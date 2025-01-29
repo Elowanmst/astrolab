@@ -34,7 +34,27 @@
                         </h2>
                     @endforeach
                 </ul>
-            </div> --}}
+            </div> --}} 
+
+            <div class="flex justify-center flex-col mt-[100px]">
+                <h2 class="text-3xl">ILLUSTRATEURS - GRAPHISTES</h2>
+                <h3 class="text-xl">| SUIVEZ MATHIS DOUILLARD & AXEL CHAPET SUR LEURS RÉSEAUX POUR DÉCOUVRIR LEUR UNIVERS |</h3>
+
+                <div class="flex justify-center mt-[80px]">
+                    <button class="bg-white text-black px-10 py-2 rounded-full">MATHIS DOUILLARD</button>
+                    <button class="bg-white text-black px-10 py-2 rounded-full">AXEL CHAPET</button>
+                </div>
+            </div>
+
+            <div class="flex justify-center flex-col mt-[100px]">
+                <h2 class="text-3xl">CONTACT</h2>
+                <h3 class="text-xl">| GILDAS CHAUVEL - FONDATEUR D'ASTROLAB |</h3>
+
+                <p class="text-gray-400">06 00 00 00 00</p>
+                <p class="text-gray-400">GILDAS@ASTROLAB.FR</p>
+
+                <img src="" alt="icône Instagram">
+            </div>
         </div>
     </div>
 @endsection
