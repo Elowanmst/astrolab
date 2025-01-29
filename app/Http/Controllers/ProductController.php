@@ -21,7 +21,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        return view('product.create');
     }
 
     /**
@@ -29,7 +29,16 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'name' => 'required',
+            'description' => 'required',
+            // 'price' => 'required',
+            // 'stock' => 'required',
+        ]);
+
+        Product::create($data);
+
+        return redirect()->route('products.index');
     }
 
     /**
@@ -37,7 +46,8 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $product = Product::findOrFail($id);
+        return view('product.show', compact('product'));
     }
 
     /**
@@ -45,7 +55,8 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $product = Product::findOrFail($id);
+        return view('product.edit', compact('product'));
     }
 
     /**
@@ -53,7 +64,17 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $data = $request->validate([
+            'name' => 'required',
+            'description' => 'required',
+        ]);
+
+        // $article = Article::findOrFail($id);
+        // $article->update($data);
+
+        Product::where('id', $id)->update($data);
+
+        return redirect()->route('products.index');
     }
 
     /**
@@ -61,6 +82,7 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        Product::destroy($id);
+        return redirect()->route('products.index');
     }
 }
