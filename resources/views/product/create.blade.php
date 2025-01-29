@@ -18,6 +18,20 @@
                 <p>{{ $message }}</p>                
             @enderror
         </div>
+        <div>
+            <label for="price">price</label>
+            <input type="number" name="price" id="price" value="{{ old('price') }}">
+            @error('price')
+                <p>{{ $message }}</p>                
+            @enderror
+        </div>
+        <div>
+            <label for="quantity">quantity</label>
+            <input type="number" name="quantity" id="quantity" value="{{ old('quantity') }}">
+            @error('quantity')
+                <p>{{ $message }}</p>                
+            @enderror
+        </div>
         <button type="submit">Submit</button>
     </form>
 
