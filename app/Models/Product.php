@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
 {
-
-
-
+    
+    
+    
     protected $fillable = [
         'name',
         'description',
@@ -21,9 +21,13 @@ class Product extends Model
         'material',
         'gender'
     ];
-
+    
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+    public function colors()
+    {
+        return $this->belongsToMany(Color::class);
     }
 }

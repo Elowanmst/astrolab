@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Color;
 
 class ProductController extends Controller
 {
@@ -23,7 +24,8 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::all(); 
-        return view('product.create', compact('categories'));
+        $colors = Color::all(); // Fetch all colors
+        return view('product.create', compact('categories', 'colors'));
     }
 
     /**
@@ -40,9 +42,15 @@ class ProductController extends Controller
             'color' => 'nullable|string',
             'size' => 'nullable|string',
             'material' => 'nullable|string',
+            'colors' => 'nullable|array', // Validation for colors
+            'colors.*' => 'exists:colors,id', // Ensure each color exists in the colors table
         ]);
 
-        Product::create($data);
+        $product = Product::create($data);
+
+        if ($request->has('colors')) {
+            $product->colors()->attach($request->input('colors'));
+        }
 
         return redirect()->route('products.index');
     }
@@ -79,12 +87,16 @@ class ProductController extends Controller
             'color' => 'nullable|string',
             'size' => 'nullable|string',
             'material' => 'nullable|string',
+            'colors' => 'nullable|array', // Validation for colors
+            'colors.*' => 'exists:colors,id', // Ensure each color exists in the colors table
         ]);
 
-        // $article = Article::findOrFail($id);
-        // $article->update($data);
+        $product = Product::findOrFail($id);
+        $product->update($data);
 
-        Product::where('id', $id)->update($data);
+        if ($request->has('colors')) {
+            $product->colors()->sync($request->input('colors')); // Sync colors to update relationships
+        }
 
         return redirect()->route('products.index');
     }

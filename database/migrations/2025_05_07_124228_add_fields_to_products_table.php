@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->string('color')->nullable()->after('description'); // Couleur du vêtement
-            $table->string('size')->nullable()->after('color'); // Taille du vêtement
+            $table->string('size')->nullable()->after('description'); // Taille du vêtement
             $table->string('material')->nullable()->after('size'); // Matériau du vêtement
             $table->enum('gender', ['male', 'female', 'unisex'])->default('unisex')->after('material'); // Genre
         });
@@ -25,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn(['color', 'size', 'material', 'gender']);
+            $table->dropColumn(['size', 'material', 'gender']);
         });
     }
 };
