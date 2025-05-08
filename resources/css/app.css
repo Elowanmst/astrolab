@@ -4,8 +4,172 @@
 
 
 html {
-    font-family: 'Nunito', sans-serif;
     background-color: rgb(34, 34, 34);  ;
+}
+
+body {
+    font-family: 'Bebas Kai', sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+#products {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 50px;
+    gap: 20px;
+}
+.product-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+a.btn {
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+form {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+input, textarea, select {
+    border: 1px solid #d1d5db;
+    padding: 8px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* buttons */
+
+button, .btn {
+    display: inline-block;
+    background-color: #ffffff;
+    color: #1b1b18;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+button:hover, .btn:hover {
+    background-color: #454545;
+    color: #ffffff;
+}
+
+.btn-home {
+    background-color: #ffffff;
+    color: #000000;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.btn-home:hover {
+    box-shadow: 0 0 10px 4px rgba(255, 255, 255, 0.6);
+}
+
+.text-red-500 {
+    color: #ef4444;
+}
+
+.bg-red-100 {
+    background-color: #fee2e2;
+}
+
+.bg-blue-500 {
+    background-color: #3b82f6;
+}
+
+.bg-blue-700 {
+    background-color: #2563eb;
+}
+
+.text-gray-700 {
+    color: #374151;
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.mb-4 {
+    margin-bottom: 16px;
+}
+
+.p-2 {
+    padding: 8px;
+}
+
+.p-4 {
+    padding: 16px;
+}
+
+.rounded {
+    border-radius: 8px;
+}
+
+.shadow-md {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.max-w-lg {
+    max-width: 32rem;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+nav {
+    background-color: #1f2937; /* Dark gray background */
+    color: #ffffff; /* White text */
+    padding: 16px;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav ul div {
+    display: flex;
+    gap: 16px; /* Space between items */
+}
+
+nav a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #9ca3af; /* Light gray on hover */
 }
 @font-face {
     font-family: 'Bebas Kai';

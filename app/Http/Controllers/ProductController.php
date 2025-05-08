@@ -37,6 +37,9 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'stock' => 'required|integer',
             'category_id' => 'required|exists:categories,id', 
+            'color' => 'nullable|string',
+            'size' => 'nullable|string',
+            'material' => 'nullable|string',
         ]);
 
         Product::create($data);
@@ -70,6 +73,12 @@ class ProductController extends Controller
         $data = $request->validate([
             'name' => 'required',
             'description' => 'required',
+            'price' => 'required|numeric',
+            'stock' => 'required|integer',
+            'category_id' => 'required|exists:categories,id', 
+            'color' => 'nullable|string',
+            'size' => 'nullable|string',
+            'material' => 'nullable|string',
         ]);
 
         // $article = Article::findOrFail($id);

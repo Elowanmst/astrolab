@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
 {
@@ -15,6 +16,10 @@ class Product extends Model
         'price',
         'stock',
         'category_id',
+        'color',
+        'size',
+        'material',
+        'gender'
     ];
 
     public function category()

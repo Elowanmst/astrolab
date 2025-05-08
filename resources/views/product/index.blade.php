@@ -1,26 +1,60 @@
-@extends('layouts.app')
+@extends('layouts.master')
+
+@section('styles')
+    @vite(['resources/css/admin/dashboard.css'])
+@endsection
 
 @section('content')
-    <div class="container bg-slate-50 mx-auto p-4">
+    <div class="main-content">
 
-    <a class="" href="/products/create">créer un produit</a>
+        <h1>products</h1>
 
-    <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" href="/products/create">
-        créer un produit
-    </a>
+        <a class="btn" href="{{ route('products.create') }}">
+            {{ __('add product') }}
+        </a>
 
-    <h1>products</h1>
+        <table class="details">
+            <thead>
+                <tr>
+                    <th>{{ __('picture') }}</th>
+                    <th>{{ __('name') }}</th>
+                    <th>{{ __('price') }}</th>
+                    <th>{{ __('category') }}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($products as $product)
+                <tr onclick="window.location='{{ route('products.show', $product) }}'" style="cursor: pointer;">
+                    <td>
+                        {{-- @if ($product->getFirstMediaUrl('products', 'thumb'))
+                            <img src="{{ $product->getFirstMediaUrl('products', 'thumb') }}" alt="{{ $product->brand }} {{ $product->model }}">
+                        @else
+                            <p>{{ __('No image available') }}</p>
+                        @endif --}}
+                    </td>
+                    <td>{{ $product->name }}</td>
+                    <td>{{ $product->price }} €</td>
+                    <td>
+                        @if ($product->category)
+                            {{ $product->category->name }}
+                        @else
+                            {{ __('No category') }}
+                        @endif
+                    <td>
+                        <a href="{{ route('products.edit', $product) }}">{{ __('edit') }}</a>
+                        <form action="{{ route('products.destroy', $product) }}" method="POST" style="display: inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn-delete" type="submit">{{ __('delete') }}</button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
 
-    <ul class="list-none p-0 m-0 mt-4 space-y-4 bg-slate-100 rounded-full">
-        @foreach ($products as $product)
-            <h2 class="text-xl" >
-                <a href="{{ route('products.show', $product) }}">{{$product->name}}</a>
-            </h2>
-
-        @endforeach
-    </ul>
-
-    {{ $products->links() }}
+        {{ $products->links() }}
     </div>
 
 @endsection
