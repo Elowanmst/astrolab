@@ -26,7 +26,7 @@
             <div id="products">
                 <ul class="">
                     @foreach ($products as $product)
-                        <li class="product-item">
+                        <li class="product-item" onclick="window.location='{{ route('products.show', $product) }}'">
                             <img class="w-[300px] h-[300px] object-cover" src="{{ asset('storage/' . $product->image) }}" alt="Image de {{ $product->name }}">
                             <h2 class="">
                                 <a href="{{ route('products.show', $product) }}" >
