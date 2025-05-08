@@ -132,9 +132,6 @@ input:focus, textarea:focus, select:focus {
 }
 
 
-.text-red-500 {
-    color: #ef4444;
-}
 
 .bg-red-100 {
     background-color: #fee2e2;
