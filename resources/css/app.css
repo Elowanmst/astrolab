@@ -3,42 +3,69 @@
 @tailwind utilities;
 
 
+
 html {
     background-color: rgb(34, 34, 34);  ;
 }
 
 body {
     font-family: 'Bebas Kai', sans-serif;
-    font-weight: 450;
+    font-weight: 480;
     color: #ffffff;
     margin: 0;
     padding: 0;
 }
 .bg-home {
-    background-image: url('/assets/images/home.jpg');
+    background-image: url('/public/assets/img/BANIERE-COLLECTION-SITE-ASTROLAB.webp');
     background-size: cover;
-    background-position: center;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-position: center;    
+    height: 50vh;
+}
+.home-title {
+    padding-top: 5vh;
+    margin-bottom: 100px;
 }
 
 #products {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    margin-top: 50px;
+    margin-top: 200px;
     gap: 20px;
 }
-.product-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+#products ul {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr); /* 1 colonne par défaut */
+    gap: 40px; /* Espacement entre les cartes */
 }
+
+@media (min-width: 768px) { /* Vue tablette et desktop */
+    #products ul {
+        grid-template-columns: repeat(3, 1fr); /* 3 colonnes en vue desktop */
+    }
+}
+
+.product-item {
+    background-color: #2b2b2b;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.product-item:hover {
+    transform: scale(1.05); /* Effet de zoom au survol */
+}
+.product-image {
+    width: 100%;
+    height: auto;
+    max-height: 300px; /* Limite la hauteur des images */
+    object-fit: cover; /* Coupe l'image pour qu'elle s'adapte au conteneur */
+    border-radius: 8px;
+}
+
 .size-options {
     display: flex;
     gap: 10px;
