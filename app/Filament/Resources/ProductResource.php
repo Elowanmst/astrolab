@@ -12,6 +12,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+
 
 class ProductResource extends Resource
 {
@@ -39,11 +41,15 @@ class ProductResource extends Resource
                 Forms\Components\Select::make('category_id')
                     ->relationship('category', 'name')
                     ->required(),
-                Forms\Components\FileUpload::make('picture')
+                SpatieMediaLibraryFileUpload::make('image')
+                    ->collection('products')
                     ->image()
-                    ->directory('products')
-                    ->imagePreviewHeight('100')
-                    ->maxSize(2048),
+                    ->required()
+                    ->maxSize(1024 * 10) // 10 MB
+                    ->acceptedFileTypes(['image/*'])
+                    ->enableOpen()
+                    ->multiple()
+                    ->reorderable(),
             ]);
     }
 
