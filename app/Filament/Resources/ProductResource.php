@@ -23,7 +23,27 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\TextInput::make('name'),
+                Forms\Components\TextInput::make('description')
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('price')
+                    ->numeric()
+                    ->required()
+                    ->minValue(0)
+                    ->maxValue(1000000),
+                Forms\Components\TextInput::make('stock')
+                    ->numeric()
+                    ->required()
+                    ->minValue(0)
+                    ->maxValue(1000000),
+                Forms\Components\Select::make('category_id')
+                    ->relationship('category', 'name')
+                    ->required(),
+                Forms\Components\FileUpload::make('picture')
+                    ->image()
+                    ->directory('products')
+                    ->imagePreviewHeight('100')
+                    ->maxSize(2048),
             ]);
     }
 
@@ -31,7 +51,22 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('name')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('description')
+                    ->limit(50)
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('price')
+                    ->sortable()
+                    ->money('USD'),
+                Tables\Columns\TextColumn::make('stock')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('category.name')
+                    ->label('Category')
+                    ->sortable()
+                    ->searchable(),
             ])
             ->filters([
                 //
