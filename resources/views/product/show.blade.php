@@ -27,8 +27,6 @@
     </div>
     
     
-    
-    
     <h1>| {{ $product->name }} |</h1>
     <h3>{{ $product->price }}€</h3>
     <p>Taxes incluses</p>
@@ -44,7 +42,7 @@
         <input type="hidden" name="size" id="size" value=""> <!-- Champ caché pour stocker la taille sélectionnée -->
     </div>    
 
-    <form class="" action="{{ route('home') }}" method="POST">
+    <form action="{{ route('cart.add', ['product' => $product->id]) }}" method="POST">
         @csrf
     
         <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -57,11 +55,11 @@
         </select>
 
         
-        <div class="gallery">
+        {{-- <div class="gallery">
             @foreach ($product->getMedia('products') as $media)
             <img src="{{ $media->getUrl('thumb') }}" alt="{{ $product->name }}" style="max-width: 200px; border-radius: 8px;">
             @endforeach
-        </div>
+        </div> --}}
     
         <label for="quantity">Quantité :</label>
         <input type="number" name="quantity" id="quantity" min="1" value="1">

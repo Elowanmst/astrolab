@@ -1,0 +1,1 @@
+<img src="{{ asset('img/BANIERE-COLLECTION_SITE-ASTROLAB.WEBP') }}" alt="Astrolab" class="h-10">
