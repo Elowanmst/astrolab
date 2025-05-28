@@ -50,11 +50,16 @@ class ProductResource extends Resource
                     ->enableOpen()
                     ->multiple()
                     ->reorderable(),
-                Forms\Components\Select::make('colors')
+                Forms\Components\Select::make('color')
                     ->relationship('colors', 'name')
                     ->multiple()
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nom de la couleur')
+                            ->required(),
+                    ]), // Active la création rapide d'une couleur
             ]);
     }
 
