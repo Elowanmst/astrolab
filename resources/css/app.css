@@ -31,8 +31,22 @@ body {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    margin-top: 200px;
+    margin-top: 50px;
     gap: 20px;
+}
+
+.product-image-show {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
 }
 
 #products ul {
@@ -54,16 +68,17 @@ body {
     padding: 20px;
     text-align: center;
     transition: transform 0.3s ease;
+    width: 300px;
 }
 
 .product-item:hover {
-    transform: scale(1.05); /* Effet de zoom au survol */
+    transform: scale(1.05);
 }
 .product-image {
     width: 100%;
     height: auto;
-    max-height: 300px; /* Limite la hauteur des images */
-    object-fit: cover; /* Coupe l'image pour qu'elle s'adapte au conteneur */
+    max-height: 300px;
+    object-fit: cover;
     border-radius: 8px;
 }
 

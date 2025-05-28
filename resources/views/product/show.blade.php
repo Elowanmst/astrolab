@@ -17,12 +17,20 @@
         </div>
         <button class="next-show">❯</button>
     </div> --}}
+
+    <div class="gallery">
+        @foreach ($product->getMedia('products') as $media)
+        <img class="product-image" 
+            src="{{ $product->getFirstMediaUrl('products', 'preview') ?: asset('default-image.jpg') }}" 
+            alt="Image de {{ $product->name }}">
+        @endforeach
+    </div>
     
-    <img src="" alt="image de {{ $product->name }}" class="product-image-show">
+    
     
     
     <h1>| {{ $product->name }} |</h1>
-    <h3>{{ $product->price }},00€</h3>
+    <h3>{{ $product->price }}€</h3>
     <p>Taxes incluses</p>
     
     <div class="size-select">
