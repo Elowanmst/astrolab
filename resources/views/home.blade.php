@@ -37,7 +37,7 @@
             <ul>
                 @foreach ($products as $product)
                 <li class="product-item" onclick="window.location='{{ route('products.show', $product) }}'">
-                    <img class="product-image" src="{{ asset('storage/' . $product->image) }}" alt="Image de {{ $product->name }}">
+                    <img class="product-image" src="{{ $product->getFirstMediaUrl('products', 'thumb') ?: asset('default-image.jpg') }}" alt="Image de {{ $product->name }}">
                     <h2>
                         <a href="{{ route('products.show', $product) }}">
                             | {{ mb_strtoupper($product->name, 'UTF-8') }} |
@@ -58,6 +58,8 @@
                 <a class="btn-home">AXEL CHAPET</a>
             </div>
         </div>
+
+<footer>
         
         <div class="flex justify-center flex-col mt-[100px]">
             <h2 class="text-3xl">CONTACT</h2>
@@ -67,8 +69,10 @@
             <p class="text-gray-400">GILDAS@ASTROLAB.FR</p>
             
             <img src="" alt="icône Instagram">
+            <p class="text-gray-400">Create by <a href="https://ec-craft.fr" target="_blank" class="text-blue-500 underline">ec-craft.fr</a></p>
         </div>
     </div>
+</footer>
 </div>
 
 @endsection
