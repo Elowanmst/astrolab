@@ -50,6 +50,11 @@ class ProductResource extends Resource
                     ->enableOpen()
                     ->multiple()
                     ->reorderable(),
+                Forms\Components\Select::make('colors')
+                    ->relationship('colors', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->required(),
             ]);
     }
 

@@ -21,7 +21,13 @@
                 @endauth
             </div>
             <div class="flex items-center space-x-4">
-                <li><a href="" class="hover:text-gray-300 uppercase">Panier</a></li>
+                @inject('cart', 'App\Services\Cart')
+
+                <li>
+                    <a href="{{ route('cart.index') }}" class="hover:text-gray-300 uppercase">
+                        Panier ({{ $cart->count() }})
+                    </a>
+                </li>
                 @auth
                     <li>
                         <form method="POST" action="">

@@ -36,15 +36,17 @@
         <div id="products">
             <ul>
                 @foreach ($products as $product)
-                <li class="product-item" onclick="window.location='{{ route('products.show', $product) }}'">
-                    <img class="product-image" src="{{ $product->getFirstMediaUrl('products', 'thumb') ?: asset('default-image.jpg') }}" alt="Image de {{ $product->name }}">
-                    <h2>
-                        <a href="{{ route('products.show', $product) }}">
-                            | {{ mb_strtoupper($product->name, 'UTF-8') }} |
-                        </a>
-                    </h2>
-                    <p>{{ $product->price }} €</p>
-                </li>
+                    <li class="product-item" onclick="window.location='{{ route('products.show', $product) }}'">
+                        <img class="product-image" 
+                            src="{{ $product->getFirstMediaUrl('products', 'thumb') ?: asset('default-image.jpg') }}" 
+                            alt="Image de {{ $product->name }}">
+                        <h2>
+                            <a href="{{ route('products.show', $product) }}">
+                                | {{ mb_strtoupper($product->name, 'UTF-8') }} |
+                            </a>
+                        </h2>
+                        <p>{{ $product->price }} €</p>
+                    </li>
                 @endforeach
             </ul>
         </div>
