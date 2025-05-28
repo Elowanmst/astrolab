@@ -14,7 +14,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::paginate(5);
+        $products = Product::with('category', 'colors','media')->paginate(5);
         return view('product.index', compact('products'));
     }
 
@@ -44,12 +44,18 @@ class ProductController extends Controller
             'material' => 'nullable|string',
             'colors' => 'nullable|array', // Validation for colors
             'colors.*' => 'exists:colors,id', // Ensure each color exists in the colors table
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
         $product = Product::create($data);
 
         if ($request->has('colors')) {
             $product->colors()->attach($request->input('colors'));
+        }
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $product->addMedia($image)->toMediaCollection('products');
+            }
         }
 
         return redirect()->route('products.index');
@@ -60,7 +66,7 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('category', 'colors', 'media')->findOrFail($id);
         return view('product.show', compact('product'));
     }
 
@@ -69,8 +75,10 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
-        $product = Product::findOrFail($id);
-        return view('product.edit', compact('product'));
+        $product = Product::with('colors', 'media')->findOrFail($id);
+        $categories = Category::all();
+        $colors = Color::all();
+        return view('product.edit', compact('product', 'categories', 'colors'));
     }
 
     /**
@@ -89,6 +97,7 @@ class ProductController extends Controller
             'material' => 'nullable|string',
             'colors' => 'nullable|array', // Validation for colors
             'colors.*' => 'exists:colors,id', // Ensure each color exists in the colors table
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
         $product = Product::findOrFail($id);
@@ -96,6 +105,11 @@ class ProductController extends Controller
 
         if ($request->has('colors')) {
             $product->colors()->sync($request->input('colors')); // Sync colors to update relationships
+        }
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $product->addMedia($image)->toMediaCollection('products');
+            }
         }
 
         return redirect()->route('products.index');
@@ -107,6 +121,11 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         Product::destroy($id);
+
+        $product->clearMediaCollection('products');
+
+        $product->delete();
+
         return redirect()->route('products.index');
     }
 }

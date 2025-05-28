@@ -47,6 +47,13 @@
                 <option value="{{ $color->id }}">{{ $color->name }}</option>
             @endforeach
         </select>
+
+        
+        <div class="gallery">
+            @foreach ($product->getMedia('products') as $media)
+            <img src="{{ $media->getUrl('thumb') }}" alt="{{ $product->name }}" style="max-width: 200px; border-radius: 8px;">
+            @endforeach
+        </div>
     
         <label for="quantity">Quantité :</label>
         <input type="number" name="quantity" id="quantity" min="1" value="1">
@@ -63,7 +70,7 @@
 <button id="openModal" class="btn-primary">Contactez-nous</button>
 
 <footer>
-    <p>© 2025 - Garage du Centre RENAULT | DACIA  </p>
+    <p>© 2025 - ASTROLAB  </p>
     <br>
     <p>created by ec-craft.fr  </p>
 </footer>
