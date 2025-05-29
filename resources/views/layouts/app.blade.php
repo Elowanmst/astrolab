@@ -30,10 +30,9 @@
                 </li>
                 @auth
                     <li>
-                        <form method="POST" action="">
-                            @csrf
-                            <button type="submit" class="uppercase">Logout</button>
-                        </form>
+                        <a href="/admin" class="hover:text-gray-300 uppercase">
+                            Admin
+                        </a>
                     </li>
                 @endauth
             </div>
