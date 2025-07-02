@@ -70,7 +70,10 @@
             <p class="text-gray-400">06 00 00 00 00</p>
             <p class="text-gray-400">GILDAS@ASTROLAB.FR</p>
             
-            <img src="" alt="icône Instagram">
+            <a href="https://instagram.com/" target="_blank">
+                <i class="fa-brands fa-instagram"></i>
+            </a>
+
             <p class="text-gray-400">Create by <a href="https://ec-craft.fr" target="_blank" class="text-blue-500 underline">ec-craft.fr</a></p>
         </div>
     </div>
