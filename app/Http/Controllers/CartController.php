@@ -30,7 +30,10 @@ class CartController extends Controller
     {
         $this->cart->add($product, $request->input('quantity', 1));
 
-        return redirect()->back()->with('success', 'Produit ajouté au panier');
+        return redirect()->back()->with('cart_success', [
+            'message' => 'Article bien ajouté au panier !',
+            'product_name' => $product->name
+        ]);
     }
 
     public function remove($id)
