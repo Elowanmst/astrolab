@@ -65,156 +65,134 @@
             <h2 class="section-title">COLLECTION STELLAE 01</h2>
             <p class="section-subtitle">DÉCOUVREZ NOTRE PREMIÈRE COLLECTION EXCLUSIVE</p>
             
-            <!-- Galerie de produits avec carousel et 4 slots -->
-            <div class="products-grid">
-                <!-- Carousel de la collection (slot plus grand) -->
-                <div class="collection-carousel">
-                    <div class="carousel-container">
-                        <div class="carousel-slides">
-                            <div class="carousel-slide active">
-                                <img src="/assets/img/sweat-blanc.jpeg" alt="Collection Stellae 01 - Vue 1" class="carousel-image">
+            <!-- Galerie de produits en grid 3x2 -->
+            <div class="products-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto; gap: 20px; max-width: 1200px; margin: 0 auto;">
+                <!-- Ligne du haut : 3 produits -->
+                <div class="card product-card">
+                    <div class="product-flip-container" data-card-id="tshirt-classique">
+                        <div class="product-card-inner">
+                            <!-- Face avant -->
+                            <div class="product-face product-front">
+                                <img src="/assets/img/sweat-blanc.jpeg" alt="T-Shirt Classique" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="product-placeholder" style="display: none;">T-SHIRT CLASSIQUE</div>
                             </div>
-                            <div class="carousel-slide">
-                                <img src="/assets/img/sweat-noir.jpeg" alt="Collection Stellae 01 - Vue 2" class="carousel-image">
-                            </div>
-                            <div class="carousel-slide">
-                                <img src="/assets/img/BANIERE-COLLECTION-SITE-ASTROLAB.webp" alt="Collection Stellae 01 - Vue 3" class="carousel-image">
+                            <!-- Face arrière -->
+                            <div class="product-face product-back">
+                                <img src="/assets/img/sweat-noir.jpeg" alt="T-Shirt Classique Dos" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="product-placeholder" style="display: none;">T-SHIRT DOS</div>
                             </div>
                         </div>
-                        <!-- Indicateurs -->
-                        <div class="carousel-indicators">
-                            <button class="indicator active" data-slide="0"></button>
-                            <button class="indicator" data-slide="1"></button>
-                            <button class="indicator" data-slide="2"></button>
-                        </div>
+                        <!-- Zones de clic invisibles -->
+                        <div class="click-zone click-left" onclick="flipCard(this, 'left')"></div>
+                        <div class="click-zone click-right" onclick="flipCard(this, 'right')"></div>
                     </div>
-                    <h3 class="product-title">COLLECTION STELLAE 01 COMPLÈTE</h3>
-                    <p class="product-description">Découvrez l'univers complet de notre première collection</p>
-                    
-                    <!-- Informations détaillées de la collection -->
-                    <div class="collection-details" style="margin-top: 24px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);">
-                        <h4 style="color: white; font-size: 18px; margin-bottom: 16px; font-weight: 600;">ÉDITION LIMITÉE</h4>
-                        <div style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
-                            <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.9);">
-                                <span style="font-weight: 500;">Pièces disponibles :</span>
-                                <span style="color: #fbbf24; font-weight: 600;">100 exemplaires</span>
+                    <h3 class="card-title">T-SHIRT CLASSIQUE "STELLAE 01"</h3>
+                    <p class="card-text">Coupe classique • Noir ou Blanc</p>
+                </div>
+                
+                <div class="card product-card">
+                    <div class="product-flip-container" data-card-id="tshirt-oversize">
+                        <div class="product-card-inner">
+                            <!-- Face avant -->
+                            <div class="product-face product-front">
+                                <img src="/assets/img/sweat-blanc.jpeg" alt="T-Shirt Oversize" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="product-placeholder" style="display: none;">T-SHIRT OVERSIZE</div>
                             </div>
-                            <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.9);">
-                                <span style="font-weight: 500;">Matière :</span>
-                                <span>100% Coton Bio</span>
+                            <!-- Face arrière -->
+                            <div class="product-face product-back">
+                                <img src="/assets/img/sweat-noir.jpeg" alt="T-Shirt Oversize Dos" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="product-placeholder" style="display: none;">T-SHIRT DOS</div>
                             </div>
-                            <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.9);">
-                                <span style="font-weight: 500;">Impression :</span>
-                                <span>Sérigraphie Premium</span>
+                        </div>
+                        <!-- Zones de clic invisibles -->
+                        <div class="click-zone click-left" onclick="flipCard(this, 'left')"></div>
+                        <div class="click-zone click-right" onclick="flipCard(this, 'right')"></div>
+                    </div>
+                    <h3 class="card-title">T-SHIRT OVERSIZE "STELLAE 01"</h3>
+                    <p class="card-text">Coupe oversize • Noir ou Blanc</p>
+                </div>
+                
+                <div class="card product-card">
+                    <div class="product-flip-container" data-card-id="hoodie">
+                        <div class="product-card-inner">
+                            <!-- Face avant -->
+                            <div class="product-face product-front">
+                                <img src="/assets/img/sweat-blanc.jpeg" alt="Hoodie" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="product-placeholder" style="display: none;">HOODIE</div>
                             </div>
-                            <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.9);">
-                                <span style="font-weight: 500;">Collaboration :</span>
-                                <span style="color: #8b5cf6; font-weight: 600;">M. Douillard & A. Chapet</span>
+                            <!-- Face arrière -->
+                            <div class="product-face product-back">
+                                <img src="/assets/img/sweat-noir.jpeg" alt="Hoodie Dos" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="product-placeholder" style="display: none;">HOODIE DOS</div>
+                            </div>
+                        </div>
+                        <!-- Zones de clic invisibles -->
+                        <div class="click-zone click-left" onclick="flipCard(this, 'left')"></div>
+                        <div class="click-zone click-right" onclick="flipCard(this, 'right')"></div>
+                    </div>
+                    <h3 class="card-title">HOODIE "STELLAE 01"</h3>
+                    <p class="card-text">Capuche doublée • Noir ou Blanc</p>
+                </div>
+
+                <!-- Ligne du bas : 1 produit + carousel large -->
+                <div class="card product-card">
+                    <div class="product-flip-container" data-card-id="sweatshirt">
+                        <div class="product-card-inner">
+                            <!-- Face avant -->
+                            <div class="product-face product-front">
+                                <img src="/assets/img/sweat-blanc.jpeg" alt="Sweatshirt" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="product-placeholder" style="display: none;">SWEATSHIRT</div>
+                            </div>
+                            <!-- Face arrière -->
+                            <div class="product-face product-back">
+                                <img src="/assets/img/sweat-noir.jpeg" alt="Sweatshirt Dos" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="product-placeholder" style="display: none;">SWEATSHIRT DOS</div>
+                            </div>
+                        </div>
+                        <!-- Zones de clic invisibles -->
+                        <div class="click-zone click-left" onclick="flipCard(this, 'left')"></div>
+                        <div class="click-zone click-right" onclick="flipCard(this, 'right')"></div>
+                    </div>
+                    <h3 class="card-title">SWEATSHIRT "STELLAE 01"</h3>
+                    <p class="card-text">Col rond • Noir ou Blanc</p>
+                </div>
+
+                <!-- Carousel large qui prend 2 colonnes -->
+                <div class="collection-carousel-large card" style="grid-column: span 2;">
+                    <div class="carousel-container" style="position: relative; width: 100%; height: 300px; overflow: hidden; border-radius: 8px; background: #f8f9fa; margin-bottom: 16px;">
+                        <div class="carousel-slides" style="position: relative; width: 100%; height: 100%;">
+                            <div class="carousel-slide active" style="position: absolute; width: 100%; height: 100%; opacity: 1; transition: opacity 0.5s ease-in-out;">
+                                <img src="/assets/img/sweat-blanc.jpeg" alt="Collection Stellae 01 - Vue 1" class="carousel-image" style="width: 100%; height: 100%; object-fit: contain; object-position: center;">
+                            </div>
+                            <div class="carousel-slide" style="position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 0.5s ease-in-out;">
+                                <img src="/assets/img/sweat-noir.jpeg" alt="Collection Stellae 01 - Vue 2" class="carousel-image" style="width: 100%; height: 100%; object-fit: contain; object-position: center;">
+                            </div>
+                            <div class="carousel-slide" style="position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 0.5s ease-in-out;">
+                                <img src="/assets/img/BANIERE-COLLECTION-SITE-ASTROLAB.webp" alt="Collection Stellae 01 - Vue 3" class="carousel-image" style="width: 100%; height: 100%; object-fit: contain; object-position: center;">
                             </div>
                         </div>
                         
-                        <!-- Badge exclusivité -->
-                        <div style="margin-top: 16px; padding: 8px 16px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 20px; text-align: center;">
-                            <span style="color: white; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
-                                ⚡ Première collection exclusive
-                            </span>
+                        <!-- Flèches de navigation -->
+                        <button class="carousel-arrow carousel-prev" onclick="prevSlide()" style="position: absolute; top: 50%; left: 12px; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 20; transition: background 0.3s;">
+                            &#8249;
+                        </button>
+                        <button class="carousel-arrow carousel-next" onclick="nextSlide()" style="position: absolute; top: 50%; right: 12px; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 20; transition: background 0.3s;">
+                            &#8250;
+                        </button>
+                        
+                        <!-- Indicateurs -->
+                        <div class="carousel-indicators" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10;">
+                            <button class="indicator active" data-slide="0" style="width: 10px; height: 10px; border-radius: 50%; border: none; background: #fff; opacity: 1; cursor: pointer; transition: opacity 0.3s;"></button>
+                            <button class="indicator" data-slide="1" style="width: 10px; height: 10px; border-radius: 50%; border: none; background: #fff; opacity: 0.5; cursor: pointer; transition: opacity 0.3s;"></button>
+                            <button class="indicator" data-slide="2" style="width: 10px; height: 10px; border-radius: 50%; border: none; background: #fff; opacity: 0.5; cursor: pointer; transition: opacity 0.3s;"></button>
                         </div>
                     </div>
+                    
+                    <!-- Texte dans le fond gris comme les autres cartes -->
+                    <h3 class="card-title">COLLECTION STELLAE 01 COMPLÈTE</h3>
+                    <p class="card-text">Découvrez l'univers complet de notre première collection</p>
                 </div>
-                
-                <!-- 4 slots produits -->
-                <div class="product-slots">
-                    <div class="card product-card">
-                        <div class="product-flip-container" data-card-id="tshirt-classique">
-                            <div class="product-card-inner">
-                                <!-- Face avant -->
-                                <div class="product-face product-front">
-                                    <img src="/assets/img/sweat-blanc.jpeg" alt="T-Shirt Classique" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="product-placeholder" style="display: none;">T-SHIRT CLASSIQUE</div>
-                                </div>
-                                <!-- Face arrière -->
-                                <div class="product-face product-back">
-                                    <img src="/assets/img/sweat-noir.jpeg" alt="T-Shirt Classique Dos" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="product-placeholder" style="display: none;">T-SHIRT DOS</div>
-                                </div>
-                            </div>
-                            <!-- Zones de clic invisibles -->
-                            <div class="click-zone click-left" onclick="flipCard(this, 'left')"></div>
-                            <div class="click-zone click-right" onclick="flipCard(this, 'right')"></div>
-                        </div>
-                        <h3 class="card-title">T-SHIRT CLASSIQUE "STELLAE 01"</h3>
-                        <p class="card-text">Coupe classique • Noir ou Blanc</p>
-                    </div>
-                    
-                    <div class="card product-card">
-                        <div class="product-flip-container" data-card-id="tshirt-oversize">
-                            <div class="product-card-inner">
-                                <!-- Face avant -->
-                                <div class="product-face product-front">
-                                    <img src="/assets/img/sweat-blanc.jpeg" alt="T-Shirt Oversize" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="product-placeholder" style="display: none;">T-SHIRT OVERSIZE</div>
-                                </div>
-                                <!-- Face arrière -->
-                                <div class="product-face product-back">
-                                    <img src="/assets/img/sweat-noir.jpeg" alt="T-Shirt Oversize Dos" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="product-placeholder" style="display: none;">T-SHIRT DOS</div>
-                                </div>
-                            </div>
-                            <!-- Zones de clic invisibles -->
-                            <div class="click-zone click-left" onclick="flipCard(this, 'left')"></div>
-                            <div class="click-zone click-right" onclick="flipCard(this, 'right')"></div>
-                        </div>
-                        <h3 class="card-title">T-SHIRT OVERSIZE "STELLAE 01"</h3>
-                        <p class="card-text">Coupe oversize • Noir ou Blanc</p>
-                    </div>
-                    
-                    <div class="card product-card">
-                        <div class="product-flip-container" data-card-id="hoodie">
-                            <div class="product-card-inner">
-                                <!-- Face avant -->
-                                <div class="product-face product-front">
-                                    <img src="/assets/img/sweat-blanc.jpeg" alt="Hoodie" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="product-placeholder" style="display: none;">HOODIE</div>
-                                </div>
-                                <!-- Face arrière -->
-                                <div class="product-face product-back">
-                                    <img src="/assets/img/sweat-noir.jpeg" alt="Hoodie Dos" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="product-placeholder" style="display: none;">HOODIE DOS</div>
-                                </div>
-                            </div>
-                            <!-- Zones de clic invisibles -->
-                            <div class="click-zone click-left" onclick="flipCard(this, 'left')"></div>
-                            <div class="click-zone click-right" onclick="flipCard(this, 'right')"></div>
-                        </div>
-                        <h3 class="card-title">HOODIE "STELLAE 01"</h3>
-                        <p class="card-text">Capuche doublée • Noir ou Blanc</p>
-                    </div>
-                    
-                    <div class="card product-card">
-                        <div class="product-flip-container" data-card-id="sweatshirt">
-                            <div class="product-card-inner">
-                                <!-- Face avant -->
-                                <div class="product-face product-front">
-                                    <img src="/assets/img/sweat-blanc.jpeg" alt="Sweatshirt" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="product-placeholder" style="display: none;">SWEATSHIRT</div>
-                                </div>
-                                <!-- Face arrière -->
-                                <div class="product-face product-back">
-                                    <img src="/assets/img/sweat-noir.jpeg" alt="Sweatshirt Dos" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="product-placeholder" style="display: none;">SWEATSHIRT DOS</div>
-                                </div>
-                            </div>
-                            <!-- Zones de clic invisibles -->
-                            <div class="click-zone click-left" onclick="flipCard(this, 'left')"></div>
-                            <div class="click-zone click-right" onclick="flipCard(this, 'right')"></div>
-                        </div>
-                        <h3 class="card-title">SWEATSHIRT "STELLAE 01"</h3>
-                        <p class="card-text">Col rond • Noir ou Blanc</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Call to Action -->
+            </div>            <!-- Call to Action -->
             <div class="text-center space-y">
                 <div class="preorder-notice">
                     <h3 class="preorder-title">PRÉCOMMANDE BIENTÔT DISPONIBLE</h3>
@@ -381,7 +359,7 @@
                     <h4 class="card-title">LIENS RAPIDES</h4>
                     <div class="card-text">
                         <a href="#boutique" class="card-text">Boutique</a><br>
-                        <a href="#illustrateurs" class="card-text">Artistes</a><br>
+                        <a href="#illustrateurs" class="card-text">Illustrateurs</a><br>
                         <a href="#contact" class="card-text">Contact</a>
                     </div>
                 </div>
@@ -421,17 +399,26 @@ const slides = document.querySelectorAll('.carousel-slide');
 const indicators = document.querySelectorAll('.indicator');
 
 function showSlide(index) {
-    // Cacher toutes les slides
-    slides.forEach(slide => slide.classList.remove('active'));
-    indicators.forEach(indicator => indicator.classList.remove('active'));
+    // Cacher toutes les slides avec opacity
+    slides.forEach((slide, i) => {
+        slide.style.opacity = i === index ? '1' : '0';
+        slide.classList.toggle('active', i === index);
+    });
     
-    // Afficher la slide courante
-    slides[index].classList.add('active');
-    indicators[index].classList.add('active');
+    // Mettre à jour les indicateurs
+    indicators.forEach((indicator, i) => {
+        indicator.style.opacity = i === index ? '1' : '0.5';
+        indicator.classList.toggle('active', i === index);
+    });
 }
 
 function nextSlide() {
     currentSlide = (currentSlide + 1) % slides.length;
+    showSlide(currentSlide);
+}
+
+function prevSlide() {
+    currentSlide = (currentSlide - 1 + slides.length) % slides.length;
     showSlide(currentSlide);
 }
 
@@ -443,6 +430,16 @@ indicators.forEach((indicator, index) => {
     indicator.addEventListener('click', () => {
         currentSlide = index;
         showSlide(currentSlide);
+    });
+});
+
+// Effets hover pour les flèches
+document.querySelectorAll('.carousel-arrow').forEach(arrow => {
+    arrow.addEventListener('mouseenter', () => {
+        arrow.style.background = 'rgba(0,0,0,0.8)';
+    });
+    arrow.addEventListener('mouseleave', () => {
+        arrow.style.background = 'rgba(0,0,0,0.5)';
     });
 });
 
