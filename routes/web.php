@@ -8,6 +8,16 @@ use App\Http\Controllers\CartController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Landing page
+Route::get('/landing', function () {
+    return view('landing');
+})->name('landing');
+
+// Page de remerciement pour le formulaire de contact
+Route::get('/merci', function () {
+    return view('merci');
+})->name('merci');
+
 // Route::get('/admin', [DashboardController::class, 'index'])->name('admin')->middleware(['auth']);
 
 Route::resource('products', ProductController::class);
