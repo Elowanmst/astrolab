@@ -52,11 +52,6 @@
                 <p class="hero-subtitle">
                     DES ÉDITIONS ÉPHÉMÈRES EXCLUSIVES IMAGINÉES PAR DES ILLUSTRATEURS INDÉPENDANTS
                 </p>
-                <div class="space-y">
-                    <a href="#boutique" class="btn-home">
-                        DÉCOUVRIR LES COLLECTIONS
-                    </a>
-                </div>
             </div>
         </div>
     </section>
@@ -95,6 +90,36 @@
                     </div>
                     <h3 class="product-title">COLLECTION STELLAE 01 COMPLÈTE</h3>
                     <p class="product-description">Découvrez l'univers complet de notre première collection</p>
+                    
+                    <!-- Informations détaillées de la collection -->
+                    <div class="collection-details" style="margin-top: 24px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);">
+                        <h4 style="color: white; font-size: 18px; margin-bottom: 16px; font-weight: 600;">ÉDITION LIMITÉE</h4>
+                        <div style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
+                            <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.9);">
+                                <span style="font-weight: 500;">Pièces disponibles :</span>
+                                <span style="color: #fbbf24; font-weight: 600;">100 exemplaires</span>
+                            </div>
+                            <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.9);">
+                                <span style="font-weight: 500;">Matière :</span>
+                                <span>100% Coton Bio</span>
+                            </div>
+                            <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.9);">
+                                <span style="font-weight: 500;">Impression :</span>
+                                <span>Sérigraphie Premium</span>
+                            </div>
+                            <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.9);">
+                                <span style="font-weight: 500;">Collaboration :</span>
+                                <span style="color: #8b5cf6; font-weight: 600;">M. Douillard & A. Chapet</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Badge exclusivité -->
+                        <div style="margin-top: 16px; padding: 8px 16px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 20px; text-align: center;">
+                            <span style="color: white; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                                ⚡ Première collection exclusive
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- 4 slots produits -->
@@ -193,34 +218,18 @@
             <div class="text-center space-y">
                 <div class="preorder-notice">
                     <h3 class="preorder-title">PRÉCOMMANDE BIENTÔT DISPONIBLE</h3>
-                    <p class="preorder-subtitle">Soyez les premiers informés du lancement</p>
+                    <p class="preorder-subtitle">Soyez les premiers informés du lancement de notre première collection exclusive</p>
                 </div>
-                <div class="button-container">
+                <div class="button-container" style="gap: 20px; margin-top: 32px;">
                     <a href="#contact" class="btn-home">
                         NOUS CONTACTER
                     </a>
                     <a href="#illustrateurs" class="btn-home">
                         DÉCOUVRIR LES ILLUSTRATEURS
                     </a>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Section Témoignages -->
-    <section class="section-container footer-section">
-        <div class="max-width text-center">
-            <h2 class="section-title">CE QUE DISENT NOS CLIENTS</h2>
-            <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
-                <div class="card">
-                    <div class="card-icon">⭐⭐⭐⭐⭐</div>
-                    <p class="card-text">"Qualité exceptionnelle et designs uniques. Je recommande vivement ASTROLAB !"</p>
-                    <p class="card-text">- Marine L.</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon">⭐⭐⭐⭐⭐</div>
-                    <p class="card-text">"Concept génial ! J'adore porter des pièces que personne d'autre n'a."</p>
-                    <p class="card-text">- Thomas K.</p>
+                    <a href="#newsletter" class="btn-home">
+                        RECEVOIR LES ACTUALITÉS
+                    </a>
                 </div>
             </div>
         </div>
