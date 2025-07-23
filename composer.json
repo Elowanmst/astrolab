@@ -13,7 +13,8 @@
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.6",
-        "spatie/laravel-medialibrary": "^11.13"
+        "spatie/laravel-medialibrary": "^11.13",
+        "stripe/stripe-php": "^17.4"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15",

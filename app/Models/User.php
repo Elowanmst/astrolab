@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
-// use Filament\Panel;
+use Filament\Panel;
 
-class User extends Authenticatable 
+class User extends Authenticatable implements FilamentUser 
 {
     
     use HasFactory, Notifiable;
@@ -23,13 +23,20 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'address',
+        'city',
+        'postal_code',
+        'country',
+        'newsletter',
+        'birth_date',
     ];
     
-    //Décommenter cette fonction en prod pour s'assurer que seul un utilisateur avec un email @astrolab.com puisse accéder au panneau d'administration
-    // public function canAccessPanel(Panel $panel): bool
-    // {
-    //     return str_ends_with($this->email, '@astrolab.com') && $this->hasVerifiedEmail();
-    // }
+    // Seuls les utilisateurs avec un email @astrolab.com peuvent accéder au panneau d'administration Filament
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return str_ends_with($this->email, '@astrolab.com');
+    }
     
     
     /**
@@ -52,6 +59,12 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birth_date' => 'datetime',
         ];
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 }
