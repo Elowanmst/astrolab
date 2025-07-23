@@ -1505,6 +1505,25 @@ a:hover {
     margin-top: var(--astro-spacing-md);
 }
 
+/* Container spécifique pour newsletter */
+.newsletter-container {
+    display: flex;
+    gap: var(--astro-spacing-md);
+    justify-content: center;
+    align-items: stretch; /* Aligne les hauteurs */
+    flex-wrap: wrap;
+    margin-top: var(--astro-spacing-md);
+}
+
+.newsletter-container .form-input {
+    margin-bottom: 0; /* Supprime la marge par défaut */
+    height: auto; /* Laisse la hauteur s'adapter */
+}
+
+.newsletter-container .btn-home {
+    align-self: center; /* Centre verticalement le bouton */
+}
+
 /* Timer moderne */
 .countdown-container {
     display: flex;
@@ -1692,6 +1711,21 @@ a:hover {
     color: var(--astro-text-secondary);
     font-size: 1.1rem;
     margin: 0;
+}
+
+/* CTA Précommande dans le contact */
+.preorder-cta-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) !important;
+    border: 2px solid rgba(255,255,255,0.2) !important;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.preorder-cta-card:hover {
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08)) !important;
+    border-color: rgba(255,255,255,0.3) !important;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(255,255,255,0.1);
 }
 
 .product-flip-container {
@@ -1889,14 +1923,24 @@ a:hover {
 .contact-icon {
     width: 50px;
     height: 50px;
-    background: var(--astro-primary);
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border: 1px solid rgba(255,255,255,0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--astro-text-primary);
     font-size: 1.2rem;
     flex-shrink: 0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.contact-info-item:hover .contact-icon {
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+    border-color: rgba(255,255,255,0.3);
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(255,255,255,0.1);
 }
 
 .contact-details h4 {
@@ -1996,9 +2040,15 @@ a:hover {
         align-items: center;
     }
     
+    .newsletter-container {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--astro-spacing-sm);
+    }
+    
     .newsletter-form {
         width: 100% !important;
-        margin-bottom: var(--astro-spacing-sm);
+        margin-bottom: 0;
     }
     
     .contact-info-item {
