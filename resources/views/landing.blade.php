@@ -45,11 +45,13 @@
 <div class="landing-container">
     
     <!-- Hero Section avec bannière -->
-    <section class="bg-home hero-section">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
+    <section class="bg-home hero-section" style="height: 70vh; display: flex; flex-direction: column;">
+        <div class="hero-banner" style="flex: 1; background-image: url('/assets/img/BANIERE-COLLECTION-SITE-ASTROLAB.webp'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; display: flex; align-items: center; justify-content: center;">
+            <div class="hero-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4);"></div>
+        </div>
+        <div class="hero-content" style="background: rgba(34, 34, 34, 0.95); padding: 40px 20px; text-align: center; position: relative; z-index: 2;">
             <div class="hero-text">
-                <p class="hero-subtitle">
+                <p class="hero-subtitle" style="font-size: 1.2rem; font-weight: 400; letter-spacing: 2px; color: rgba(255,255,255,0.9); margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); border-left: 2px solid white; border-right: 2px solid white; padding: 0 20px; display: inline-block;">
                     DES ÉDITIONS ÉPHÉMÈRES EXCLUSIVES IMAGINÉES PAR DES ILLUSTRATEURS INDÉPENDANTS
                 </p>
             </div>
@@ -157,40 +159,26 @@
                     <p class="card-text">Col rond • Noir ou Blanc</p>
                 </div>
 
-                <!-- Carousel large qui prend 2 colonnes -->
-                <div class="collection-carousel-large card" style="grid-column: span 2;">
-                    <div class="carousel-container" style="position: relative; width: 100%; height: 300px; overflow: hidden; border-radius: 8px; background: #f8f9fa; margin-bottom: 16px;">
-                        <div class="carousel-slides" style="position: relative; width: 100%; height: 100%;">
-                            <div class="carousel-slide active" style="position: absolute; width: 100%; height: 100%; opacity: 1; transition: opacity 0.5s ease-in-out;">
-                                <img src="/assets/img/sweat-blanc.jpeg" alt="Collection Stellae 01 - Vue 1" class="carousel-image" style="width: 100%; height: 100%; object-fit: contain; object-position: center;">
-                            </div>
-                            <div class="carousel-slide" style="position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 0.5s ease-in-out;">
-                                <img src="/assets/img/sweat-noir.jpeg" alt="Collection Stellae 01 - Vue 2" class="carousel-image" style="width: 100%; height: 100%; object-fit: contain; object-position: center;">
-                            </div>
-                            <div class="carousel-slide" style="position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 0.5s ease-in-out;">
-                                <img src="/assets/img/BANIERE-COLLECTION-SITE-ASTROLAB.webp" alt="Collection Stellae 01 - Vue 3" class="carousel-image" style="width: 100%; height: 100%; object-fit: contain; object-position: center;">
-                            </div>
+                <!-- Collection showcase qui prend 2 colonnes -->
+                <div class="collection-showcase-large card" style="grid-column: span 2;">
+                    <div class="collection-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <!-- Image 1 -->
+                        <div class="collection-item" style="position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 8px;">
+                            <img src="/assets/img/sweat-blanc.jpeg" alt="Collection Stellae 01 - T-Shirt Blanc" style="width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 0.3s ease;">
                         </div>
-                        
-                        <!-- Flèches de navigation -->
-                        <button class="carousel-arrow carousel-prev" onclick="prevSlide()" style="position: absolute; top: 50%; left: 12px; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 20; transition: background 0.3s;">
-                            &#8249;
-                        </button>
-                        <button class="carousel-arrow carousel-next" onclick="nextSlide()" style="position: absolute; top: 50%; right: 12px; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 20; transition: background 0.3s;">
-                            &#8250;
-                        </button>
-                        
-                        <!-- Indicateurs -->
-                        <div class="carousel-indicators" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10;">
-                            <button class="indicator active" data-slide="0" style="width: 10px; height: 10px; border-radius: 50%; border: none; background: #fff; opacity: 1; cursor: pointer; transition: opacity 0.3s;"></button>
-                            <button class="indicator" data-slide="1" style="width: 10px; height: 10px; border-radius: 50%; border: none; background: #fff; opacity: 0.5; cursor: pointer; transition: opacity 0.3s;"></button>
-                            <button class="indicator" data-slide="2" style="width: 10px; height: 10px; border-radius: 50%; border: none; background: #fff; opacity: 0.5; cursor: pointer; transition: opacity 0.3s;"></button>
+                        <!-- Image 2 -->
+                        <div class="collection-item" style="position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 8px;">
+                            <img src="/assets/img/sweat-noir.jpeg" alt="Collection Stellae 01 - T-Shirt Noir" style="width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 0.3s ease;">
+                        </div>
+                        <!-- Image 3 -->
+                        <div class="collection-item" style="position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 8px;">
+                            <img src="/assets/img/BANIERE-COLLECTION-SITE-ASTROLAB.webp" alt="Collection Stellae 01 - Bannière" style="width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 0.3s ease;">
                         </div>
                     </div>
                     
                     <!-- Texte dans le fond gris comme les autres cartes -->
-                    <h3 class="card-title">COLLECTION STELLAE 01 COMPLÈTE</h3>
-                    <p class="card-text">Découvrez l'univers complet de notre première collection</p>
+                    <h3 class="card-title">DÉCOUVRIR LA COLLECTION "STELLAE"</h3>
+                    <p class="card-text">T-SHIRT | T-SHIRT OVERSIZE | HOODIE</p>
                 </div>
             </div>            <!-- Call to Action -->
             <div class="text-center space-y">
@@ -280,7 +268,7 @@
                             </div>
                         </div>
                         <div class="contact-info-item">
-                            <div class="contact-icon" style="background: linear-gradient(135deg, #ec4899, #be185d);">
+                            <div class="contact-icon">
                                 <i class="fab fa-instagram"></i>
                             </div>
                             <div class="contact-details">
@@ -374,7 +362,7 @@
                 <div>
                     <h4 class="card-title">SUIVEZ-NOUS</h4>
                     <div class="card-text">
-                        <a href="https://instagram.com/" target="_blank" style="color: #ec4899; font-size: 32px;">
+                        <a href="https://instagram.com/" target="_blank" style="color: rgba(255,255,255,0.8); font-size: 32px; transition: all 0.3s ease;">
                             <i class="fab fa-instagram"></i>
                         </a>
                     </div>
@@ -384,65 +372,15 @@
             <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 32px; margin-top: 32px;">
                 <p class="card-text">
                     © 2025 ASTROLAB - Tous droits réservés | 
-                    Créé par <a href="https://ec-craft.fr" target="_blank" style="color: #3b82f6;">ec-craft.fr</a>
+                    Créé par <a href="https://ec-craft.fr" target="_blank" style="color: rgba(255,255,255,0.7);">ec-craft.fr</a>
                 </p>
             </div>
         </div>
     </footer>
 </div>
 
-<!-- JavaScript pour le carousel et flip des cartes -->
+<!-- JavaScript pour le flip des cartes -->
 <script>
-// === CAROUSEL AUTOMATIQUE ===
-let currentSlide = 0;
-const slides = document.querySelectorAll('.carousel-slide');
-const indicators = document.querySelectorAll('.indicator');
-
-function showSlide(index) {
-    // Cacher toutes les slides avec opacity
-    slides.forEach((slide, i) => {
-        slide.style.opacity = i === index ? '1' : '0';
-        slide.classList.toggle('active', i === index);
-    });
-    
-    // Mettre à jour les indicateurs
-    indicators.forEach((indicator, i) => {
-        indicator.style.opacity = i === index ? '1' : '0.5';
-        indicator.classList.toggle('active', i === index);
-    });
-}
-
-function nextSlide() {
-    currentSlide = (currentSlide + 1) % slides.length;
-    showSlide(currentSlide);
-}
-
-function prevSlide() {
-    currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-    showSlide(currentSlide);
-}
-
-// Changement automatique toutes les 4 secondes
-setInterval(nextSlide, 4000);
-
-// Gestion des clics sur les indicateurs
-indicators.forEach((indicator, index) => {
-    indicator.addEventListener('click', () => {
-        currentSlide = index;
-        showSlide(currentSlide);
-    });
-});
-
-// Effets hover pour les flèches
-document.querySelectorAll('.carousel-arrow').forEach(arrow => {
-    arrow.addEventListener('mouseenter', () => {
-        arrow.style.background = 'rgba(0,0,0,0.8)';
-    });
-    arrow.addEventListener('mouseleave', () => {
-        arrow.style.background = 'rgba(0,0,0,0.5)';
-    });
-});
-
 // === STOCKAGE DES ÉTATS ET TIMEOUTS DES CARTES ===
 const cardStates = new Map();
 
@@ -507,76 +445,6 @@ function flipCard(clickZone, direction) {
     }, 50);
 }
 
-// Smooth scroll pour les liens d'ancre
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
-// === NAVBAR MOBILE ===
-const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-const navbarMenu = document.getElementById('navbar-menu');
-
-mobileMenuToggle.addEventListener('click', () => {
-    navbarMenu.classList.toggle('active');
-    mobileMenuToggle.classList.toggle('active');
-});
-
-// Fermer le menu mobile lors du clic sur un lien
-document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', () => {
-        navbarMenu.classList.remove('active');
-        mobileMenuToggle.classList.remove('active');
-    });
-});
-
-// === NAVBAR SCROLL EFFECT ===
-window.addEventListener('scroll', () => {
-    const navbar = document.querySelector('.landing-navbar');
-    if (window.scrollY > 100) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
-    }
-});
-
-// === ANIMATIONS AU SCROLL ===
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            
-            // Animation staggerée pour les cartes
-            if (entry.target.classList.contains('card')) {
-                const cards = entry.target.parentElement.querySelectorAll('.card');
-                cards.forEach((card, index) => {
-                    setTimeout(() => {
-                        card.classList.add('visible');
-                    }, index * 200);
-                });
-            }
-        }
-    });
-}, observerOptions);
-
-// Observer les sections et cartes
-document.querySelectorAll('.section-container, .card, .product-card').forEach(el => {
-    observer.observe(el);
-});
-
 // === EFFET DE TYPING POUR LE TITRE ===
 function typeWriter(element, text, speed = 100) {
     let i = 0;
@@ -592,7 +460,86 @@ function typeWriter(element, text, speed = 100) {
     typing();
 }
 
-// Appliquer l'effet de typing au titre principal
+// === INITIALISATION AU CHARGEMENT DE LA PAGE ===
+document.addEventListener('DOMContentLoaded', function() {
+    // === EFFETS HOVER POUR LES IMAGES DE COLLECTION ===
+    const collectionItems = document.querySelectorAll('.collection-item img');
+    collectionItems.forEach(img => {
+        img.addEventListener('mouseenter', () => {
+            img.style.transform = 'scale(1.05)';
+        });
+        
+        img.addEventListener('mouseleave', () => {
+            img.style.transform = 'scale(1)';
+        });
+    });
+
+    // === NAVBAR MOBILE ===
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
+    const navbarMenu = document.getElementById('navbar-menu');
+    
+    if (mobileToggle && navbarMenu) {
+        mobileToggle.addEventListener('click', function() {
+            mobileToggle.classList.toggle('active');
+            navbarMenu.classList.toggle('active');
+        });
+    }
+    
+    // Fermer le menu au clic sur un lien
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (mobileToggle && navbarMenu) {
+                mobileToggle.classList.remove('active');
+                navbarMenu.classList.remove('active');
+            }
+        });
+    });
+
+    // === ANIMATIONS AU SCROLL ===
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    // Observer les éléments à animer
+    const elementsToAnimate = document.querySelectorAll('.section-container, .card, .product-card');
+    elementsToAnimate.forEach(el => observer.observe(el));
+});
+
+// === SMOOTH SCROLL ===
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// === NAVBAR SCROLL EFFECT ===
+window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.landing-navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+});
+
+// === EFFET DE TYPING AU CHARGEMENT DE LA PAGE ===
 window.addEventListener('load', () => {
     const heroSubtitle = document.querySelector('.hero-subtitle');
     if (heroSubtitle) {
