@@ -31,8 +31,34 @@
                 </li>
                 @auth
                     <li>
-                        <a href="/admin" class="hover:text-gray-300 uppercase">
-                            Admin
+                        <a href="{{ route('profile') }}" class="hover:text-gray-300 uppercase">
+                            {{ Auth::user()->name }}
+                        </a>
+                    </li>
+                    @if(str_ends_with(Auth::user()->email, '@astrolab.com'))
+                        <li>
+                            <a href="/admin" class="hover:text-gray-300 uppercase">
+                                Admin
+                            </a>
+                        </li>
+                    @endif
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="hover:text-gray-300 uppercase bg-transparent border-none text-white cursor-pointer">
+                                Déconnexion
+                            </button>
+                        </form>
+                    </li>
+                @else
+                    <li>
+                        <a href="{{ route('login') }}" class="hover:text-gray-300 uppercase">
+                            Connexion
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('register') }}" class="hover:text-gray-300 uppercase">
+                            Inscription
                         </a>
                     </li>
                 @endauth

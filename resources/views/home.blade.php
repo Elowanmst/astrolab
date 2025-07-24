@@ -3,7 +3,14 @@
 @section('content')
 <div class="">
     
-    
+    @auth
+        <div class="bg-gray-900 text-white p-4 text-center border-b border-gray-700">
+            <p class="text-gray-300">
+                Bienvenue, <span class="text-white font-semibold uppercase">{{ Auth::user()->name }}</span> !
+                <a href="{{ route('profile') }}" class="text-blue-400 hover:text-blue-300 ml-2 underline">Voir mon profil</a>
+            </p>
+        </div>
+    @endauth
     
     
     <section class="bg-home">

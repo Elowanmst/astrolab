@@ -1,45 +1,85 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-center mb-6">{{ __('Reset Password') }}</h2>
+<div class="min-h-screen bg-black text-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <h1 class="text-center text-4xl font-bold">ASTROLAB</h1>
+            <h2 class="mt-6 text-center text-2xl">NOUVEAU MOT DE PASSE</h2>
+            <p class="mt-2 text-center text-gray-400">| CRÉEZ UN NOUVEAU MOT DE PASSE |</p>
+        </div>
+        
+        <div class="w-full h-1 bg-white shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] mx-auto"></div>
+        
+        @if ($errors->any())
+            <div class="bg-red-600 border border-red-500 text-white px-4 py-3 rounded">
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-        <form method="POST" action="{{ route('password.update') }}" class="space-y-4">
+        <form method="POST" action="{{ route('password.update') }}" class="mt-8 space-y-6">
             @csrf
-
+            
             <input type="hidden" name="token" value="{{ $request->route('token') }}">
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-300 uppercase">
+                        Adresse Email
+                    </label>
+                    <input type="email" 
+                           name="email" 
+                           id="email" 
+                           value="{{ old('email', $request->email) }}"
+                           required 
+                           autocomplete="email"
+                           readonly
+                           class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 text-gray-300 placeholder-gray-400 focus:outline-none cursor-not-allowed">
+                </div>
 
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">{{ __('Email Address') }}</label>
-                <input id="email" type="email" name="email" value="{{ old('email', $request->email) }}" required autocomplete="email" autofocus
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('email') border-red-500 @enderror">
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300 uppercase">
+                        Nouveau mot de passe
+                    </label>
+                    <input type="password" 
+                           name="password" 
+                           id="password" 
+                           required 
+                           autocomplete="new-password"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent">
+                </div>
 
-                @error('email')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
+                <div>
+                    <label for="password_confirmation" class="block text-sm font-medium text-gray-300 uppercase">
+                        Confirmer le nouveau mot de passe
+                    </label>
+                    <input type="password" 
+                           name="password_confirmation" 
+                           id="password_confirmation" 
+                           required 
+                           autocomplete="new-password"
+                           class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent">
+                </div>
             </div>
 
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">{{ __('Password') }}</label>
-                <input id="password" type="password" name="password" required autocomplete="new-password"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('password') border-red-500 @enderror">
-
-                @error('password')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="password-confirm" class="block text-sm font-medium text-gray-700">{{ __('Confirm Password') }}</label>
-                <input id="password-confirm" type="password" name="password_confirmation" required autocomplete="new-password"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            </div>
-
-            <div>
-                <button type="submit" class="w-full py-2 px-4 bg-indigo-600 text-white font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    {{ __('Reset Password') }}
+                <button type="submit" 
+                        class="group relative w-full flex justify-center py-3 px-4 border border-white text-sm font-medium uppercase text-white bg-transparent hover:bg-white hover:text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors duration-200">
+                    Réinitialiser le mot de passe
                 </button>
+            </div>
+
+            <div class="text-center">
+                <p class="text-gray-400">
+                    Retour à la 
+                    <a href="{{ route('login') }}" class="text-white hover:text-gray-300 uppercase underline">
+                        Connexion
+                    </a>
+                </p>
             </div>
         </form>
     </div>

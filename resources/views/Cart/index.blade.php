@@ -55,19 +55,19 @@
                     </div>
                     <div class="summary-line">
                         <span>Livraison :</span>
-                        <span>GRATUITE</span>
+                        <span class="text-gray-400 text-sm">Calculée à l'étape suivante</span>
                     </div>
-                    <div class="summary-line total-line">
-                        <span>TOTAL :</span>
+                    <div class="summary-line">
+                        <span class="text-gray-400">TOTAL (hors livraison) :</span>
                         <span>{{ number_format($total, 2) }} €</span>
                     </div>
                     <div class="summary-actions">
                         <a href="{{ route('home') }}" class="btn-continue">
                             <i class="fas fa-arrow-left"></i> CONTINUER MES ACHATS
                         </a>
-                        <button class="btn-checkout">
+                        <a href="{{ route('checkout.index') }}" class="btn-checkout">
                             <i class="fas fa-credit-card"></i> COMMANDER
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
