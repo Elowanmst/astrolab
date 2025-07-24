@@ -25,8 +25,13 @@
                 @inject('cart', 'App\Services\Cart')
 
                 <li>
-                    <a href="{{ route('cart.index') }}" class="hover:text-gray-300 uppercase">
-                        Panier ({{ $cart->count() }})
+                    <a href="{{ route('cart.index') }}" class="hover:text-gray-300 relative inline-block">
+                        <i class="fas fa-shopping-bag text-lg"></i>
+                        @if($cart->count() > 0)
+                            <span class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold border border-white">
+                                {{ $cart->count() }}
+                            </span>
+                        @endif
                     </a>
                 </li>
                 @auth
@@ -53,12 +58,7 @@
                 @else
                     <li>
                         <a href="{{ route('login') }}" class="hover:text-gray-300 uppercase">
-                            Connexion
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('register') }}" class="hover:text-gray-300 uppercase">
-                            Inscription
+                            Se connecter
                         </a>
                     </li>
                 @endauth
