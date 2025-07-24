@@ -10,6 +10,7 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentIcon;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -24,6 +25,11 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        // Fix pour les icônes Heroicons manquantes ou modifiées
+        FilamentIcon::register([
+            'panels::user-menu.profile-item' => 'heroicon-o-user-circle',
+        ]);
+
         return $panel
             ->default()
             ->id('admin')

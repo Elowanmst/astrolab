@@ -42,7 +42,7 @@
                     </li>
                     @if(str_ends_with(Auth::user()->email, '@astrolab.com'))
                         <li>
-                            <a href="/admin" class="hover:text-gray-300 uppercase">
+                            <a href="/admin" class="hover:text-gray-300 uppercase" target="_blank">
                                 Admin
                             </a>
                         </li>
