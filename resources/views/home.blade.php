@@ -1,293 +1,299 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen text-white" style="background-color: rgb(34,34,34);">
+<div class="landing-container" style="padding-top: 0;">
     
-    @auth
-        <div class="text-white p-4 text-center border-b border-gray-700" style="background-color: rgb(34,34,34);">
-            <p class="text-gray-300">
-                Bienvenue, <span class="text-white font-semibold uppercase">{{ Auth::user()->name }}</span> !
-                <a href="{{ route('profile') }}" class="text-blue-400 hover:text-blue-300 ml-2 underline transition-all duration-300">Voir mon profil</a>
-            </p>
+    <!-- Hero Section avec bannière dynamique -->
+    <section class="bg-home hero-section" style="height: 70vh; display: flex; flex-direction: column;">
+        <div class="hero-banner" style="flex: 1; background-image: url('{{ $homeSettings['hero_image'] ? asset('storage/' . $homeSettings['hero_image']) : '/assets/img/BANIERE-COLLECTION-SITE-ASTROLAB.webp' }}'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; display: flex; align-items: center; justify-content: center;">
+            <div class="hero-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.1);"></div>
         </div>
-    @endauth
-    
-    <!-- Bannière en haut de page (gardée sans modification) -->
-    <section class="bg-home">
-        <div class=""></div>
+        <div class="hero-content" style="background: rgba(34, 34, 34, 0.95); padding: 40px 20px; text-align: center; position: relative; z-index: 2;">
+            <div class="hero-text">
+                <p class="hero-subtitle">| DES ÉDITIONS ÉPHÉMÈRES EXCLUSIVES IMAGINÉES PAR DES ILLUSTRATEURS INDÉPENDANTS |</p>
+            </div>
+        </div>
     </section>
     
-    <!-- Section principale avec titre et description -->
-    <div class="w-full text-center py-20">
-        <div class="home-title">
-            <h1 class="text-6xl font-bold mb-6">ASTROLAB</h1>
-            <div class="flex justify-center items-center mb-8">
-                <div class="w-1 h-16 bg-white mr-4"></div>
-                <p class="text-gray-300 text-lg tracking-wider">
-                    DES ÉDITIONS ÉPHÉMÈRES EXCLUSIVES IMAGINÉES PAR DES ILLUSTRATEURS INDÉPENDANTS
-                </p>
-                <div class="w-1 h-16 bg-white ml-4"></div>
-            </div>
-        </div>
-        
-        <div class="w-full max-w-6xl h-px bg-white shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] mx-auto mb-20"></div>
-        
-        <!-- Section Boutique -->
-        <section class="max-w-7xl mx-auto px-4 mb-32 scroll-animate">
-            <div class="text-center mb-16">
-                <h2 class="text-5xl font-bold mb-8" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">COLLECTION STELLAE 01</h2>
-                <p class="text-gray-300 text-xl mb-8" style="font-family: var(--astro-font-family); letter-spacing: 1px;">DÉCOUVREZ NOTRE PREMIÈRE COLLECTION EXCLUSIVE</p>
-            </div>
+    <!-- Séparateur lumineux -->
+    <div class="divider"></div>
+    
+    <!-- Section Boutique -->
+    <section id="boutique" class="section-container text-center">
+        <div class="max-width">
+            @if($collection)
+                <h2 class="section-title">{{ strtoupper($collection->name) }}</h2>
+                @if($collection->description)
+                    <p class="section-subtitle">{{ strtoupper($collection->description) }}</p>
+                @endif
+            @else
+                <h2 class="section-title">COLLECTION STELLAE 01</h2>
+                <p class="section-subtitle">DÉCOUVREZ NOTRE PREMIÈRE COLLECTION EXCLUSIVE</p>
+            @endif
             
-            <!-- Grille de produits -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <!-- Grille de produits en utilisant les données dynamiques -->
+            <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto;">
                 @php $visibleProducts = $products->take(6); @endphp
                 @foreach ($visibleProducts as $product)
-                    <div class="glass-card rounded-lg p-6 card-hover-effect cursor-pointer scroll-animate" 
-                         onclick="window.location='{{ route('products.show', $product) }}'">
-                        <div class="product-image-container bg-gray-900 rounded-lg p-4 mb-4">
-                            <img class="w-full h-64 object-cover rounded-lg" 
-                                src="{{ $product->getFirstMediaUrl('products', 'thumb') ?: asset('default-image.jpg') }}" 
-                                alt="Image de {{ $product->name }}">
+                    <div class="card product-card" onclick="navigateToProduct('{{ route('products.show', $product) }}', event)">
+                        <div class="product-image-container">
+                            @if($product->getFirstMediaUrl('products', 'thumb'))
+                                <img src="{{ $product->getFirstMediaUrl('products', 'thumb') }}" 
+                                     alt="Image de {{ $product->name }}" 
+                                     class="product-image">
+                            @else
+                                <div class="product-placeholder">
+                                    <span class="placeholder-text">Image bientôt disponible</span>
+                                </div>
+                            @endif
                         </div>
-                        <h3 class="text-xl font-bold mb-2 uppercase" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">{{ $product->name }}</h3>
-                        <p class="text-gray-300 mb-4" style="font-family: var(--astro-font-family);">Coupe classique • Noir ou Blanc</p>
-                        <p class="text-lg font-bold text-white" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight);">{{ $product->price }} €</p>
+                        <h3 class="card-title">{{ strtoupper($product->name) }}</h3>
+                        <p class="card-text">Coupe classique • Noir ou Blanc</p>
+                        <p class="card-text" style="color: var(--astro-text-primary); font-weight: bold;">{{ $product->price }} €</p>
                     </div>
                 @endforeach
             </div>
             
-            @if($products->count() > 6)
-                <div class="text-center mb-16 scroll-animate">
-                    <button class="btn-modern text-white px-8 py-3 rounded-lg font-bold uppercase">
-                        VOIR PLUS
-                    </button>
-                </div>
-            @endif
-            
-            <!-- Section Précommande -->
-            <div class="glass-card rounded-lg p-8 card-hover-effect scroll-animate">
-                <h3 class="text-3xl font-bold text-center mb-4" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">PRÉCOMMANDE BIENTÔT DISPONIBLE</h3>
-                <p class="text-gray-300 text-center mb-8" style="font-family: var(--astro-font-family);">Soyez les premiers informés du lancement</p>
-                <div class="text-center">
-                    <button class="bg-white text-gray-900 px-8 py-3 rounded-lg font-bold hover:bg-gray-200 transition-all duration-200 uppercase" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: 1px;">
-                        ÊTRE NOTIFIÉ
-                    </button>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Section Illustrateurs -->
-        <section class="max-w-7xl mx-auto px-4 mb-32 scroll-animate">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-8" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">ILLUSTRATEURS</h2>
-                <p class="text-gray-300 text-xl" style="font-family: var(--astro-font-family);">
-                    Découvrez les artistes derrière nos créations exclusives
-                </p>
+            <!-- Bouton vers la boutique -->
+            <div class="text-center space-y">
+                <a href="{{ route('products.index') }}" class="btn-home">
+                    VOIR TOUTE LA COLLECTION
+                </a>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="glass-card rounded-lg p-8 text-center card-hover-effect scroll-animate">
-                    <div class="w-24 h-24 bg-gray-600 rounded-full mx-auto mb-6"></div>
-                    <h3 class="text-2xl font-bold mb-4" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">MATHIS DOUILLARD</h3>
-                    <p class="text-gray-300 mb-6" style="font-family: var(--astro-font-family);">Illustrateur & Designer graphique</p>
-                    <button class="bg-white text-gray-900 px-6 py-2 rounded-lg font-bold hover:bg-gray-200 transition-all duration-200 uppercase" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: 1px;">
-                        DÉCOUVRIR
-                    </button>
+            <!-- Call to Action -->
+            {{-- <div class="text-center space-y">
+                <div class="preorder-notice">
+                    <h3 class="preorder-title">PRÉCOMMANDE BIENTÔT DISPONIBLE</h3>
+                    <p class="preorder-subtitle">Soyez les premiers informés du lancement de notre première collection exclusive</p>
                 </div>
-                
-                <div class="glass-card rounded-lg p-8 text-center card-hover-effect scroll-animate">
-                    <div class="w-24 h-24 bg-gray-600 rounded-full mx-auto mb-6"></div>
-                    <h3 class="text-2xl font-bold mb-4" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">AXEL CHAPET</h3>
-                    <p class="text-gray-300 mb-6" style="font-family: var(--astro-font-family);">Illustrateur & Designer graphique</p>
-                    <button class="bg-white text-gray-900 px-6 py-2 rounded-lg font-bold hover:bg-gray-200 transition-all duration-200 uppercase" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: 1px;">
-                        DÉCOUVRIR
-                    </button>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Section Contact -->
-        <section class="max-w-7xl mx-auto px-4 mb-32 scroll-animate">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-8" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">CONTACTEZ-NOUS</h2>
-                <p class="text-gray-300 text-xl" style="font-family: var(--astro-font-family);">
-                    Une question, un projet personnalisé ou besoin d'informations ?
-                </p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                <!-- Téléphone -->
-                <div class="contact-card rounded-lg p-6 text-center card-hover-effect scroll-animate">
-                    <div class="contact-icon mx-auto">
-                        <i class="fas fa-phone text-white text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">TÉLÉPHONE</h3>
-                    <p class="text-gray-300 mb-4" style="font-family: var(--astro-font-family);">Lundi au Vendredi<br>9h - 18h</p>
-                    <a href="tel:0600000000" class="text-white font-bold hover:text-gray-300 transition-colors duration-200" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight);">06 00 00 00 00</a>
-                </div>
-                
-                <!-- Email -->
-                <div class="contact-card rounded-lg p-6 text-center card-hover-effect scroll-animate">
-                    <div class="contact-icon mx-auto">
-                        <i class="fas fa-envelope text-white text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">EMAIL</h3>
-                    <p class="text-gray-300 mb-4" style="font-family: var(--astro-font-family);">Réponse sous 24h<br>7j/7</p>
-                    <a href="mailto:contact@astrolab.fr" class="text-white font-bold hover:text-gray-300 transition-colors duration-200" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight);">contact@astrolab.fr</a>
-                </div>
-                
-                <!-- Adresse -->
-                <div class="contact-card rounded-lg p-6 text-center card-hover-effect scroll-animate">
-                    <div class="contact-icon mx-auto">
-                        <i class="fas fa-map-marker-alt text-white text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">ATELIER</h3>
-                    <p class="text-gray-300 mb-4" style="font-family: var(--astro-font-family);">Visite sur RDV<br>Paris, France</p>
-                    <span class="text-white font-bold" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight);">Paris 11ème</span>
-                </div>
-            </div>
-            
-            <!-- Newsletter améliorée -->
-            <div class="contact-card rounded-lg p-8 text-center scroll-animate">
-                <div class="max-w-2xl mx-auto">
-                    <div class="contact-icon mx-auto mb-6">
-                        <i class="fas fa-bell text-white text-xl"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4" style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: var(--astro-letter-spacing);">NEWSLETTER EXCLUSIVE</h3>
-                    <p class="text-gray-300 mb-8" style="font-family: var(--astro-font-family);">
-                        Soyez les premiers informés de nos nouvelles collections, éditions limitées et événements privés. 
-                        <br><strong>Accès privilégié aux préventes</strong>
-                    </p>
-                    <div class="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
-                        <input type="email" placeholder="Votre email" 
-                               class="flex-1 contact-card border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-white focus:ring-1 focus:ring-white transition-all duration-200" 
-                               style="font-family: var(--astro-font-family);">
-                        <button class="bg-white text-gray-900 px-6 py-3 rounded-lg font-bold hover:bg-gray-200 transition-all duration-200 uppercase" 
-                                style="font-family: var(--astro-font-family); font-weight: var(--astro-font-weight); letter-spacing: 1px;">
-                            S'ABONNER
-                        </button>
-                    </div>
-                    <p class="text-gray-400 text-sm mt-4" style="font-family: var(--astro-font-family);">
-                        Pas de spam, désinscription possible à tout moment
-                    </p>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Footer -->
-    <footer class="border-t border-gray-800" style="background-color: rgb(24,24,24);">
-        <div class="max-w-7xl mx-auto px-4 py-16">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold mb-4">ASTROLAB</h2>
-                <p class="text-gray-300">Créations exclusives • Éditions limitées • Qualité premium</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                <div class="text-center">
-                    <h3 class="text-xl font-bold mb-4">LIENS RAPIDES</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Boutique</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Illustrateurs</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors duration-200">Contact</a></li>
-                    </ul>
-                </div>
-                
-                <div class="text-center">
-                    <h3 class="text-xl font-bold mb-4">INFORMATIONS</h3>
-                    <ul class="space-y-2">
-                        <li><span class="text-gray-300">Éditions limitées</span></li>
-                        <li><span class="text-gray-300">Livraison France</span></li>
-                        <li><span class="text-gray-300">Qualité premium</span></li>
-                    </ul>
-                </div>
-                
-                <div class="text-center">
-                    <h3 class="text-xl font-bold mb-4">SUIVEZ-NOUS</h3>
-                    <a href="https://instagram.com/" target="_blank" 
-                       class="inline-block text-gray-300 hover:text-white transition-colors duration-200">
-                        <i class="fab fa-instagram text-2xl"></i>
+                <div class="button-container" style="gap: 20px; margin-top: 32px;">
+                    <a href="#contact" class="btn-home">
+                        NOUS CONTACTER
+                    </a>
+                    <a href="#illustrateurs" class="btn-home">
+                        DÉCOUVRIR LES ILLUSTRATEURS
                     </a>
                 </div>
+            </div> --}}
+        </div>
+    </section>
+    
+    <!-- Section Illustrateurs -->
+    <section id="illustrateurs" class="section-container">
+        <div class="max-width text-center">
+            <h2 class="section-title">ILLUSTRATEURS - GRAPHISTES</h2>
+            <h3 class="section-subtitle">| SUIVEZ MATHIS DOUILLARD & AXEL CHAPET SUR LEURS RÉSEAUX POUR DÉCOUVRIR LEUR UNIVERS |</h3>
+            
+            <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
+                <div class="card">
+                    <div class="card-icon" style="width: 120px; height: 120px; background-color: #666; border-radius: 50%; margin: 0 auto 24px;"></div>
+                    <h4 class="card-title">MATHIS DOUILLARD</h4>
+                    <p class="card-text">Illustrateur & Designer graphique</p>
+                    <a href="#" class="btn-home">SUIVRE MATHIS</a>
+                </div>
+                <div class="card">
+                    <div class="card-icon" style="width: 120px; height: 120px; background-color: #666; border-radius: 50%; margin: 0 auto 24px;"></div>
+                    <h4 class="card-title">AXEL CHAPET</h4>
+                    <p class="card-text">Illustrateur & Designer graphique</p>
+                    <a href="#" class="btn-home">SUIVRE AXEL</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Section Newsletter -->
+    <section id="newsletter" class="section-container footer-section">
+        <div class="max-width text-center">
+            <h2 class="section-title">RESTEZ INFORMÉ</h2>
+            <p class="section-subtitle">Soyez le premier à découvrir nos nouvelles collections et bénéficiez d'offres exclusives</p>
+            <div class="newsletter-container">
+                <input type="email" placeholder="Votre adresse email" class="form-input newsletter-form" style="width: 400px;">
+                <button class="btn-home">
+                    S'ABONNER
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Section Contact -->
+    <section id="contact" class="section-container">
+        <div class="max-width">
+            <div class="text-center space-y">
+                <h2 class="section-title">CONTACT</h2>
+                <h3 class="section-subtitle">| CONTACTEZ-NOUS POUR TOUTE DEMANDE D'INFORMATION |</h3>
             </div>
             
-            <div class="border-t border-gray-700 pt-8 text-center">
-                <p class="text-gray-300">
+            <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
+                <!-- Informations de contact -->
+                <div class="card">
+                    <h4 class="card-title">CONTACTEZ-NOUS</h4>
+                    <div class="card-text">
+                        <div class="contact-info-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h4>Téléphone</h4>
+                                <p>06 00 00 00 00</p>
+                            </div>
+                        </div>
+                        <div class="contact-info-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h4>Email</h4>
+                                <p>contact@astrolab.fr</p>
+                            </div>
+                        </div>
+                        <div class="contact-info-item">
+                            <div class="contact-icon">
+                                <i class="fab fa-instagram"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h4>Instagram</h4>
+                                <a href="https://instagram.com/" target="_blank" style="color: white; text-decoration: none;">
+                                    @astrolab_official
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CTA urgence -->
+                    <div class="card preorder-cta-card" style="margin-top: 24px;">
+                        <h4 class="card-title" style="color: white;">ENVIE DE PRÉCOMMANDER ?</h4>
+                        <p class="card-text" style="color: rgba(255,255,255,0.9);">Contactez-nous dès maintenant pour réserver votre pièce avant la fin de la collection</p>
+                        <a href="mailto:contact@astrolab.fr" class="btn-home">
+                            ENVOYER UN EMAIL
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Formulaire de contact -->
+                <div class="form-container">
+                    <h4 class="card-title">ENVOYEZ-NOUS UN MESSAGE</h4>
+                    <form>
+                        <div class="form-group">
+                            <label class="form-label">Nom complet</label>
+                            <input type="text" name="name" required class="form-input" placeholder="Votre nom complet">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" required class="form-input" placeholder="votre@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sujet</label>
+                            <select name="subject_type" class="form-input">
+                                <option value="">Choisissez un sujet</option>
+                                <option value="precommande">Précommande</option>
+                                <option value="info">Information produit</option>
+                                <option value="partenariat">Partenariat</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Message</label>
+                            <textarea name="message" rows="4" required class="form-input" placeholder="Décrivez votre demande..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-home" style="width: 100%;">
+                            ENVOYER LE MESSAGE
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer-section">
+        <div class="max-width text-center">
+            <div class="space-y">
+                <h3 class="section-title">ASTROLAB</h3>
+                <p class="card-text">Créations exclusives • Éditions limitées • Qualité premium</p>
+            </div>
+            
+            <div class="grid-3">
+                <div>
+                    <h4 class="card-title">LIENS RAPIDES</h4>
+                    <div class="card-text">
+                        <a href="#boutique" class="card-text">Boutique</a><br>
+                        <a href="#illustrateurs" class="card-text">Illustrateurs</a><br>
+                        <a href="#contact" class="card-text">Contact</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="card-title">INFORMATIONS</h4>
+                    <div class="card-text">
+                        Éditions limitées<br>
+                        Livraison France<br>
+                        Qualité premium
+                    </div>
+                </div>
+                <div>
+                    <h4 class="card-title">SUIVEZ-NOUS</h4>
+                    <div class="card-text">
+                        <a href="https://instagram.com/" target="_blank" style="color: rgba(255,255,255,0.8); font-size: 32px; transition: all 0.3s ease;">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 32px; margin-top: 32px;">
+                <p class="card-text">
                     © 2025 ASTROLAB - Tous droits réservés | 
-                    Créé par <a href="https://ec-craft.fr" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">ec-craft.fr</a>
+                    Créé par <a href="https://ec-craft.fr" target="_blank" style="color: rgba(255,255,255,0.7);">ec-craft.fr</a>
                 </p>
             </div>
         </div>
     </footer>
 </div>
 
+<!-- JavaScript pour les animations -->
 <script>
-// Animation au scroll - Version optimisée
+// === INITIALISATION AU CHARGEMENT DE LA PAGE ===
 document.addEventListener('DOMContentLoaded', function() {
-    // Configuration de l'observer
+    // === ANIMATIONS AU SCROLL ===
     const observerOptions = {
-        threshold: 0.15,
-        rootMargin: '0px 0px -100px 0px'
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
     };
 
-    let animationQueue = [];
-
-    const observer = new IntersectionObserver(function(entries) {
+    const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                // Ajouter à la queue d'animation
-                const delay = entry.target.style.animationDelay || '0s';
-                const delayMs = parseFloat(delay) * 1000;
-                
-                animationQueue.push({
-                    element: entry.target,
-                    delay: delayMs
-                });
-                
-                observer.unobserve(entry.target);
+                entry.target.classList.add('visible');
             }
         });
-        
-        // Traiter la queue d'animations
-        processAnimationQueue();
     }, observerOptions);
 
-    function processAnimationQueue() {
-        // Trier par délai
-        animationQueue.sort((a, b) => a.delay - b.delay);
-        
-        animationQueue.forEach((item, index) => {
-            setTimeout(() => {
-                item.element.classList.add('visible');
-            }, item.delay);
-        });
-        
-        // Vider la queue
-        animationQueue = [];
-    }
-
-    // Observer tous les éléments avec la classe scroll-animate
-    const elementsToAnimate = document.querySelectorAll('.scroll-animate');
-    elementsToAnimate.forEach((el, index) => {
-        // Ajouter un délai progressif si pas déjà défini
-        if (!el.style.animationDelay) {
-            el.style.transitionDelay = (index * 0.1) + 's';
-        }
-        observer.observe(el);
-    });
-
-    // Performance: Réduire les animations sur mobile si nécessaire
-    if (window.innerWidth < 768) {
-        const style = document.createElement('style');
-        style.textContent = `
-            .scroll-animate {
-                transition-duration: 0.4s !important;
-            }
-        `;
-        document.head.appendChild(style);
-    }
+    // Observer les éléments à animer
+    const elementsToAnimate = document.querySelectorAll('.section-container, .card, .product-card');
+    elementsToAnimate.forEach(el => observer.observe(el));
 });
+
+// === SMOOTH SCROLL ===
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// === NAVIGATION VERS PRODUIT ===
+function navigateToProduct(url, event) {
+    if (event) {
+        event.preventDefault();
+    }
+    window.location.href = url;
+}
 </script>
 
 @endsection
