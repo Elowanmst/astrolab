@@ -255,8 +255,11 @@ main:last-child {
     }
     
     .hero-subtitle {
-        font-size: 1.2rem;
-        letter-spacing: 1px;
+        font-size: 0.75rem;
+        letter-spacing: 0.3px;
+        padding: 0 20px;
+        line-height: 1.2;
+        word-spacing: -1px;
     }
 }
 
@@ -1386,6 +1389,10 @@ a:hover {
     color: var(--astro-text-secondary);
     margin-bottom: var(--astro-spacing-md);
     letter-spacing: 1px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    hyphens: none;
+    text-align: center;
 }
 
 /* Responsive pour hero section */
@@ -1404,9 +1411,11 @@ a:hover {
     }
     
     .hero-subtitle {
-        font-size: 1rem;
-        letter-spacing: 1px;
-        padding: 0 15px;
+        font-size: 0.75rem;
+        letter-spacing: 0.3px;
+        padding: 0 20px;
+        line-height: 1.2;
+        word-spacing: -1px;
     }
 }
 
@@ -2091,7 +2100,11 @@ a:hover {
     }
     
     .hero-subtitle {
-        font-size: 1.2rem;
+        font-size: 0.65rem;
+        letter-spacing: 0.2px;
+        padding: 0 20px;
+        line-height: 1.1;
+        word-spacing: -1px;
     }
     
     .section-title {
