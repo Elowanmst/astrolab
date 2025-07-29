@@ -28,14 +28,23 @@ class User extends Authenticatable implements FilamentUser
         'city',
         'postal_code',
         'country',
-        'newsletter',
+        'newsletter_subscribed',
         'birth_date',
+        'is_admin',
+        'billing_address',
+        'billing_city',
+        'billing_postal_code',
+        'billing_country',
+        'shipping_address',
+        'shipping_city',
+        'shipping_postal_code',
+        'shipping_country',
     ];
     
-    // Seuls les utilisateurs avec un email @astrolab.com peuvent accéder au panneau d'administration Filament
+    // Les utilisateurs admin ou avec un email @astrolab.com peuvent accéder au panneau d'administration Filament
     public function canAccessPanel(Panel $panel): bool
     {
-        return str_ends_with($this->email, '@astrolab.com');
+        return $this->is_admin || str_ends_with($this->email, '@astrolab.com');
     }
     
     
@@ -60,6 +69,8 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'birth_date' => 'datetime',
+            'is_admin' => 'boolean',
+            'newsletter_subscribed' => 'boolean',
         ];
     }
 

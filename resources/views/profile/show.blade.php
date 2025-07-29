@@ -105,7 +105,7 @@
                     <div class="mt-6">
                         <h4 class="text-lg font-medium mb-4 uppercase">Dernières commandes</h4>
                         <div class="space-y-3">
-                            @foreach($user->orders->latest()->take(3) as $order)
+                            @foreach($user->orders->sortByDesc('created_at')->take(3) as $order)
                                 <div class="bg-gray-800 p-4 border border-gray-600">
                                     <div class="flex justify-between items-start">
                                         <div>
