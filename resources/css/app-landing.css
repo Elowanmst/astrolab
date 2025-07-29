@@ -631,8 +631,10 @@ nav button:hover {
 }
 @font-face {
     font-family: 'Bebas Kai';
+    src: local('Arial'), local('Helvetica'); /* Fallback fonts */
+    /* Fonts personnalisées temporairement désactivées
     src: url('/assets/fonts/BebasKai-Regular.ttf') format('truetype'),
-         url('/assets/fonts/BebasKai-Regular.woff') format('woff');
+         url('/assets/fonts/BebasKai-Regular.woff') format('woff'); */
     font-weight: normal;
     font-style: normal;
 }

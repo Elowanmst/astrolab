@@ -4,6 +4,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalButton = document.querySelector('.screen-header-right .close');
     const modalOverlay = document.querySelector('.modal-overlay');
 
+    // Vérifier que tous les éléments existent avant d'ajouter les listeners
+    if (!modal || !openModalButton || !closeModalButton) {
+        // Les éléments de modal ne sont pas présents sur cette page
+        return;
+    }
+
     // Ouvrir la modale
     openModalButton.addEventListener('click', () => {
         modal.style.display = 'block';

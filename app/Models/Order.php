@@ -44,6 +44,16 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function paymentTransactions()
+    {
+        return $this->hasMany(PaymentTransaction::class);
+    }
+
+    public function latestPaymentTransaction()
+    {
+        return $this->hasOne(PaymentTransaction::class)->latestOfMany();
+    }
+
     public function getStatusLabelAttribute()
     {
         return match($this->status) {

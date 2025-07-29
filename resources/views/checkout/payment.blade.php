@@ -73,6 +73,37 @@
                     </div>
                 </div>
 
+                <!-- Informations de test -->
+                @if(config('app.env') !== 'production')
+                <div class="bg-blue-900 border border-blue-700 p-6">
+                    <h4 class="text-lg font-semibold mb-3 text-blue-200 uppercase">🧪 Mode Test - Cartes de simulation</h4>
+                    <div class="text-sm text-blue-300 space-y-2">
+                        <p class="font-medium">Utilisez ces numéros de carte pour tester différents scénarios :</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                            <div class="bg-blue-800 p-3 rounded">
+                                <p class="font-semibold text-green-300">✅ Paiement réussi</p>
+                                <p class="font-mono">4242 4242 4242 4242</p>
+                            </div>
+                            <div class="bg-blue-800 p-3 rounded">
+                                <p class="font-semibold text-red-300">❌ Carte refusée</p>
+                                <p class="font-mono">4000 0000 0000 0002</p>
+                            </div>
+                            <div class="bg-blue-800 p-3 rounded">
+                                <p class="font-semibold text-yellow-300">⚠️ Fonds insuffisants</p>
+                                <p class="font-mono">4000 0000 0000 9995</p>
+                            </div>
+                            <div class="bg-blue-800 p-3 rounded">
+                                <p class="font-semibold text-orange-300">🔧 Erreur de traitement</p>
+                                <p class="font-mono">4000 0000 0000 0119</p>
+                            </div>
+                        </div>
+                        <p class="mt-3 text-xs text-blue-400">
+                            💡 Utilisez n'importe quelle date future (ex: 12/25) et n'importe quel CVV (ex: 123)
+                        </p>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Formulaire de paiement -->
                 <form action="{{ route('checkout.process') }}" method="POST" id="payment-form">
                     @csrf
