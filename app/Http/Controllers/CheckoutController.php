@@ -104,6 +104,38 @@ class CheckoutController extends Controller
     }
 
     /**
+     * Affichage de la page de paiement (GET)
+     */
+    public function showPayment()
+    {
+        if ($this->cart->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
+        }
+
+        // Vérifier si les données de livraison sont en session
+        $shippingData = session('checkout_data');
+        if (!$shippingData) {
+            return redirect()->route('checkout.shipping')->with('error', 'Veuillez d\'abord remplir les informations de livraison.');
+        }
+
+        $shippingCost = $this->cart->getShippingCost($shippingData['shipping_method']);
+        $totalHT = $this->cart->getTotalHT();
+        $tva = $this->cart->getTVA();
+        $totalTTC = $this->cart->getTotalTTC();
+        $finalTotal = $totalTTC + $shippingCost;
+
+        return view('checkout.payment', [
+            'cart' => $this->cart,
+            'shippingData' => $shippingData,
+            'shippingCost' => $shippingCost,
+            'totalHT' => $totalHT,
+            'tva' => $tva,
+            'totalTTC' => $totalTTC,
+            'finalTotal' => $finalTotal,
+        ]);
+    }
+
+    /**
      * Traitement du paiement et création de la commande
      */
     public function processPayment(Request $request)

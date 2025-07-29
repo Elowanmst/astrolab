@@ -7,6 +7,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\StripeWebhookController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -22,9 +23,13 @@ Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('car
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 Route::get('/checkout/shipping', [CheckoutController::class, 'shipping'])->name('checkout.shipping');
 Route::post('/checkout/shipping', [CheckoutController::class, 'shipping']);
+Route::get('/checkout/payment', [CheckoutController::class, 'showPayment'])->name('checkout.payment.show');
 Route::post('/checkout/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
 Route::post('/checkout/process', [CheckoutController::class, 'processPayment'])->name('checkout.process');
 Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+
+// Webhook Stripe (sans middleware CSRF)
+Route::post('/webhook/stripe', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');
 
 // Routes de profil utilisateur (protégées par l'authentification)
 Route::middleware(['auth'])->group(function () {
