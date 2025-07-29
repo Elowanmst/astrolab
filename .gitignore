@@ -21,3 +21,23 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Fichiers système macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Base de données SQLite locale
+database/database.sqlite
+
+# Logs Laravel
+storage/logs/*.log
+
+# Fichiers de cache et temporaires
+*.tmp
+*.cache
+*.log

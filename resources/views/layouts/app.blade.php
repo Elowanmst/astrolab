@@ -4,68 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Astrolab</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/modal.js', 'resources/js/size.js'])
+    @vite(['resources/css/app.css', 'resources/css/app-landing.css', 'resources/js/app.js', 'resources/js/modal.js', 'resources/js/size.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <nav class="bg-[rgb(34,34,34)] text-white p-4 ">
-        <ul class="flex justify-between items-center">
-            <div class="flex space-x-4">
-                @auth
-                    <li><a href="{{ route('home') }}" class="hover:text-gray-300 uppercase">Accueil</a></li>
-                    <li><a href="" class="hover:text-gray-300 uppercase">Boutique</a></li>
-                    <li><a href="" class="hover:text-gray-300 uppercase">Contact</a></li>
-                @else
-                    <li><a href="{{ route('home') }}" class="hover:text-gray-300 uppercase">Accueil</a></li>
-                    <li><a href="" class="hover:text-gray-300 uppercase">Boutique</a></li>
-                    <li><a href="" class="hover:text-gray-300 uppercase">Contact</a></li>
-                @endauth
+    <nav class="landing-navbar">
+        <div class="navbar-container">
+            <!-- Brand/Logo -->
+            <div class="navbar-brand">
+                <a href="{{ route('home') }}" class="brand-text">ASTROLAB</a>
             </div>
-            <div class="flex items-center space-x-4">
-                @inject('cart', 'App\Services\Cart')
-
-                <li>
-                    <a href="{{ route('cart.index') }}" class="hover:text-gray-300 uppercase">
-                        Panier ({{ $cart->count() }})
-                    </a>
-                </li>
-                @auth
-                    <li>
-                        <a href="{{ route('profile') }}" class="hover:text-gray-300 uppercase">
-                            {{ Auth::user()->name }}
-                        </a>
+            
+            <!-- Navigation Menu -->
+            <div class="navbar-menu">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="{{ route('home') }}" class="nav-link">Accueil</a>
                     </li>
-                    @if(str_ends_with(Auth::user()->email, '@astrolab.com'))
-                        <li>
-                            <a href="/admin" class="hover:text-gray-300 uppercase">
-                                Admin
-                            </a>
+                    <li class="nav-item">
+                        <a href="#boutique" class="nav-link">Boutique</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#contact" class="nav-link">Contact</a>
+                    </li>
+                    @if(str_ends_with(Auth::user()->email ?? '', '@astrolab.com'))
+                        <li class="nav-item">
+                            <a href="/admin" class="nav-link" target="_blank">Admin</a>
                         </li>
                     @endif
-                    <li>
+                </ul>
+            </div>
+            
+            <!-- Actions (Cart, Profile, Login) -->
+            <div class="navbar-actions">
+                @inject('cart', 'App\Services\Cart')
+                
+                <!-- Cart Icon -->
+                <a href="{{ route('cart.index') }}" class="navbar-cart-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                    @if($cart->count() > 0)
+                        <span class="cart-badge">{{ $cart->count() }}</span>
+                    @endif
+                </a>
+                
+                @auth
+                    <!-- User Profile -->
+                    <div class="navbar-user-menu">
+                        <a href="{{ route('profile') }}" class="nav-link">{{ Auth::user()->name }}</a>
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
-                            <button type="submit" class="hover:text-gray-300 uppercase bg-transparent border-none text-white cursor-pointer">
+                            <button type="submit" class="navbar-logout-btn">
                                 Déconnexion
                             </button>
                         </form>
-                    </li>
+                    </div>
                 @else
-                    <li>
-                        <a href="{{ route('login') }}" class="hover:text-gray-300 uppercase">
-                            Connexion
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('register') }}" class="hover:text-gray-300 uppercase">
-                            Inscription
-                        </a>
-                    </li>
+                    <!-- Login Button -->
+                    <a href="{{ route('login') }}" class="navbar-cta">Se connecter</a>
                 @endauth
             </div>
-        </ul>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle">
+                <div class="burger-line"></div>
+                <div class="burger-line"></div>
+                <div class="burger-line"></div>
+            </button>
+        </div>
     </nav>
-    <main>@yield('content')</main>
+    
+    <main style="padding-top: 70px;">@yield('content')</main>
     
     <!-- Popup ajout au panier -->
     @if(session('cart_success'))
@@ -108,5 +116,33 @@
     });
     </script>
     @endif
+    
+    <!-- Script pour la navbar responsive -->
+    <script>
+    // Toggle mobile menu
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileToggle = document.querySelector('.mobile-menu-toggle');
+        const navbarMenu = document.querySelector('.navbar-menu');
+        
+        if (mobileToggle && navbarMenu) {
+            mobileToggle.addEventListener('click', function() {
+                mobileToggle.classList.toggle('active');
+                navbarMenu.classList.toggle('active');
+            });
+        }
+        
+        // Navbar scroll effect
+        const navbar = document.querySelector('.landing-navbar');
+        if (navbar) {
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+        }
+    });
+    </script>
 </body>
 </html>

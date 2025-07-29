@@ -19,7 +19,7 @@
     --astro-warning-hover: #e0a800; /* Jaune foncé */
     
     /* Couleurs de fond */
-    --astro-bg-dark: #222222;       /* Fond principal sombre */
+    --astro-bg-dark: rgb(34,34,34);       /* Fond principal gris très sombre */
     --astro-bg-card: rgba(255, 255, 255, 0.05); /* Fond cartes transparent */
     --astro-bg-card-hover: rgba(255, 255, 255, 0.08); /* Fond cartes au survol */
     
@@ -404,6 +404,42 @@ nav button {
 
 nav button:hover {
     color: var(--astro-text-secondary);
+}
+
+/* === ICÔNE PANIER === */
+.cart-icon {
+    position: relative;
+    display: inline-block;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--astro-danger);
+    color: var(--astro-text-primary);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* === MODALES === */
@@ -965,5 +1001,126 @@ a:hover {
     
     .summary-actions {
         gap: 10px;
+    }
+}
+
+/* === STYLES HOME PAGE ECOMMERCE CLASSIQUE === */
+
+/* Animation d'apparition au scroll - Version corrigée */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Éléments en attente d'animation */
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+/* Classe ajoutée quand l'élément devient visible */
+.scroll-animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Effets hover simples pour les cartes produits */
+.card-hover-effect {
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    will-change: transform, box-shadow;
+}
+
+.card-hover-effect:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Boutons ecommerce classiques */
+.btn-modern {
+    background: #4a5568;
+    border: 1px solid #5a6572;
+    transition: all 0.4s ease;
+    font-family: var(--astro-font-family);
+    font-weight: var(--astro-font-weight);
+    letter-spacing: var(--astro-letter-spacing);
+    will-change: transform, background-color;
+}
+
+.btn-modern:hover {
+    background: #5a6572;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Cartes avec style glassmorphism léger */
+.glass-card {
+    background: rgba(75, 85, 99, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Section contact moderne */
+.contact-card {
+    background: rgba(75, 85, 99, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+.contact-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    transition: all 0.4s ease;
+    will-change: transform, background-color;
+}
+
+.contact-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+/* Amélioration des images produits */
+.product-image-container {
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.product-image-container img {
+    transition: transform 0.5s ease;
+    will-change: transform;
+}
+
+.card-hover-effect:hover .product-image-container img {
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-hover-effect:hover {
+        transform: translateY(-4px);
+    }
+    
+    .btn-modern:hover {
+        transform: translateY(-2px);
+    }
+    
+    .contact-icon:hover {
+        transform: translateY(-2px);
     }
 }

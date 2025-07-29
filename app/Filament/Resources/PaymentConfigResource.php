@@ -17,7 +17,7 @@ class PaymentConfigResource extends Resource
 {
     protected static ?string $model = PaymentConfig::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-credit-card';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     
     protected static ?string $navigationLabel = 'Configuration Paiement';
     
