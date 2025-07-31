@@ -140,6 +140,12 @@ class CheckoutController extends Controller
      */
     public function processPayment(Request $request)
     {
+        // Log du début du processus
+        Log::info('=== DÉBUT PROCESSUS PAIEMENT ===', [
+            'request_data' => $request->except(['card_number', 'card_cvv']), // Exclure les données sensibles
+            'card_last_4' => substr($request->card_number, -4),
+        ]);
+
         $request->validate([
             'payment_method' => 'required|in:card',
             'card_number' => 'required|string',
@@ -150,25 +156,41 @@ class CheckoutController extends Controller
 
         $checkoutData = session('checkout_data');
         if (!$checkoutData) {
+            Log::error('Données de checkout manquantes dans la session');
             return redirect()->route('checkout.index')->with('error', 'Données de commande manquantes.');
         }
 
+        Log::info('Données checkout récupérées', ['checkout_data' => $checkoutData]);
+
         try {
             DB::beginTransaction();
+            Log::info('Transaction DB démarrée');
 
             // Créer la commande
             $order = $this->createOrder($checkoutData);
+            Log::info('Commande créée', ['order_id' => $order->id, 'order_number' => $order->order_number]);
 
             // Traiter le paiement
-            $paymentResult = $this->paymentService->processPayment([
+            $paymentData = [
                 'card_number' => $request->card_number,
                 'card_expiry' => $request->card_expiry,
                 'card_cvv' => $request->card_cvv,
                 'card_name' => $request->card_name,
                 'payment_method' => $request->payment_method,
-            ], $order);
+            ];
+            
+            Log::info('Début traitement paiement', [
+                'order_id' => $order->id,
+                'amount' => $order->total_amount,
+                'card_last_4' => substr($request->card_number, -4),
+            ]);
+
+            $paymentResult = $this->paymentService->processPayment($paymentData, $order);
+            
+            Log::info('Résultat du paiement', ['payment_result' => $paymentResult]);
 
             if (!$paymentResult['success']) {
+                Log::warning('Paiement refusé', ['error' => $paymentResult['error'] ?? 'Erreur inconnue']);
                 DB::rollBack();
                 return back()->with('error', 'Paiement refusé: ' . ($paymentResult['error'] ?? 'Erreur inconnue'));
             }
@@ -179,6 +201,12 @@ class CheckoutController extends Controller
                 'payment_method' => $paymentResult['processor'],
                 'transaction_id' => $paymentResult['transaction_id'],
                 'status' => 'confirmed',
+            ]);
+            
+            Log::info('Commande mise à jour après paiement', [
+                'order_id' => $order->id,
+                'payment_status' => 'paid',
+                'transaction_id' => $paymentResult['transaction_id'],
             ]);
 
             // Envoyer l'email de confirmation au client
@@ -204,16 +232,28 @@ class CheckoutController extends Controller
 
             // Vider le panier
             $this->cart->clear();
+            Log::info('Panier vidé');
 
             // Supprimer les données de session
             session()->forget('checkout_data');
+            Log::info('Session checkout nettoyée');
 
             DB::commit();
+            Log::info('Transaction DB commitée avec succès');
+
+            Log::info('=== PAIEMENT TERMINÉ AVEC SUCCÈS ===', [
+                'order_id' => $order->id,
+                'redirect_to' => 'checkout.success'
+            ]);
 
             return redirect()->route('checkout.success', $order->id);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('=== ERREUR LORS DU PAIEMENT ===', [
+                'error' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString()
+            ]);
             return back()->with('error', 'Erreur lors du traitement du paiement: ' . $e->getMessage());
         }
     }
