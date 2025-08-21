@@ -41,6 +41,9 @@
     </nav>
     <main>@yield('content')</main>
     
+    <!-- Footer -->
+    @include('partials.footer')
+    
     <!-- Popup ajout au panier -->
     @if(session('cart_success'))
     <div id="cart-popup" class="cart-popup-overlay">
