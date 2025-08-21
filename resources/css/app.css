@@ -289,7 +289,7 @@ textarea:focus,
 select:focus {
     outline: none;
     border-color: var(--astro-primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
 }
 
 /* === BOUTONS SPÉCIAUX === */
@@ -728,13 +728,13 @@ a:hover {
 }
 
 .cart-breadcrumb a {
-    color: #007bff;
+    color: var(--astro-primary);
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .cart-breadcrumb a:hover {
-    color: #0056b3;
+    color: var(--astro-primary-hover);
 }
 
 .cart-content {
@@ -1711,7 +1711,7 @@ a:hover {
     outline: none;
     border-color: var(--astro-primary);
     background: rgba(255,255,255,0.08);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
 .form-input::placeholder, .newsletter-form::placeholder {
@@ -1922,8 +1922,8 @@ a:hover {
 
 /* Boutons ecommerce classiques */
 .btn-modern {
-    background: #4a5568;
-    border: 1px solid #5a6572;
+    background: var(--astro-secondary);
+    border: 1px solid var(--astro-secondary-hover);
     transition: all 0.4s ease;
     font-family: var(--astro-font-family);
     font-weight: var(--astro-font-weight);
@@ -1932,22 +1932,22 @@ a:hover {
 }
 
 .btn-modern:hover {
-    background: #5a6572;
+    background: var(--astro-secondary-hover);
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Cartes avec style glassmorphism léger */
 .glass-card {
-    background: rgba(75, 85, 99, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: var(--astro-bg-card);
+    border: 1px solid var(--astro-border-light);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
 
 /* Section contact moderne */
 .contact-card {
-    background: rgba(75, 85, 99, 0.7);
+    background: var(--astro-bg-card-hover);
     border: 1px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
