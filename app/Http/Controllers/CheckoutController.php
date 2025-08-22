@@ -285,7 +285,6 @@ class CheckoutController extends Controller
             'name' => $request->register_name,
             'email' => $request->register_email,
             'password' => Hash::make($request->register_password),
-            'newsletter' => $request->has('register_newsletter'),
         ]);
     }
 

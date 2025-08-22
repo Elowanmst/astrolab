@@ -52,7 +52,7 @@ class ProfileController extends Controller
             'address' => $request->address,
             'city' => $request->city,
             'postal_code' => $request->postal_code,
-            'newsletter' => $request->has('newsletter'),
+            // 'newsletter' => $request->has('newsletter'),
         ]);
 
         return redirect()->route('profile')->with('success', 'Profil mis à jour avec succès.');

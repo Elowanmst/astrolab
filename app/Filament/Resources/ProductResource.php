@@ -63,6 +63,10 @@ class ProductResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->label('Nom de la couleur')
                             ->required(),
+                        Forms\Components\ColorPicker::make('hex')
+                            ->label('Code couleur (hex)')
+                            ->required()
+                            ->helperText('Sélectionnez la couleur ou entrez un code hexadécimal (ex: #FF0000)'),
                     ]), // Active la création rapide d'une couleur
             ]);
     }
