@@ -74,39 +74,22 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="checkout-item-pricing">
-                                <div class="checkout-item-quantity">{{ $item['quantity'] }} x {{ $item['price'] }}€</div>
-                                <div class="checkout-item-total">{{ number_format($item['price'] * $item['quantity'], 2) }}€</div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
 
-            @if(config('app.env') !== 'production')
-            <!-- Informations de test -->
-            <div class="checkout-section test-mode">
-                <h3 class="checkout-section-title">
-                    <i class="fas fa-flask"></i>
-                    Mode Test - Cartes de simulation
-                </h3>
-                <p style="margin-bottom: 1rem; font-weight: 500;">Utilisez ces numéros de carte pour tester différents scénarios :</p>
-                <div class="test-cards-grid">
-                    <div class="test-card success">
-                        <div class="test-card-status">✅ Paiement réussi</div>
-                        <div class="test-card-number">4242 4242 4242 4242</div>
+                        @endforeach
                     </div>
-                    <div class="test-card error">
-                        <div class="test-card-status">❌ Carte refusée</div>
-                        <div class="test-card-number">4000 0000 0000 0002</div>
-                    </div>
-                    <div class="test-card warning">
-                        <div class="test-card-status">⚠️ Fonds insuffisants</div>
-                        <div class="test-card-number">4000 0000 0000 9995</div>
-                    </div>
-                    <div class="test-card info">
-                        <div class="test-card-status">🔧 Erreur de traitement</div>
-                        <div class="test-card-number">4000 0000 0000 0119</div>
+                </div>
+
+                <!-- Informations de développement (si activées) -->
+                @if(config('app.env') === 'local' && config('app.debug'))
+                <div class="bg-amber-900 border border-amber-700 p-4">
+                    <h4 class="text-sm font-semibold mb-2 text-amber-200 uppercase">⚠️ Mode Développement</h4>
+                    <div class="text-xs text-amber-300">
+                        <p>Vous êtes en mode développement. Utilisez les cartes de test Stripe si configuré en mode test.</p>
+                        <p class="mt-1">
+                            <strong>Test :</strong> 4242 4242 4242 4242 | 
+                            <strong>Date :</strong> 12/25 | 
+                            <strong>CVV :</strong> 123
+                        </p>
                     </div>
                 </div>
                 <p style="margin-top: 1rem; font-size: 0.8rem; color: var(--astro-text-secondary); font-weight: 500;">
