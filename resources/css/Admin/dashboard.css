@@ -275,16 +275,16 @@ td a {
 }
 .form-group input:focus, 
 .form-group select:focus {
-    border-color: #3b82f6;
+    border-color: var(--astro-primary, #ffffff);
     outline: none;
-    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
 .btn-form[type="submit"] {
     display: inline-block;
     padding: 10px 15px;
-    background-color: #3b82f6;
-    color: white;
+    background-color: var(--astro-primary, #ffffff);
+    color: var(--astro-black, #000000);
     border: none;
     border-radius: 4px;
     font-size: 14px;
@@ -373,8 +373,8 @@ td a {
     color: #ffcc00;
 }
 .btn {
-    background: #007bff;
-    color: white;
+    background: var(--astro-primary, #ffffff);
+    color: var(--astro-black, #000000);
     padding: 10px 15px;
     border-radius: 4px;
     text-decoration: none;
@@ -383,7 +383,8 @@ td a {
     cursor: pointer;
 }
 .btn:hover {
-    background: #0056b3;
+    background: var(--astro-primary-hover, #717171);
+    color: var(--astro-text-primary, #ffffff);
 }
 
 .btn-danger{
@@ -414,8 +415,8 @@ td a {
     background: #c82333;
 }
 .btn-edit {
-    background: #007bff;
-    color: white;
+    background: var(--astro-primary, #ffffff);
+    color: var(--astro-black, #000000);
     border: none;
     padding: 6px 12px;
     cursor: pointer;
@@ -424,7 +425,8 @@ td a {
     font-size: 14px;
 }
 .btn-edit:hover {
-    background: #0056b3;
+    background: var(--astro-primary-hover, #717171);
+    color: var(--astro-text-primary, #ffffff);
 }
 
 /* detail vehicule */

@@ -1,179 +1,180 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-black text-white py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-4xl mx-auto">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold">ASTROLAB</h1>
-            <h2 class="mt-6 text-2xl">FINALISER MA COMMANDE</h2>
-            <p class="mt-2 text-gray-400">| ÉTAPE 1/3 : IDENTIFICATION |</p>
-        </div>
+<div class="checkout-container">
+    <!-- En-tête checkout -->
+    <div class="checkout-header">
+        <h1 class="checkout-title">ASTROLAB</h1>
+        <h2 class="checkout-subtitle">Finaliser ma commande</h2>
+        <p class="checkout-step">| ÉTAPE 1/3 : IDENTIFICATION |</p>
         
-        <div class="w-full h-1 bg-white shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] mx-auto mb-12"></div>
+        <div class="progress-bar step-1"></div>
+    </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- Résumé du panier -->
-            <div class="lg:col-span-1 bg-gray-900 p-6 border border-gray-700">
-                <h3 class="text-xl font-semibold mb-6 uppercase">Mon panier</h3>
+    <div class="checkout-grid">
+        
+        <!-- Résumé du panier -->
+        <div class="checkout-summary">
+            <div class="checkout-section">
+                <h3 class="checkout-section-title">Mon panier</h3>
                 
                 @foreach($cart->get() as $item)
-                    <div class="flex items-center space-x-4 mb-4 pb-4 border-b border-gray-700">
-                        @if($item['image'])
-                            <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="w-16 h-16 object-cover">
-                        @else
-                            <div class="w-16 h-16 bg-gray-600 flex items-center justify-center">
-                                <span class="text-gray-400 text-xs">NO IMG</span>
+                    <div class="checkout-item">
+                        <div class="checkout-item-image">
+                            @if($item['image'])
+                                <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}">
+                            @else
+                                <div class="checkout-item-placeholder">NO IMG</div>
+                            @endif
+                        </div>
+                        <div class="checkout-item-info">
+                            <div class="checkout-item-name">{{ $item['name'] }}</div>
+                            <div class="checkout-item-details">
+                                @if($item['size'])
+                                    <div>Taille: {{ $item['size'] }}</div>
+                                @endif
+                                @if($item['color'])
+                                    <div>Couleur: {{ $item['color'] }}</div>
+                                @endif
+                                <div>{{ $item['quantity'] }} x {{ $item['price'] }}€</div>
                             </div>
-                        @endif
-                        <div class="flex-1">
-                            <h4 class="font-medium">{{ $item['name'] }}</h4>
-                            @if($item['size'])
-                                <p class="text-sm text-gray-400">Taille: {{ $item['size'] }}</p>
-                            @endif
-                            @if($item['color'])
-                                <p class="text-sm text-gray-400">Couleur: {{ $item['color'] }}</p>
-                            @endif
-                            <p class="text-sm">{{ $item['quantity'] }} x {{ $item['price'] }}€</p>
                         </div>
                     </div>
                 @endforeach
                 
-                <div class="mt-6 space-y-2">
-                    <div class="flex justify-between">
+                <div class="checkout-totals">
+                    <div class="checkout-total-line">
                         <span>Total HT:</span>
                         <span>{{ number_format($cart->getTotalHT(), 2) }}€</span>
                     </div>
-                    <div class="flex justify-between">
+                    <div class="checkout-total-line">
                         <span>TVA (20%):</span>
                         <span>{{ number_format($cart->getTVA(), 2) }}€</span>
                     </div>
-                    <div class="flex justify-between font-bold text-lg">
+                    <div class="checkout-total-line final">
                         <span>Total TTC:</span>
                         <span>{{ number_format($cart->getTotalTTC(), 2) }}€</span>
                     </div>
-                    <p class="text-sm text-gray-400">+ Frais de livraison (calculés à l'étape suivante)</p>
+                    <p style="color: var(--astro-text-secondary); font-size: 0.8rem; margin-top: 0.5rem; font-weight: 500;">+ Frais de livraison (calculés à l'étape suivante)</p>
                 </div>
             </div>
-
-            <!-- Options de connexion -->
-            <div class="lg:col-span-2 space-y-8">
-                
-                @auth
-                    <!-- Utilisateur déjà connecté -->
-                    <div class="bg-green-900 p-6 border border-green-700">
-                        <h3 class="text-xl font-semibold mb-4 uppercase">Connecté en tant que</h3>
-                        <p class="text-green-300 mb-4">{{ Auth::user()->name }} ({{ Auth::user()->email }})</p>
-                        
-                        <form action="{{ route('checkout.shipping') }}" method="GET">
-                            <button type="submit" 
-                                    class="w-full py-3 px-4 border border-green-400 text-sm font-medium uppercase text-green-400 bg-transparent hover:bg-green-400 hover:text-black transition-colors duration-200">
-                                Continuer avec ce compte
-                            </button>
-                        </form>
-                    </div>
-                @else
-                    <!-- Créer un compte -->
-                    <div class="bg-gray-900 p-6 border border-gray-700">
-                        <h3 class="text-xl font-semibold mb-4 uppercase">Créer un compte</h3>
-                        <p class="text-gray-400 mb-6">Créez un compte pour suivre vos commandes et bénéficier d'avantages exclusifs.</p>
-                        
-                        <form action="{{ route('checkout.shipping') }}" method="POST" class="space-y-4">
-                            @csrf
-                            <input type="hidden" name="checkout_type" value="register">
-                            
-                            <div>
-                                <label for="register_name" class="block text-sm font-medium text-gray-300 uppercase">Nom complet</label>
-                                <input type="text" name="register_name" id="register_name" required 
-                                       class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent">
-                            </div>
-                            
-                            <div>
-                                <label for="register_email" class="block text-sm font-medium text-gray-300 uppercase">Email</label>
-                                <input type="email" name="register_email" id="register_email" required 
-                                       class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent">
-                            </div>
-                            
-                            <div>
-                                <label for="register_password" class="block text-sm font-medium text-gray-300 uppercase">Mot de passe</label>
-                                <input type="password" name="register_password" id="register_password" required 
-                                       class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent">
-                            </div>
-                            
-                            <div>
-                                <label for="register_password_confirmation" class="block text-sm font-medium text-gray-300 uppercase">Confirmer le mot de passe</label>
-                                <input type="password" name="register_password_confirmation" id="register_password_confirmation" required 
-                                       class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent">
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <input type="checkbox" name="register_newsletter" id="register_newsletter" value="1"
-                                       class="h-4 w-4 text-white focus:ring-white border-gray-600 bg-gray-800">
-                                <label for="register_newsletter" class="ml-2 block text-sm text-gray-300">
-                                    Je souhaite recevoir la newsletter d'Astrolab
-                                </label>
-                            </div>
-                            
-                            <button type="submit" 
-                                    class="w-full py-3 px-4 border border-white text-sm font-medium uppercase text-white bg-transparent hover:bg-white hover:text-black transition-colors duration-200">
-                                Créer mon compte et continuer
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Se connecter -->
-                    <div class="bg-gray-900 p-6 border border-gray-700">
-                        <h3 class="text-xl font-semibold mb-4 uppercase">J'ai déjà un compte</h3>
-                        <p class="text-gray-400 mb-6">Connectez-vous pour accéder à vos informations sauvegardées.</p>
-                        
-                        <form action="{{ route('checkout.shipping') }}" method="POST" class="space-y-4">
-                            @csrf
-                            <input type="hidden" name="checkout_type" value="login">
-                            
-                            <div>
-                                <label for="login_email" class="block text-sm font-medium text-gray-300 uppercase">Email</label>
-                                <input type="email" name="login_email" id="login_email" required 
-                                       class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent">
-                            </div>
-                            
-                            <div>
-                                <label for="login_password" class="block text-sm font-medium text-gray-300 uppercase">Mot de passe</label>
-                                <input type="password" name="login_password" id="login_password" required 
-                                       class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent">
-                            </div>
-                            
-                            <button type="submit" 
-                                    class="w-full py-3 px-4 border border-blue-400 text-sm font-medium uppercase text-blue-400 bg-transparent hover:bg-blue-400 hover:text-black transition-colors duration-200">
-                                Se connecter et continuer
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Continuer en tant qu'invité -->
-                    <div class="bg-gray-900 p-6 border border-gray-700">
-                        <h3 class="text-xl font-semibold mb-4 uppercase">Continuer en tant qu'invité</h3>
-                        <p class="text-gray-400 mb-6">Passez votre commande sans créer de compte.</p>
-                        
-                        <form action="{{ route('checkout.shipping') }}" method="GET">
-                            <input type="hidden" name="checkout_type" value="guest">
-                            <button type="submit" 
-                                    class="w-full py-3 px-4 border border-gray-600 text-sm font-medium uppercase text-gray-300 bg-transparent hover:border-white hover:text-white transition-colors duration-200">
-                                Continuer en tant qu'invité
-                            </button>
-                        </form>
-                    </div>
-                @endauth
-
-            </div>
         </div>
 
-        <!-- Navigation -->
-        <div class="mt-12 text-center">
-            <a href="{{ route('cart.index') }}" 
-               class="inline-block py-2 px-4 border border-gray-600 text-sm font-medium uppercase text-gray-300 bg-transparent hover:border-white hover:text-white transition-colors duration-200">
-                ← Retour au panier
-            </a>
+        <!-- Options de connexion -->
+        <div class="checkout-main">
+            
+            @auth
+                <!-- Utilisateur déjà connecté -->
+                <div class="checkout-section" style="border-color: var(--astro-success); background: rgba(40, 167, 69, 0.1);">
+                    <h3 class="checkout-section-title" style="color: var(--astro-success);">Connecté en tant que</h3>
+                    <p style="color: var(--astro-success); margin-bottom: 1.5rem; font-weight: 500;">{{ Auth::user()->name }} ({{ Auth::user()->email }})</p>
+                    
+                    <form action="{{ route('checkout.shipping') }}" method="GET">
+                        <button type="submit" class="checkout-btn" style="background: var(--astro-success); color: white;">
+                            <i class="fas fa-user-check"></i>
+                            Continuer avec ce compte
+                        </button>
+                    </form>
+                </div>
+            @else
+                <!-- Créer un compte -->
+                <div class="checkout-section">
+                    <h3 class="checkout-section-title">Créer un compte</h3>
+                    <p style="color: var(--astro-text-secondary); margin-bottom: 1.5rem; font-weight: 500;">Créez un compte pour suivre vos commandes et bénéficier d'avantages exclusifs.</p>
+                    
+                    <form action="{{ route('checkout.shipping') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="checkout_type" value="register">
+                        
+                        <div class="checkout-form-group">
+                            <div class="checkout-form-grid">
+                                <div>
+                                    <label for="register_name" class="checkout-label">Nom complet</label>
+                                    <input type="text" name="register_name" id="register_name" required class="checkout-input">
+                                </div>
+                                
+                                <div>
+                                    <label for="register_email" class="checkout-label">Email</label>
+                                    <input type="email" name="register_email" id="register_email" required class="checkout-input">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="checkout-form-group">
+                            <div class="checkout-form-grid">
+                                <div>
+                                    <label for="register_password" class="checkout-label">Mot de passe</label>
+                                    <input type="password" name="register_password" id="register_password" required class="checkout-input">
+                                </div>
+                                
+                                <div>
+                                    <label for="register_password_confirmation" class="checkout-label">Confirmer le mot de passe</label>
+                                    <input type="password" name="register_password_confirmation" id="register_password_confirmation" required class="checkout-input">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="checkout-btn">
+                            <i class="fas fa-user-plus"></i>
+                            Créer mon compte et continuer
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Se connecter -->
+                <div class="checkout-section">
+                    <h3 class="checkout-section-title">J'ai déjà un compte</h3>
+                    <p style="color: var(--astro-text-secondary); margin-bottom: 1.5rem; font-weight: 500;">Connectez-vous pour accéder à vos informations sauvegardées.</p>
+                    
+                    <form action="{{ route('checkout.shipping') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="checkout_type" value="login">
+                        
+                        <div class="checkout-form-group">
+                            <div class="checkout-form-grid">
+                                <div>
+                                    <label for="login_email" class="checkout-label">Email</label>
+                                    <input type="email" name="login_email" id="login_email" required class="checkout-input">
+                                </div>
+                                
+                                <div>
+                                    <label for="login_password" class="checkout-label">Mot de passe</label>
+                                    <input type="password" name="login_password" id="login_password" required class="checkout-input">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="checkout-btn" style="background: rgba(59, 130, 246, 1); color: white;">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Se connecter et continuer
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Continuer en tant qu'invité -->
+                <div class="checkout-section">
+                    <h3 class="checkout-section-title">Continuer en tant qu'invité</h3>
+                    <p style="color: var(--astro-text-secondary); margin-bottom: 1.5rem; font-weight: 500;">Passez votre commande sans créer de compte.</p>
+                    
+                    <form action="{{ route('checkout.shipping') }}" method="GET">
+                        <input type="hidden" name="checkout_type" value="guest">
+                        <button type="submit" class="checkout-btn secondary">
+                            <i class="fas fa-user"></i>
+                            Continuer en tant qu'invité
+                        </button>
+                    </form>
+                </div>
+            @endauth
+
         </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="checkout-navigation">
+        <a href="{{ route('cart.index') }}" class="checkout-btn secondary">
+            <i class="fas fa-arrow-left"></i>
+            Retour au panier
+        </a>
     </div>
 </div>
 @endsection
