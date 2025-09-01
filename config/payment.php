@@ -11,21 +11,15 @@ return [
     |
     */
 
-    'default_processor' => env('PAYMENT_PROCESSOR', 'simulation'),
+    'default_processor' => env('PAYMENT_PROCESSOR', 'stripe'),
     
     'processors' => [
-        
-        'simulation' => [
-            'name' => 'Simulation de paiement',
-            'description' => 'Mode test - aucun paiement réel',
-            'enabled' => true,
-        ],
         
         'stripe' => [
             'name' => 'Stripe',
             'description' => 'Processeur de paiement international',
-            'enabled' => env('STRIPE_ENABLED', false),
-            'public_key' => env('STRIPE_PUBLIC_KEY'),
+            'enabled' => env('STRIPE_ENABLED', true),
+            'public_key' => env('STRIPE_PUBLISHABLE_KEY'),
             'secret_key' => env('STRIPE_SECRET_KEY'),
             'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
         ],

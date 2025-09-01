@@ -1,3 +1,6 @@
+/* === IMPORT LANDING STYLES === */
+@import url('./app-landing.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

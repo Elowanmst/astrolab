@@ -73,6 +73,44 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Channel spécialisé pour la sécurité
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'info',
+            'days' => 90, // Conserver plus longtemps
+            'replace_placeholders' => true,
+            'permission' => 0644,
+        ],
+
+        // Channel pour les paiements
+        'payments' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/payments.log'),
+            'level' => 'info',
+            'days' => 365, // Archives importantes
+            'replace_placeholders' => true,
+            'permission' => 0644,
+        ],
+
+        // Channel pour les erreurs système
+        'system' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/system.log'),
+            'level' => 'warning',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        // Channel pour les performances
+        'performance' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/performance.log'),
+            'level' => 'info',
+            'days' => 7,
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
