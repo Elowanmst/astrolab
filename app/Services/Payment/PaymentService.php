@@ -12,7 +12,7 @@ class PaymentService
 
     public function __construct()
     {
-        $this->processor = config('payment.default_processor', 'simulation');
+        $this->processor = config('payment.default_processor', 'stripe');
     }
 
     /**
@@ -31,6 +31,7 @@ class PaymentService
                 return $this->processLyraPayment($paymentData, $order);
             
             default:
+
                 throw new \Exception("Processeur de paiement non configuré : {$this->processor}. Veuillez configurer PAYMENT_PROCESSOR=stripe dans votre .env");
         }
     }
@@ -136,6 +137,7 @@ class PaymentService
                 } else {
                     return ['success' => false, 'message' => '❌ Paiement refusé (simulation aléatoire)'];
                 }
+
         }
     }
 
@@ -149,13 +151,13 @@ class PaymentService
         }
 
         try {
-            // Définir la clé API Stripe depuis la configuration
-            \Stripe\Stripe::setApiKey(config('stripe.secret_key'));
+            // Définir la clé API Stripe depuis la configuration des services
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
             // Créer un PaymentIntent
             $paymentIntent = \Stripe\PaymentIntent::create([
                 'amount' => round($order->total_amount * 100), // En centimes
-                'currency' => config('stripe.currency', 'eur'),
+                'currency' => config('payment.processors.stripe.currency', 'eur'),
                 'payment_method_data' => [
                     'type' => 'card',
                     'card' => [
