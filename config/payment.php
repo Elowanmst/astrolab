@@ -11,14 +11,14 @@ return [
     |
     */
 
-    'default_processor' => env('PAYMENT_PROCESSOR', 'simulation'),
+    'default_processor' => env('PAYMENT_PROCESSOR', 'stripe'),
     
     'processors' => [
         
         'simulation' => [
             'name' => 'Simulation de paiement',
             'description' => 'Mode test - aucun paiement réel',
-            'enabled' => true,
+            'enabled' => false, // Désactivé pour la production
         ],
         
         'stripe' => [

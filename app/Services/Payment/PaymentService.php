@@ -31,7 +31,7 @@ class PaymentService
                 return $this->processLyraPayment($paymentData, $order);
             
             default:
-                return $this->processSimulationPayment($paymentData, $order);
+                throw new \Exception("Processeur de paiement non configuré : {$this->processor}. Veuillez configurer PAYMENT_PROCESSOR=stripe dans votre .env");
         }
     }
 

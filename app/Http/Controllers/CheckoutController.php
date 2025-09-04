@@ -81,7 +81,13 @@ class CheckoutController extends Controller
             'shipping_city' => 'required|string|max:100',
             'shipping_postal_code' => 'required|string|max:10',
             'shipping_method' => 'required|in:home,pickup',
+            'selected_relay_point' => 'nullable|string', // Point relais sélectionné (JSON)
         ]);
+
+        // Validation spécifique pour le point relais
+        if ($validatedData['shipping_method'] === 'pickup' && empty($validatedData['selected_relay_point'])) {
+            return back()->withErrors(['selected_relay_point' => 'Veuillez sélectionner un point relais.'])->withInput();
+        }
 
         // Stocker les données de livraison en session
         session(['checkout_data' => $validatedData]);
@@ -310,7 +316,25 @@ class CheckoutController extends Controller
         $shippingCost = $this->cart->getShippingCost($shippingData['shipping_method']);
         $finalTotal = $this->cart->getTotalTTC() + $shippingCost;
 
-        $order = Order::create([
+        // Préparer les données pour le point relais
+        $relayPointData = null;
+        $relayPointInfo = [];
+        
+        if ($shippingData['shipping_method'] === 'pickup' && !empty($shippingData['selected_relay_point'])) {
+            $relayPointData = json_decode($shippingData['selected_relay_point'], true);
+            if ($relayPointData) {
+                $relayPointInfo = [
+                    'relay_point_id' => $relayPointData['id'],
+                    'relay_point_name' => $relayPointData['name'],
+                    'relay_point_address' => $relayPointData['address'],
+                    'relay_point_postal_code' => $relayPointData['postal_code'],
+                    'relay_point_city' => $relayPointData['city'],
+                    'relay_point_data' => $relayPointData,
+                ];
+            }
+        }
+
+        $order = Order::create(array_merge([
             'user_id' => Auth::id(),
             'total_amount' => $finalTotal,
             'shipping_name' => $shippingData['shipping_name'],
@@ -318,8 +342,9 @@ class CheckoutController extends Controller
             'shipping_address' => $shippingData['shipping_address'],
             'shipping_city' => $shippingData['shipping_city'],
             'shipping_postal_code' => $shippingData['shipping_postal_code'],
+            'shipping_method' => $shippingData['shipping_method'],
             'status' => 'pending',
-        ]);
+        ], $relayPointInfo));
 
         // Créer les articles de commande
         foreach ($this->cart->get() as $item) {
