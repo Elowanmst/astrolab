@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SecurePaymentRequest;
 use App\Mail\OrderConfirmation;
 use App\Mail\NewOrderNotification;
 use App\Models\Order;
@@ -17,7 +16,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class CheckoutController extends Controller
 {
@@ -138,79 +136,41 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Traitement du paiement et création de la commande - VERSION SÉCURISÉE
+     * Traitement du paiement et création de la commande
      */
-    public function processPayment(SecurePaymentRequest $request)
+    public function processPayment(Request $request)
     {
-        // Enregistrer le début de la tentative de paiement
-        session(['payment_start_time' => time()]);
-        
-        // Log de début avec ID de transaction unique
-        $sessionTransactionId = 'TXN_' . uniqid() . '_' . time();
-        
-        Log::channel('payments')->info('=== DÉBUT PROCESSUS PAIEMENT SÉCURISÉ ===', [
-            'session_transaction_id' => $sessionTransactionId,
-            'ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'user_id' => $request->user()?->id,
-            'timestamp' => now(),
+        // Log du début du processus
+        Log::info('=== DÉBUT PROCESSUS PAIEMENT ===', [
+            'request_data' => $request->except(['card_number', 'card_cvv']), // Exclure les données sensibles
+            'card_last_4' => substr($request->card_number, -4),
         ]);
+
+        $request->validate([
+            'payment_method' => 'required|in:card',
+            'card_number' => 'required|string',
+            'card_expiry' => 'required|string',
+            'card_cvv' => 'required|string',
+            'card_name' => 'required|string',
+        ]);
+
+        $checkoutData = session('checkout_data');
+        if (!$checkoutData) {
+            Log::error('Données de checkout manquantes dans la session');
+            return redirect()->route('checkout.index')->with('error', 'Données de commande manquantes.');
+        }
+
+        Log::info('Données checkout récupérées', ['checkout_data' => $checkoutData]);
 
         try {
             DB::beginTransaction();
-            
-            // Vérifications préalables de sécurité
-            $securityChecks = $this->performSecurityChecks($request);
-            if (!$securityChecks['passed']) {
-                Log::channel('security')->warning('Paiement bloqué par les contrôles de sécurité', [
-                    'session_transaction_id' => $sessionTransactionId,
-                    'reason' => $securityChecks['reason'],
-                    'ip' => $request->ip(),
-                ]);
-                
-                DB::rollBack();
-                return back()->with('error', 'Transaction refusée pour des raisons de sécurité.');
-            }
-
-            // Récupération et validation des données de checkout
-            $checkoutData = session('checkout_data');
-            if (!$checkoutData) {
-                Log::channel('security')->error('Tentative de paiement sans données de checkout', [
-                    'session_transaction_id' => $sessionTransactionId,
-                    'ip' => $request->ip(),
-                ]);
-                
-                DB::rollBack();
-                return redirect()->route('checkout.index')->with('error', 'Données de commande manquantes.');
-            }
-
-            // Validation du montant en session vs cart
-            $expectedTotal = $this->cart->getTotalTTC() + $this->cart->getShippingCost($checkoutData['shipping_method']);
-            $sessionTotal = session('expected_total');
-            
-            if ($sessionTotal && abs($sessionTotal - $expectedTotal) > 0.01) {
-                Log::channel('security')->alert('Tentative de manipulation du montant détectée', [
-                    'session_transaction_id' => $sessionTransactionId,
-                    'expected_total' => $expectedTotal,
-                    'session_total' => $sessionTotal,
-                    'ip' => $request->ip(),
-                ]);
-                
-                DB::rollBack();
-                return back()->with('error', 'Incohérence détectée dans le montant de la commande.');
-            }
+            Log::info('Transaction DB démarrée');
 
             // Créer la commande
             $order = $this->createOrder($checkoutData);
-            
-            Log::channel('payments')->info('Commande créée avec succès', [
-                'session_transaction_id' => $sessionTransactionId,
-                'order_id' => $order->id,
-                'order_number' => $order->order_number,
-                'amount' => $order->total_amount,
-            ]);
+            Log::info('Commande créée', ['order_id' => $order->id, 'order_number' => $order->order_number]);
 
-            // Préparer les données de paiement sécurisées
+            // Traiter le paiement
             $paymentData = [
                 'card_number' => $request->card_number,
                 'card_expiry' => $request->card_expiry,
@@ -218,28 +178,19 @@ class CheckoutController extends Controller
                 'card_name' => $request->card_name,
                 'payment_method' => $request->payment_method,
             ];
-
-            // Traiter le paiement avec le service sécurisé
-            $paymentResult = $this->paymentService->processPayment($paymentData, $order, $request);
             
-            Log::channel('payments')->info('Résultat du traitement de paiement', [
-                'session_transaction_id' => $sessionTransactionId,
-                'success' => $paymentResult['success'],
-                'transaction_id' => $paymentResult['transaction_id'] ?? null,
-                'processor' => $paymentResult['processor'] ?? null,
-                'risk_score' => $paymentResult['risk_score'] ?? 0,
+            Log::info('Début traitement paiement', [
+                'order_id' => $order->id,
+                'amount' => $order->total_amount,
+                'card_last_4' => substr($request->card_number, -4),
             ]);
 
+            $paymentResult = $this->paymentService->processPayment($paymentData, $order);
+            
+            Log::info('Résultat du paiement', ['payment_result' => $paymentResult]);
+
             if (!$paymentResult['success']) {
-                // Incrémenter le compteur d'échecs pour cette IP
-                $this->incrementFailureCounter($request->ip());
-                
-                Log::channel('payments')->warning('Paiement refusé', [
-                    'session_transaction_id' => $sessionTransactionId,
-                    'error' => $paymentResult['error'] ?? 'Erreur inconnue',
-                    'security_violations' => $paymentResult['security_violations'] ?? [],
-                ]);
-                
+                Log::warning('Paiement refusé', ['error' => $paymentResult['error'] ?? 'Erreur inconnue']);
                 DB::rollBack();
                 return back()->with('error', 'Paiement refusé: ' . ($paymentResult['error'] ?? 'Erreur inconnue'));
             }
@@ -251,112 +202,60 @@ class CheckoutController extends Controller
                 'transaction_id' => $paymentResult['transaction_id'],
                 'status' => 'confirmed',
             ]);
-
-            // Réinitialiser le compteur d'échecs en cas de succès
-            $this->resetFailureCounter($request->ip());
-
-            // Envoi des emails (avec gestion d'erreurs)
-            $this->sendConfirmationEmails($order);
-
-            // Nettoyage sécurisé
-            $this->cleanupAfterPayment();
-
-            DB::commit();
             
-            Log::channel('payments')->info('=== PAIEMENT TERMINÉ AVEC SUCCÈS ===', [
-                'session_transaction_id' => $sessionTransactionId,
+            Log::info('Commande mise à jour après paiement', [
                 'order_id' => $order->id,
+                'payment_status' => 'paid',
                 'transaction_id' => $paymentResult['transaction_id'],
-                'amount' => $order->total_amount,
             ]);
 
-            // Redirection sécurisée
-            return redirect()->route('checkout.success', $order->id)->with('success', 'Paiement effectué avec succès !');
+            // Envoyer l'email de confirmation au client
+            try {
+                Mail::to($order->shipping_email)->send(new OrderConfirmation($order));
+            } catch (\Exception $e) {
+                Log::error('Erreur envoi email confirmation client', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
+            // Envoyer l'email de notification à l'admin
+            try {
+                $adminEmail = config('mail.admin_email', 'admin@astrolab.com');
+                Mail::to($adminEmail)->send(new NewOrderNotification($order));
+            } catch (\Exception $e) {
+                Log::error('Erreur envoi email notification admin', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
+            // Vider le panier
+            $this->cart->clear();
+            Log::info('Panier vidé');
+
+            // Supprimer les données de session
+            session()->forget('checkout_data');
+            Log::info('Session checkout nettoyée');
+
+            DB::commit();
+            Log::info('Transaction DB commitée avec succès');
+
+            Log::info('=== PAIEMENT TERMINÉ AVEC SUCCÈS ===', [
+                'order_id' => $order->id,
+                'redirect_to' => 'checkout.success'
+            ]);
+
+            return redirect()->route('checkout.success', $order->id);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            Log::channel('payments')->error('=== ERREUR CRITIQUE LORS DU PAIEMENT ===', [
-                'session_transaction_id' => $sessionTransactionId,
+            Log::error('=== ERREUR LORS DU PAIEMENT ===', [
                 'error' => $e->getMessage(),
-                'stack_trace' => $e->getTraceAsString(),
-                'ip' => $request->ip(),
+                'stack_trace' => $e->getTraceAsString()
             ]);
-            
-            return back()->with('error', 'Erreur lors du traitement du paiement. Veuillez réessayer.');
+            return back()->with('error', 'Erreur lors du traitement du paiement: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * Méthodes de sécurité pour le paiement
-     */
-    private function performSecurityChecks(Request $request): array
-    {
-        // Vérifier la session
-        if (!session()->has('checkout_data')) {
-            return ['passed' => false, 'reason' => 'Session checkout manquante'];
-        }
-
-        // Vérifier l'IP
-        $originalIp = session('original_ip');
-        if ($originalIp && $originalIp !== $request->ip()) {
-            return ['passed' => false, 'reason' => 'Changement d\'IP détecté'];
-        }
-
-        // Vérifier le rate limiting
-        $attempts = Cache::get('payment_attempts:' . $request->ip(), 0);
-        if ($attempts >= 5) {
-            return ['passed' => false, 'reason' => 'Trop de tentatives de paiement'];
-        }
-
-        return ['passed' => true];
-    }
-
-    private function incrementFailureCounter(string $ip): void
-    {
-        $key = 'payment_attempts:' . $ip;
-        $attempts = Cache::get($key, 0);
-        Cache::put($key, $attempts + 1, now()->addHours(24));
-    }
-
-    private function resetFailureCounter(string $ip): void
-    {
-        Cache::forget('payment_attempts:' . $ip);
-    }
-
-    private function sendConfirmationEmails(Order $order): void
-    {
-        try {
-            Mail::to($order->shipping_email)->send(new OrderConfirmation($order));
-            Log::channel('payments')->info('Email de confirmation client envoyé', ['order_id' => $order->id]);
-        } catch (\Exception $e) {
-            Log::channel('payments')->error('Erreur envoi email confirmation client', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage()
-            ]);
-        }
-
-        try {
-            $adminEmail = config('mail.admin_email', 'admin@astrolab.com');
-            Mail::to($adminEmail)->send(new NewOrderNotification($order));
-            Log::channel('payments')->info('Email de notification admin envoyé', ['order_id' => $order->id]);
-        } catch (\Exception $e) {
-            Log::channel('payments')->error('Erreur envoi email notification admin', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    private function cleanupAfterPayment(): void
-    {
-        // Vider le panier
-        $this->cart->clear();
-        
-        // Supprimer les données de session sensibles
-        session()->forget(['checkout_data', 'payment_start_time', 'expected_total']);
-        
-        Log::channel('payments')->info('Nettoyage post-paiement effectué');
     }
 
     /**

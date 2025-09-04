@@ -19,30 +19,20 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
 Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
 
-// Routes de checkout sécurisées
-Route::middleware(['checkout'])->group(function () {
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::get('/checkout/shipping', [CheckoutController::class, 'shipping'])->name('checkout.shipping');
-    Route::post('/checkout/shipping', [CheckoutController::class, 'shipping']);
-    Route::get('/checkout/payment', [CheckoutController::class, 'showPayment'])->name('checkout.payment.show');
-    Route::post('/checkout/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
-});
-
-// Route de traitement du paiement avec sécurité renforcée
-Route::middleware(['payment'])->group(function () {
-    Route::post('/checkout/process', [CheckoutController::class, 'processPayment'])->name('checkout.process');
-});
-
-// Page de succès (accessible sans restriction excessive)
+// Routes de checkout (processus de commande)
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::get('/checkout/shipping', [CheckoutController::class, 'shipping'])->name('checkout.shipping');
+Route::post('/checkout/shipping', [CheckoutController::class, 'shipping']);
+Route::get('/checkout/payment', [CheckoutController::class, 'showPayment'])->name('checkout.payment.show');
+Route::post('/checkout/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
+Route::post('/checkout/process', [CheckoutController::class, 'processPayment'])->name('checkout.process');
 Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
-// Webhook Stripe avec protection spécifique
-Route::middleware(['webhook'])->group(function () {
-    Route::post('/webhook/stripe', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');
-});
+// Webhook Stripe (sans middleware CSRF)
+Route::post('/webhook/stripe', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');
 
-// Routes de profil utilisateur avec sécurité renforcée
-Route::middleware(['auth', 'secure'])->group(function () {
+// Routes de profil utilisateur (protégées par l'authentification)
+Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
