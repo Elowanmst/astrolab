@@ -407,31 +407,6 @@
     letter-spacing: 1px;
 }
 
-.checkout-test-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.checkout-test-card {
-    background: rgba(255, 255, 255, 0.08);
-    padding: 1rem;
-    border-radius: var(--astro-radius-sm);
-}
-
-.checkout-test-card-title {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.checkout-test-card-number {
-    font-family: 'Courier New', monospace;
-    font-weight: bold;
-    color: var(--astro-text-primary);
-}
-
 .checkout-test-note {
     margin-top: 1rem;
     font-size: 0.8rem;
@@ -529,58 +504,6 @@
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--astro-text-primary);
-}
-
-/* Test mode styles */
-.checkout-section.test-mode {
-    background: rgba(37, 99, 235, 0.1);
-    border-color: rgba(37, 99, 235, 0.3);
-}
-
-.test-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin: 1rem 0;
-}
-
-.test-card {
-    padding: 1rem;
-    border-radius: var(--astro-border-radius);
-    border: 1px solid;
-}
-
-.test-card.success {
-    background: rgba(34, 197, 94, 0.1);
-    border-color: rgba(34, 197, 94, 0.3);
-}
-
-.test-card.error {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-.test-card.warning {
-    background: rgba(245, 158, 11, 0.1);
-    border-color: rgba(245, 158, 11, 0.3);
-}
-
-.test-card.info {
-    background: rgba(168, 85, 247, 0.1);
-    border-color: rgba(168, 85, 247, 0.3);
-}
-
-.test-card-status {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.test-card-number {
-    font-family: 'Courier New', monospace;
-    font-weight: 700;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
 }
 
 /* Payment method styles */
@@ -727,10 +650,6 @@
 
 /* Responsive adjustments for payment */
 @media (max-width: 768px) {
-    .test-cards-grid {
-        grid-template-columns: 1fr;
-    }
-    
     .checkout-item.detailed {
         padding: 0.75rem;
     }
@@ -773,10 +692,6 @@
     
     .checkout-section {
         padding: 1.5rem;
-    }
-    
-    .checkout-test-cards {
-        grid-template-columns: 1fr;
     }
 }
 

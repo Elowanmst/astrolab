@@ -83,38 +83,6 @@
                 </div>
             </div>
 
-            @if(config('app.env') !== 'production')
-            <!-- Informations de test -->
-            <div class="checkout-section test-mode">
-                <h3 class="checkout-section-title">
-                    <i class="fas fa-flask"></i>
-                    Mode Test - Cartes de simulation
-                </h3>
-                <p style="margin-bottom: 1rem; font-weight: 500;">Utilisez ces numéros de carte pour tester différents scénarios :</p>
-                <div class="test-cards-grid">
-                    <div class="test-card success">
-                        <div class="test-card-status">✅ Paiement réussi</div>
-                        <div class="test-card-number">4242 4242 4242 4242</div>
-                    </div>
-                    <div class="test-card error">
-                        <div class="test-card-status">❌ Carte refusée</div>
-                        <div class="test-card-number">4000 0000 0000 0002</div>
-                    </div>
-                    <div class="test-card warning">
-                        <div class="test-card-status">⚠️ Fonds insuffisants</div>
-                        <div class="test-card-number">4000 0000 0000 9995</div>
-                    </div>
-                    <div class="test-card info">
-                        <div class="test-card-status">🔧 Erreur de traitement</div>
-                        <div class="test-card-number">4000 0000 0000 0119</div>
-                    </div>
-                </div>
-                <p style="margin-top: 1rem; font-size: 0.8rem; color: var(--astro-text-secondary); font-weight: 500;">
-                    💡 Utilisez n'importe quelle date future (ex: 12/25) et n'importe quel CVV (ex: 123)
-                </p>
-            </div>
-            @endif
-
             <!-- Formulaire de paiement -->
             <div class="checkout-section">
                 <h3 class="checkout-section-title">

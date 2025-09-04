@@ -350,11 +350,7 @@
             <div class="total-section">
                 <div class="total-amount">{{ number_format($order->total_amount, 2) }} €</div>
                 <div class="payment-info">
-                    @if(config('payment.default_processor') === 'simulation')
-                        Commande de test • Mode simulation
-                    @else
-                        TTC • Paiement sécurisé
-                    @endif
+                    TTC • Paiement sécurisé
                 </div>
             </div>
             

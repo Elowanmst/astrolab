@@ -31,11 +31,7 @@
             </div>
             <h1 class="text-4xl font-bold mb-4 uppercase tracking-wider">Commande confirmée</h1>
             <p class="text-gray-300 text-lg">
-                @if(config('payment.default_processor') === 'simulation')
-                    Commande de test confirmée ! (Mode simulation)
-                @else
-                    Merci pour votre commande ! Nous avons bien reçu votre paiement.
-                @endif
+                Merci pour votre commande ! Nous avons bien reçu votre paiement.
             </p>
         </div>
 
