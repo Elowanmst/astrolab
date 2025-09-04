@@ -31,7 +31,113 @@ class PaymentService
                 return $this->processLyraPayment($paymentData, $order);
             
             default:
-                throw new \Exception('Processeur de paiement non configuré pour la production');
+
+                throw new \Exception("Processeur de paiement non configuré : {$this->processor}. Veuillez configurer PAYMENT_PROCESSOR=stripe dans votre .env");
+        }
+    }
+
+    /**
+     * Simulation de paiement (pour les tests)
+     */
+    protected function processSimulationPayment(array $paymentData, Order $order)
+    {
+        // Créer la transaction en base
+        $transaction = PaymentTransaction::create([
+            'order_id' => $order->id,
+            'transaction_id' => 'SIM_' . time() . '_' . $order->id,
+            'processor' => 'simulation',
+            'status' => 'pending',
+            'amount' => $order->total_amount,
+            'fees' => 0,
+            'currency' => 'EUR',
+            'payment_method' => 'card',
+            'card_last_4' => substr($paymentData['card_number'], -4),
+            'card_brand' => $this->detectCardBrand($paymentData['card_number']),
+            'processed_at' => now(),
+        ]);
+
+        // Simuler un délai de traitement
+        sleep(1);
+
+        // Cartes de test spécifiques pour contrôler le résultat
+        $cardNumber = preg_replace('/\s+/', '', $paymentData['card_number']);
+        $testResult = $this->getTestResult($cardNumber);
+
+        // Log pour le développement
+        Log::info('Simulation de paiement', [
+            'order_id' => $order->id,
+            'transaction_id' => $transaction->transaction_id,
+            'amount' => $order->total_amount,
+            'card_last_4' => substr($paymentData['card_number'], -4),
+            'test_result' => $testResult,
+        ]);
+
+        if ($testResult['success']) {
+            $transaction->update([
+                'status' => 'completed',
+                'processor_response' => [
+                    'success' => true,
+                    'message' => $testResult['message'],
+                    'test_card' => $cardNumber,
+                    'simulated_at' => now()->toISOString(),
+                ]
+            ]);
+
+            return [
+                'success' => true,
+                'transaction_id' => $transaction->transaction_id,
+                'message' => $testResult['message'],
+                'processor' => 'simulation',
+            ];
+        } else {
+            $transaction->update([
+                'status' => 'failed',
+                'failure_reason' => $testResult['message'],
+                'processor_response' => [
+                    'success' => false,
+                    'error' => $testResult['message'],
+                    'test_card' => $cardNumber,
+                    'simulated_at' => now()->toISOString(),
+                ]
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $testResult['message'],
+                'processor' => 'simulation',
+            ];
+        }
+    }
+
+    /**
+     * Détermine le résultat du test selon la carte utilisée
+     */
+    private function getTestResult($cardNumber)
+    {
+        switch ($cardNumber) {
+            case '4242424242424242':
+                return ['success' => true, 'message' => '✅ Paiement test réussi - Carte Visa valide'];
+                
+            case '5555555555554444':
+                return ['success' => true, 'message' => '✅ Paiement test réussi - Carte Mastercard valide'];
+                
+            case '4000000000000002':
+                return ['success' => false, 'message' => '❌ Carte déclinée - Fonds insuffisants'];
+                
+            case '4000000000000127':
+                return ['success' => false, 'message' => '❌ Carte expirée'];
+                
+            case '4000000000000119':
+                return ['success' => false, 'message' => '❌ Erreur de traitement - Réessayez plus tard'];
+                
+            default:
+                // Simulation aléatoire pour les autres cartes (95% de succès)
+                if (rand(1, 100) <= 95) {
+                    return ['success' => true, 'message' => '✅ Paiement simulé avec succès'];
+                } else {
+                    return ['success' => false, 'message' => '❌ Paiement refusé (simulation aléatoire)'];
+                }
+
         }
     }
 

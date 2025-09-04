@@ -18,7 +18,7 @@ return [
         'simulation' => [
             'name' => 'Simulation de paiement',
             'description' => 'Mode test - aucun paiement réel',
-            'enabled' => true,
+            'enabled' => false, // Désactivé pour la production
         ],
         
         'stripe' => [
