@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\Cache;
 
 class MondialRelayService
 {
-    private $soapClient;  // Client SOAP (utilisé pour tout)
+    private $soapClient;  // Client SOAP pour V1
+    private $restClient;  // Client REST pour V2
     private $config;
+    private $v2Token = null;
 
     public function __construct()
     {
@@ -18,15 +20,37 @@ class MondialRelayService
             'enabled' => env('MONDIAL_RELAY_ENABLED', true),
             'mode' => env('MONDIAL_RELAY_MODE', 'production'),
             
-            // Configuration unique SOAP - Mondial Relay utilise uniquement SOAP
-            'wsdl_url' => env('MONDIAL_RELAY_WSDL_URL', 'http://www.mondialrelay.fr/webservice/Web_Services.asmx?WSDL'),
-            'enseigne' => env('MONDIAL_RELAY_ENSEIGNE', 'CC235KWE'),
-            'private_key' => env('MONDIAL_RELAY_PRIVATE_KEY', '1GixuOdd'),
-            'brand' => env('MONDIAL_RELAY_BRAND', 'CC'),
+            // Configuration V1 (SOAP) - Points relais classiques
+            'v1' => [
+                'api_url' => env('MONDIAL_RELAY_V1_API_URL', 'https://api.mondialrelay.com/WebService.asmx'),
+                'wsdl_url' => env('MONDIAL_RELAY_V1_WSDL_URL', 'http://www.mondialrelay.fr/webservice/Web_Services.asmx?WSDL'),
+                'enseigne' => env('MONDIAL_RELAY_V1_ENSEIGNE', 'CC235KWE'),
+                'private_key' => env('MONDIAL_RELAY_V1_PRIVATE_KEY', '1GixuOdd'),
+                'brand' => env('MONDIAL_RELAY_V1_BRAND', 'CC'),
+            ],
+            
+            // Configuration V2 (REST) - Lockers et services modernes
+            'v2' => [
+                'api_url' => env('MONDIAL_RELAY_V2_API_URL', 'https://connect-api.mondialrelay.com/api'),
+                'brand_id' => env('MONDIAL_RELAY_V2_BRAND_ID', 'CC235KWE'),
+                'login' => env('MONDIAL_RELAY_V2_LOGIN', 'CC235KWE@business-api.mondialrelay.com'),
+                'password' => env('MONDIAL_RELAY_V2_PASSWORD', '&AbLHN5keS9EGYkuMF#a'),
+            ]
         ];
 
-        // Client SOAP (sera initialisé à la demande)
+        // Client SOAP pour V1 (sera initialisé à la demande)
         $this->soapClient = null;
+        
+        // Client REST pour V2
+        $this->restClient = new Client([
+            'base_uri' => $this->config['v2']['api_url'],
+            'timeout' => 30,
+            'verify' => true,
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ]
+        ]);
     }
 
     /**
@@ -100,13 +124,114 @@ class MondialRelayService
     }
 
     /**
-     * Initialiser le client SOAP (à la demande)
+     * Authentification V2 REST API
+     */
+    private function authenticateV2()
+    {
+        if ($this->v2Token) {
+            return $this->v2Token;
+        }
+
+        try {
+            $response = $this->restClient->post('/auth/token', [
+                'json' => [
+                    'login' => $this->config['v2']['login'],
+                    'password' => $this->config['v2']['password']
+                ]
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            
+            if (isset($data['token'])) {
+                $this->v2Token = $data['token'];
+                return $this->v2Token;
+            }
+            
+            throw new \Exception('Token non reçu dans la réponse V2');
+            
+        } catch (\Exception $e) {
+            Log::error('Erreur authentification V2: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Recherche via API V2 REST (pour lockers)
+     */
+    private function searchV2PickupPoints($params)
+    {
+        try {
+            $token = $this->authenticateV2();
+            
+            // Paramètres pour l'API V2
+            $v2Params = [
+                'country' => $params['Pays'] ?? 'FR',
+                'postcode' => $params['CP'] ?? '',
+                'city' => $params['Ville'] ?? '',
+                'latitude' => $params['Latitude'] ?? null,
+                'longitude' => $params['Longitude'] ?? null,
+                'radius' => intval($params['RayonRecherche'] ?? 10),
+                'limit' => intval($params['NombreResultats'] ?? 50),
+                'services' => ['locker'] // Rechercher spécifiquement les lockers
+            ];
+
+            $response = $this->restClient->get('/pickup-points', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token
+                ],
+                'query' => array_filter($v2Params) // Enlever les valeurs nulles
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            
+            if (!isset($data['data']) || !is_array($data['data'])) {
+                return ['success' => false, 'error' => 'Format de réponse V2 invalide'];
+            }
+
+            $points = [];
+            foreach ($data['data'] as $point) {
+                $points[] = [
+                    'id' => $point['id'] ?? '',
+                    'name' => $point['name'] ?? '',
+                    'address' => $point['address'] ?? '',
+                    'postal_code' => $point['postcode'] ?? '',
+                    'city' => $point['city'] ?? '',
+                    'country' => $point['country'] ?? 'FR',
+                    'latitude' => $point['latitude'] ?? '',
+                    'longitude' => $point['longitude'] ?? '',
+                    'distance' => $point['distance'] ?? '',
+                    'phone' => $point['phone'] ?? '',
+                    'type' => 'LOC',
+                    'opening_hours' => $point['opening_hours'] ?? [],
+                    // Champs de compatibilité
+                    'Num' => $point['id'] ?? '',
+                    'Nom' => $point['name'] ?? '',
+                    'Adresse' => $point['address'] ?? ''
+                ];
+            }
+
+            return [
+                'success' => true,
+                'points' => $points
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Erreur recherche V2: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Initialiser le client SOAP V1 (à la demande)
      */
     private function getSoapClient()
     {
         if ($this->soapClient === null) {
             try {
-                $this->soapClient = new \SoapClient($this->config['wsdl_url'], [
+                $this->soapClient = new \SoapClient($this->config['v1']['wsdl_url'], [
                     'trace' => true,
                     'exceptions' => true,
                     'soap_version' => SOAP_1_1,
@@ -121,12 +246,12 @@ class MondialRelayService
     }
 
     /**
-     * Rechercher par type (REL via WSI4, LOC via WSI2 - tout en SOAP)
+     * Rechercher par type hybride (V1 pour REL, V2 pour LOC)
      */
     private function searchByType($action, $params = [], $rayonKm = 10)
     {
         $defaultParams = [
-            'Enseigne' => $this->config['enseigne'],
+            'Enseigne' => $this->config['v1']['enseigne'],
             'Pays' => 'FR',
             'Ville' => '',
             'CP' => '',
@@ -144,9 +269,9 @@ class MondialRelayService
         $errors = [];
 
         try {
-            // --- REL : points relais classiques via WSI4 ---
+            // --- REL : points relais classiques via V1 SOAP WSI4 ---
             if ($action === 'REL' || $action === 'all') {
-                Log::info('Recherche points relais REL via WSI4', ['params' => $searchParams]);
+                Log::info('Recherche points relais REL via V1', ['params' => $searchParams]);
                 
                 $paramsREL = $searchParams;
                 $paramsREL['Action'] = 'REL';
@@ -159,27 +284,47 @@ class MondialRelayService
                         $parsed = $this->parseRelayPointsResponse($responseREL->WSI4_PointRelais_RechercheResult, 'REL');
                         if ($parsed['success']) {
                             $allPoints = array_merge($allPoints, $parsed['points']);
-                            Log::info('Points REL trouvés via WSI4', ['count' => count($parsed['points'])]);
+                            Log::info('Points REL trouvés via V1', ['count' => count($parsed['points'])]);
                         } else {
-                            $errors[] = 'REL WSI4: ' . $parsed['error'];
+                            $errors[] = 'REL V1: ' . $parsed['error'];
                         }
                     }
                 } catch (\Exception $e) {
-                    $errors[] = 'REL WSI4: ' . $e->getMessage();
-                    Log::error("Erreur API REL WSI4: " . $e->getMessage());
+                    $errors[] = 'REL V1: ' . $e->getMessage();
+                    Log::error("Erreur API REL V1: " . $e->getMessage());
                 }
             }
 
-            // --- LOC : lockers via WSI2 (SOAP aussi) ---
+            // --- LOC : lockers via V2 REST API ---
             if ($action === 'LOC' || $action === 'all') {
-                Log::info('Recherche lockers LOC via WSI2', ['cp' => $searchParams['CP'], 'rayon' => $rayonKm]);
+                Log::info('Recherche lockers LOC via V2', ['cp' => $searchParams['CP'], 'rayon' => $rayonKm]);
                 
-                $fallbackResult = $this->searchV1LockersWSI2($searchParams, $rayonKm);
-                if ($fallbackResult['success']) {
-                    $allPoints = array_merge($allPoints, $fallbackResult['points']);
-                    Log::info('Points LOC trouvés via WSI2', ['count' => count($fallbackResult['points'])]);
-                } else {
-                    $errors[] = 'LOC WSI2: ' . $fallbackResult['error'];
+                try {
+                    $lockerResult = $this->searchV2PickupPoints($searchParams);
+                    
+                    if ($lockerResult['success']) {
+                        $allPoints = array_merge($allPoints, $lockerResult['points']);
+                        Log::info('Points LOC trouvés via V2', ['count' => count($lockerResult['points'])]);
+                    } else {
+                        $errors[] = 'LOC V2: ' . $lockerResult['error'];
+                        
+                        // Fallback sur V1 WSI2 si V2 échoue
+                        Log::info('Fallback LOC sur V1 WSI2');
+                        $fallbackResult = $this->searchV1LockersWSI2($searchParams, $rayonKm);
+                        if ($fallbackResult['success']) {
+                            $allPoints = array_merge($allPoints, $fallbackResult['points']);
+                            Log::info('Points LOC trouvés via V1 fallback', ['count' => count($fallbackResult['points'])]);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = 'LOC V2: ' . $e->getMessage();
+                    Log::error("Erreur API LOC V2: " . $e->getMessage());
+                    
+                    // Fallback sur V1
+                    $fallbackResult = $this->searchV1LockersWSI2($searchParams, $rayonKm);
+                    if ($fallbackResult['success']) {
+                        $allPoints = array_merge($allPoints, $fallbackResult['points']);
+                    }
                 }
             }
 
@@ -219,7 +364,7 @@ class MondialRelayService
             $lockerPoints = [];
             foreach ($cpList as $currentCP) {
                 $paramsLOC = [
-                    'Enseigne' => $this->config['enseigne'],
+                    'Enseigne' => $this->config['v1']['enseigne'],
                     'Pays' => $searchParams['Pays'],
                     'CP' => $currentCP,
                     'NbResult' => $searchParams['NombreResultats'],
@@ -457,7 +602,7 @@ class MondialRelayService
         $signature .= $params['CP'] ?? '';
         $signature .= $params['NbResult'] ?? '';
         $signature .= $params['TypeActivite'] ?? '';
-        $signature .= $this->config['private_key'];
+        $signature .= $this->config['v1']['private_key'];
         
         return strtoupper(md5($signature));
     }
@@ -470,7 +615,7 @@ class MondialRelayService
 
         try {
             $params = [
-                'Enseigne' => $this->config['enseigne'],
+                'Enseigne' => $this->config['v1']['enseigne'],
                 'Expedition' => $expeditionNumber,
                 'Langue' => 'FR'
             ];
@@ -539,7 +684,7 @@ class MondialRelayService
             $signature .= $params[$field] ?? '';
         }
         
-        $signature .= $this->config['private_key'];
+        $signature .= $this->config['v1']['private_key'];
         
         return strtoupper(md5($signature));
     }
