@@ -132,7 +132,7 @@
                                    value="pickup">
                             <div class="checkout-option-content">
                                 <div class="checkout-option-info">
-                                    <h4>Point relais</h4>
+                                    <h4>Point relais & Casiers</h4>
                                     <p>Livraison en 2-4 jours ouvrés</p>
                                 </div>
                                 <div class="checkout-option-price">2.99€</div>
@@ -145,20 +145,44 @@
                         <div class="checkout-section">
                             <h4 class="checkout-section-title">
                                 <i class="fas fa-map-marker-alt"></i>
-                                Choisissez votre point relais
+                                Choisissez votre point de collecte
                             </h4>
                             
                             <div class="relay-search">
-                                <div class="checkout-form-group">
-                                    <label for="relay-postal-code" class="checkout-label">Code postal</label>
-                                    <input type="text" 
-                                           id="relay-postal-code" 
-                                           placeholder="Ex: 75001"
-                                           class="checkout-input"
-                                           style="max-width: 200px;">
-                                    <button type="button" id="search-relay-btn" class="btn btn-sm btn-primary" style="margin-left: 10px;">
+                                <div class="checkout-form-group" style="display: flex; gap: 10px; align-items: end;">
+                                    <div>
+                                        <label for="relay-postal-code" class="checkout-label">Code postal</label>
+                                        <input type="text" 
+                                               id="relay-postal-code" 
+                                               placeholder="Ex: 75001"
+                                               class="checkout-input"
+                                               style="max-width: 120px;">
+                                    </div>
+                                    <div>
+                                        <label for="relay-city" class="checkout-label">Ville</label>
+                                        <input type="text" 
+                                               id="relay-city" 
+                                               placeholder="Ex: Paris"
+                                               class="checkout-input"
+                                               style="max-width: 150px;">
+                                    </div>
+                                    <button type="button" id="search-relay-btn" class="btn btn-sm btn-primary">
                                         Rechercher
                                     </button>
+                                </div>
+                                
+                                <!-- Information sur les types de points -->
+                                <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 12px; color: #6c757d;">
+                                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                                        <div>
+                                            <strong style="color: #27ae60;">🔒 Casiers automatiques</strong><br>
+                                            Accès 24h/24 - 7j/7
+                                        </div>
+                                        <div>
+                                            <strong style="color: #3498db;">🏪 Points relais</strong><br>
+                                            Accueil personnalisé
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -293,9 +317,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const mondialRelayWidget = document.getElementById('mondial-relay-widget');
     const searchRelayBtn = document.getElementById('search-relay-btn');
     const relayPostalCode = document.getElementById('relay-postal-code');
+    const relayCity = document.getElementById('relay-city');
     const relayResults = document.getElementById('relay-results');
     const relayList = document.getElementById('relay-list');
     const selectedRelayPoint = document.getElementById('selected-relay-point');
+    
+    let currentRelayPoints = [];
     
     const baseTotalTTC = {{ $cart->getTotalTTC() }};
     
@@ -323,28 +350,74 @@ document.addEventListener('DOMContentLoaded', function() {
     // Recherche de points relais
     function searchRelayPoints() {
         const postalCode = relayPostalCode.value.trim();
-        if (!postalCode) {
-            alert('Veuillez saisir un code postal');
+        const relayCity = document.getElementById('relay-city');
+        
+        if (!postalCode || postalCode.length !== 5) {
+            alert('Veuillez saisir un code postal valide (5 chiffres)');
             return;
         }
         
         searchRelayBtn.textContent = 'Recherche...';
         searchRelayBtn.disabled = true;
         
-        fetch(`/api/mondial-relay/relay-points/search?postal_code=${postalCode}&city=`)
+        // Afficher un message de recherche
+        relayList.innerHTML = '<p style="color: #3498db; text-align: center; padding: 20px;">🔍 Recherche de points relais et casiers automatiques...</p>';
+        relayResults.style.display = 'block';
+        
+        // Utiliser la ville du champ relay-city ou celle de livraison comme fallback
+        const cityField = document.getElementById('shipping_city');
+        let city = relayCity ? relayCity.value.trim() : '';
+        if (!city && cityField) {
+            city = cityField.value.trim();
+        }
+        
+        // Préparer les données pour l'API
+        const requestData = {
+            postal_code: postalCode,
+            city: city || '',
+            type: 'all',
+            limit: 30
+        };
+        
+        // Nouvelle API Mondial Relay
+        fetch('/api/mondial-relay/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(requestData)
+        })
             .then(response => response.json())
             .then(data => {
-                if (data.success && data.points.length > 0) {
-                    displayRelayPoints(data.points);
+                if (data.success && data.data && data.data.points.length > 0) {
+                    currentRelayPoints = data.data.points;
+                    displayRelayPoints(data.data.points);
+                    
+                    // Statistiques
+                    if (data.data.stats) {
+                        const stats = data.data.stats;
+                        const statsHtml = `
+                            <div style="background: #e8f5e8; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 12px;">
+                                <strong>📊 Résultats trouvés :</strong> 
+                                ${stats.total} points au total 
+                                (${stats.relay_points || 0} points relais, ${stats.lockers || 0} casiers)
+                            </div>
+                        `;
+                        relayList.innerHTML = statsHtml + relayList.innerHTML;
+                    }
                 } else {
-                    relayList.innerHTML = '<p style="color: #e74c3c;">Aucun point relais trouvé pour ce code postal.</p>';
+                    const message = data.data?.message || 'Aucun point de collecte trouvé pour ce code postal.';
+                    relayList.innerHTML = `<p style="color: #e74c3c;">${message}</p>`;
                     relayResults.style.display = 'block';
+                    currentRelayPoints = [];
                 }
             })
             .catch(error => {
                 console.error('Erreur:', error);
                 relayList.innerHTML = '<p style="color: #e74c3c;">Erreur lors de la recherche. Veuillez réessayer.</p>';
                 relayResults.style.display = 'block';
+                currentRelayPoints = [];
             })
             .finally(() => {
                 searchRelayBtn.textContent = 'Rechercher';
@@ -354,38 +427,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Afficher la liste des points relais
     function displayRelayPoints(points) {
-        let html = '<h5 style="margin-bottom: 15px;">Points relais disponibles :</h5>';
+        let html = '<h5 style="margin-bottom: 15px;">Points de collecte disponibles :</h5>';
         
-        points.forEach(point => {
-            html += `
-                <div class="relay-point" data-point-id="${point.id}" style="
-                    border: 1px solid #ddd; 
-                    padding: 15px; 
-                    margin-bottom: 10px; 
-                    cursor: pointer;
-                    border-radius: 5px;
-                    transition: all 0.3s ease;
-                " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='white'">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div style="flex: 1;">
-                            <h6 style="margin: 0 0 5px 0; font-weight: bold; color: #2c3e50;">${point.name}</h6>
-                            <p style="margin: 0 0 5px 0; color: #7f8c8d;">${point.address}</p>
-                            <p style="margin: 0; color: #7f8c8d;">${point.postal_code} ${point.city}</p>
-                            ${point.distance > 0 ? `<small style="color: #3498db;">Distance: ${point.distance}m</small>` : ''}
-                        </div>
-                        <button type="button" class="select-relay-btn" data-point='${JSON.stringify(point)}' style="
-                            background: #3498db;
-                            color: white;
-                            border: none;
-                            padding: 8px 16px;
-                            border-radius: 4px;
-                            cursor: pointer;
-                            font-size: 12px;
-                        ">Sélectionner</button>
-                    </div>
-                </div>
-            `;
-        });
+        // Séparer les points relais et les lockers
+        const relayPoints = points.filter(p => p.type === 'REL');
+        const lockers = points.filter(p => p.type === 'LOC');
+        
+        // Afficher d'abord les lockers (souvent plus pratiques)
+        if (lockers.length > 0) {
+            html += '<h6 style="margin: 15px 0 10px 0; color: #27ae60; font-weight: bold;">🔒 Casiers automatiques (24h/24)</h6>';
+            lockers.forEach(point => {
+                html += generatePointHTML(point, '#27ae60', '🔒');
+            });
+        }
+        
+        // Puis les points relais classiques
+        if (relayPoints.length > 0) {
+            html += '<h6 style="margin: 15px 0 10px 0; color: #3498db; font-weight: bold;">🏪 Points relais</h6>';
+            relayPoints.forEach(point => {
+                html += generatePointHTML(point, '#3498db', '🏪');
+            });
+        }
         
         relayList.innerHTML = html;
         relayResults.style.display = 'block';
@@ -399,8 +461,89 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Générer le HTML pour un point de collecte
+    function generatePointHTML(point, color, icon) {
+        const isLocker = point.type === 'LOC';
+        const typeLabel = isLocker ? 'Casier automatique' : 'Point relais';
+        const availabilityText = isLocker ? 'Accès 24h/24 - 7j/7' : 'Voir horaires sur place';
+        
+        return `
+            <div class="relay-point" data-point-id="${point.id}" style="
+                border: 1px solid #ddd; 
+                padding: 15px; 
+                margin-bottom: 10px; 
+                cursor: pointer;
+                border-radius: 5px;
+                transition: all 0.3s ease;
+                border-left: 4px solid ${color};
+            " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='white'">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                            <span style="margin-right: 8px; font-size: 16px;">${icon}</span>
+                            <h6 style="margin: 0; font-weight: bold; color: #2c3e50;">${point.name}</h6>
+                            <span style="margin-left: 10px; background: ${color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; text-transform: uppercase;">
+                                ${typeLabel}
+                            </span>
+                        </div>
+                        <p style="margin: 0 0 5px 0; color: #7f8c8d;">${point.address}</p>
+                        <p style="margin: 0 0 5px 0; color: #7f8c8d;">${point.postal_code} ${point.city}</p>
+                        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 8px;">
+                            <small style="color: #16a085; font-weight: bold;">
+                                ⏰ ${availabilityText}
+                            </small>
+                        </div>
+                        ${point.phone ? `<small style="color: #7f8c8d;">📞 ${point.phone}</small>` : ''}
+                    </div>
+                    <button type="button" class="select-relay-btn" data-point='${JSON.stringify(point)}' style="
+                        background: ${color};
+                        color: white;
+                        border: none;
+                        padding: 10px 16px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 12px;
+                        font-weight: bold;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        Sélectionner
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
     // Sélectionner un point relais
-    function selectRelayPoint(point) {
+    function selectRelayPoint(point) {    // Sélectionner un point depuis la carte
+    function selectRelayFromMap(pointId) {
+        const point = currentRelayPoints.find(p => p.id === pointId);
+        if (point) {
+            selectRelayPoint(point);
+        }
+    }
+    
+    // Basculer l'affichage de la carte
+    function toggleMap() {
+        if (mapContainer.style.display === 'none') {
+            mapContainer.style.display = 'block';
+            toggleMapBtn.textContent = '📍 Masquer la carte';
+            
+            if (!relayMap) {
+                initMap();
+            }
+            
+            // Forcer le redimensionnement de la carte
+            setTimeout(() => {
+                relayMap.invalidateSize();
+                if (currentRelayPoints.length > 0) {
+                    showPointsOnMap(currentRelayPoints);
+                }
+            }, 100);
+        } else {
+            mapContainer.style.display = 'none';
+            toggleMapBtn.textContent = '📍 Afficher la carte';
+        }
+    }
         selectedRelayPoint.value = JSON.stringify(point);
         
         // Mettre à jour l'affichage
@@ -416,7 +559,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Afficher la confirmation
-        alert(`Point relais sélectionné : ${point.name}\n${point.address}\n${point.postal_code} ${point.city}`);
+        const typeLabel = point.type === 'LOC' ? 'Casier automatique' : 'Point relais';
+        const availabilityText = point.type === 'LOC' ? 'Accès 24h/24 - 7j/7' : 'Voir horaires sur place';
+        
+        alert(`${typeLabel} sélectionné :\n${point.name}\n${point.address}\n${point.postal_code} ${point.city}\n\n${availabilityText}`);
     }
     
     // Événements
@@ -449,10 +595,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Pré-remplir le code postal si l'adresse est déjà saisie
+    // Pré-remplir le code postal et la ville si l'adresse est déjà saisie
     const shippingPostalCode = document.getElementById('shipping_postal_code');
+    const shippingCity = document.getElementById('shipping_city');
     if (shippingPostalCode && shippingPostalCode.value) {
         relayPostalCode.value = shippingPostalCode.value;
+    }
+    if (shippingCity && shippingCity.value && relayCity) {
+        relayCity.value = shippingCity.value;
     }
 });
 </script>

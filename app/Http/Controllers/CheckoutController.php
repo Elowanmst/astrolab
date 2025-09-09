@@ -10,6 +10,7 @@ use App\Models\OrderItem;
 use App\Models\User;
 use App\Services\Cart;
 use App\Services\Payment\PaymentService;
+use App\Traits\HasMondialRelayCheckout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
+    use HasMondialRelayCheckout;
+
     protected $cart;
     protected $paymentService;
 
@@ -360,5 +363,84 @@ class CheckoutController extends Controller
         }
 
         return $order;
+    }
+
+    /**
+     * API pour récupérer les points de livraison depuis le checkout
+     */
+    public function getDeliveryPoints(Request $request)
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'postal_code' => 'required|string|regex:/^\d{5}$/',
+            'city' => 'nullable|string|max:100'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->deliveryErrorResponse('Code postal invalide (5 chiffres requis)');
+        }
+
+        try {
+            $result = $this->getDeliveryPointsForCheckout(
+                $request->input('postal_code'),
+                $request->input('city', ''),
+                15 // Rayon de 15km pour le checkout
+            );
+
+            if (!$result['success']) {
+                return $this->deliveryErrorResponse($result['error'] ?? 'Erreur lors de la recherche');
+            }
+
+            return $this->deliverySuccessResponse([
+                'points' => $result['points'],
+                'stats' => $result['stats'],
+                'message' => $result['message']
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur récupération points checkout: ' . $e->getMessage());
+            return $this->deliveryErrorResponse('Erreur serveur lors de la recherche des points de livraison');
+        }
+    }
+
+    /**
+     * Valider un point de livraison sélectionné
+     */
+    public function validateSelectedDeliveryPoint(Request $request)
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'point_id' => 'required|string',
+            'postal_code' => 'required|string|regex:/^\d{5}$/'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->deliveryErrorResponse('Paramètres invalides');
+        }
+
+        $pointInfo = $this->getDeliveryPointInfo(
+            $request->input('point_id'),
+            $request->input('postal_code')
+        );
+
+        if (!$pointInfo) {
+            return $this->deliveryErrorResponse('Point de livraison introuvable');
+        }
+
+        // Calculer le coût total avec les produits du panier
+        $cartTotal = $this->cart->getTotalHT();
+        $costCalculation = $this->calculateTotalShippingCost(
+            $request->input('point_id'),
+            $request->input('postal_code'),
+            $cartTotal
+        );
+
+        return $this->deliverySuccessResponse([
+            'point' => $pointInfo,
+            'cost_calculation' => $costCalculation,
+            'cart_summary' => [
+                'products_total' => $cartTotal,
+                'shipping_cost' => $pointInfo['delivery_cost'],
+                'total_ttc' => $cartTotal + $pointInfo['delivery_cost']
+            ]
+        ]);
     }
 }

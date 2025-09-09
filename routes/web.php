@@ -29,19 +29,31 @@ Route::post('/checkout/payment', [CheckoutController::class, 'payment'])->name('
 Route::post('/checkout/process', [CheckoutController::class, 'processPayment'])->name('checkout.process');
 Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
+// Routes API pour les points de livraison dans le checkout
+Route::post('/checkout/delivery-points', [CheckoutController::class, 'getDeliveryPoints'])->name('checkout.delivery.points');
+Route::post('/checkout/validate-delivery-point', [CheckoutController::class, 'validateSelectedDeliveryPoint'])->name('checkout.validate.delivery.point');
+
 // Webhook Stripe (sans middleware CSRF)
 Route::post('/webhook/stripe', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');
 
-// Routes API Mondial Relay
-Route::prefix('api/mondial-relay')->name('mondial-relay.')->group(function () {
-    Route::get('/relay-points/search', [MondialRelayController::class, 'searchRelayPoints'])->name('search');
-    Route::post('/shipping-label', [MondialRelayController::class, 'createShippingLabel'])->name('label.create');
-    Route::get('/tracking/{trackingNumber}', [MondialRelayController::class, 'trackPackage'])->name('tracking');
-    Route::get('/test-connection', [MondialRelayController::class, 'testConnection'])->name('test');
-});
+// Route temporaire Mondial Relay (sans CSRF pour test)
+Route::post('/api/mondial-relay/search', [MondialRelayController::class, 'searchRelayPoints'])->withoutMiddleware(['csrf']);
+
+// Route spécialisée pour le checkout (sans CSRF pour les appels AJAX)
+Route::post('/api/mondial-relay/checkout-delivery-points', [MondialRelayController::class, 'getCheckoutDeliveryPoints'])->withoutMiddleware(['csrf']);
 
 // Widget Mondial Relay
 Route::get('/mondial-relay/widget', [MondialRelayController::class, 'widget'])->name('mondial-relay.widget');
+
+// Route de test Mondial Relay
+Route::get('/mondial-relay/test', function () {
+    return view('mondial-relay.test');
+})->name('mondial-relay.test');
+
+// Route d'exemple pour le checkout
+Route::get('/mondial-relay/checkout-example', function () {
+    return view('mondial-relay.checkout-example');
+})->name('mondial-relay.checkout-example');
 
 // Routes de profil utilisateur (protégées par l'authentification)
 Route::middleware(['auth'])->group(function () {
