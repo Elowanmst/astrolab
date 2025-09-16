@@ -35,6 +35,14 @@ return [
         ],
     ],
 
+    'mondialrelay' => [
+        'enseigne' => env('MONDIAL_RELAY_ENSEIGNE'),
+        'private_key' => env('MONDIAL_RELAY_PRIVATE_KEY'),
+        'brand' => env('MONDIAL_RELAY_BRAND'),
+        'mode' => env('MONDIAL_RELAY_MODE', 'production'),
+        'wsdl_url' => env('MONDIAL_RELAY_WSDL_URL'),
+    ],
+
     'stripe' => [
         'model' => App\Models\User::class,
         'key' => env('STRIPE_KEY', env('STRIPE_PUBLISHABLE_KEY')),
