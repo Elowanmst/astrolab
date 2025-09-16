@@ -37,10 +37,10 @@ Route::post('/checkout/validate-delivery-point', [CheckoutController::class, 'va
 Route::post('/webhook/stripe', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');
 
 // Route temporaire Mondial Relay (sans CSRF pour test)
-Route::post('/api/mondial-relay/search', [MondialRelayController::class, 'searchRelayPoints'])->withoutMiddleware(['csrf']);
+Route::post('/api/mondial-relay/search', [MondialRelayController::class, 'getRelayPoints'])->withoutMiddleware(['csrf']);
 
 // Route spécialisée pour le checkout (sans CSRF pour les appels AJAX)
-Route::post('/api/mondial-relay/checkout-delivery-points', [MondialRelayController::class, 'getCheckoutDeliveryPoints'])->withoutMiddleware(['csrf']);
+Route::post('/checkout/delivery-points', [CheckoutController::class, 'getDeliveryPoints'])->name('checkout.delivery.points');
 
 // Widget Mondial Relay
 Route::get('/mondial-relay/widget', [MondialRelayController::class, 'widget'])->name('mondial-relay.widget');

@@ -10,7 +10,7 @@ use App\Models\OrderItem;
 use App\Models\User;
 use App\Services\Cart;
 use App\Services\Payment\PaymentService;
-use App\Traits\HasMondialRelayCheckout;
+use App\Services\MondialRelayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -20,15 +20,15 @@ use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
-    use HasMondialRelayCheckout;
-
     protected $cart;
     protected $paymentService;
+    protected $mondialRelayService;
 
-    public function __construct(Cart $cart, PaymentService $paymentService)
+    public function __construct(Cart $cart, PaymentService $paymentService, MondialRelayService $mondialRelayService)
     {
         $this->cart = $cart;
         $this->paymentService = $paymentService;
+        $this->mondialRelayService = $mondialRelayService;
     }
 
     /**
@@ -151,7 +151,7 @@ class CheckoutController extends Controller
     {
         // Log du début du processus
         Log::info('=== DÉBUT PROCESSUS PAIEMENT ===', [
-            'request_data' => $request->except(['card_number', 'card_cvv']), // Exclure les données sensibles
+            'request_data' => $request->except(['card_number', 'card_cvv']),
             'card_last_4' => substr($request->card_number, -4),
         ]);
 
@@ -218,6 +218,9 @@ class CheckoutController extends Controller
                 'transaction_id' => $paymentResult['transaction_id'],
             ]);
 
+            // NOUVELLE FONCTIONNALITÉ : Créer l'étiquette d'expédition avec le package
+            $this->createShippingExpedition($order);
+
             // Envoyer l'email de confirmation au client
             try {
                 Mail::to($order->shipping_email)->send(new OrderConfirmation($order));
@@ -268,6 +271,112 @@ class CheckoutController extends Controller
     }
 
     /**
+     * NOUVELLE MÉTHODE : Créer l'expédition avec le package bmwsly
+     */
+    protected function createShippingExpedition($order)
+    {
+        try {
+            // Données expéditeur (Astrolab)
+            $sender = [
+                'name' => 'Astrolab',
+                'company' => 'Astrolab',
+                'address' => '9 rue Georges Brassens ',
+                'city' => 'Blain',
+                'postal_code' => '44130',
+                'country' => 'FR',
+                'phone' => '06 88 70 43 31',
+                'email' => 'contact@astrolab.com',
+            ];
+
+            // Données destinataire
+            $recipient = [
+                'name' => $order->shipping_name,
+                'address' => $order->shipping_address,
+                'city' => $order->shipping_city,
+                'postal_code' => $order->shipping_postal_code,
+                'country' => 'FR',
+                'phone' => $order->shipping_phone ?? '0600000000',
+                'email' => $order->shipping_email,
+            ];
+
+            // Poids estimé (en grammes)
+            $weightInGrams = 1000; // 1kg par défaut, à adapter selon vos produits
+
+            if ($order->shipping_method === 'pickup' && $order->relay_point_id) {
+                // EXPÉDITION VERS POINT RELAIS (24R)
+                Log::info('Création expédition point relais avec package', [
+                    'order_id' => $order->id,
+                    'relay_point_id' => $order->relay_point_id
+                ]);
+
+                $expeditionResult = $this->mondialRelayService->createRelayExpedition(
+                    $sender,
+                    $recipient,
+                    $order->relay_point_id,
+                    $weightInGrams,
+                    $order->order_number
+                );
+
+                if ($expeditionResult['success']) {
+                    $order->update([
+                        'tracking_number' => $expeditionResult['expedition_number'],
+                        'shipping_label_url' => $expeditionResult['label_url_a4'] ?? null,
+                    ]);
+
+                    Log::info('Étiquette point relais créée avec succès', [
+                        'order_id' => $order->id,
+                        'expedition_number' => $expeditionResult['expedition_number'],
+                        'tracking_url' => $expeditionResult['tracking_url']
+                    ]);
+                } else {
+                    Log::error('Erreur création expédition point relais', [
+                        'order_id' => $order->id,
+                        'error' => $expeditionResult['error']
+                    ]);
+                }
+
+            } elseif ($order->shipping_method === 'home') {
+                // EXPÉDITION À DOMICILE (24L)
+                Log::info('Création expédition domicile avec package', [
+                    'order_id' => $order->id
+                ]);
+
+                $homeDeliveryResult = $this->mondialRelayService->createHomeDeliveryExpedition(
+                    $sender,
+                    $recipient,
+                    $weightInGrams,
+                    $order->order_number
+                );
+
+                if ($homeDeliveryResult['success']) {
+                    $order->update([
+                        'tracking_number' => $homeDeliveryResult['expedition_number'],
+                        'shipping_label_url' => $homeDeliveryResult['label_url_a4'] ?? null,
+                    ]);
+
+                    Log::info('Étiquette domicile créée avec succès', [
+                        'order_id' => $order->id,
+                        'expedition_number' => $homeDeliveryResult['expedition_number'],
+                        'tracking_url' => $homeDeliveryResult['tracking_url']
+                    ]);
+                } else {
+                    Log::error('Erreur création expédition domicile', [
+                        'order_id' => $order->id,
+                        'error' => $homeDeliveryResult['error']
+                    ]);
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Erreur générale création expédition', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
+    /**
      * Page de succès
      */
     public function success($orderId)
@@ -282,6 +391,49 @@ class CheckoutController extends Controller
         return view('checkout.success', compact('order'));
     }
 
+    /**
+     * API pour récupérer les points relais avec le package
+     */
+    public function getDeliveryPoints(Request $request)
+    {
+        $request->validate([
+            'postal_code' => 'required|string|size:5',
+            'city' => 'nullable|string|max:100',
+            'limit' => 'nullable|integer|min:5|max:50'
+        ]);
+
+        try {
+            Log::info('Recherche points relais checkout avec package', [
+                'postal_code' => $request->input('postal_code'),
+                'city' => $request->input('city')
+            ]);
+
+            // Utiliser le service avec le package bmwsly
+            $result = $this->mondialRelayService->findRelayPointsForCheckout(
+                $request->input('postal_code'),
+                $request->input('city', ''),
+                $request->input('limit', 30)
+            );
+
+            return response()->json([
+                'success' => $result['success'],
+                'data' => [
+                    'points' => $result['points'],
+                    'stats' => $result['stats']
+                ],
+                'message' => $result['success'] ? 'Points trouvés avec le package' : 'Erreur de recherche'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur récupération points checkout avec package: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors de la recherche des points de livraison'
+            ], 500);
+        }
+    }
+
+    // MÉTHODES PRIVÉES INCHANGÉES
     protected function createAccount(Request $request)
     {
         $request->validate([
@@ -332,7 +484,7 @@ class CheckoutController extends Controller
                     'relay_point_address' => $relayPointData['address'],
                     'relay_point_postal_code' => $relayPointData['postal_code'],
                     'relay_point_city' => $relayPointData['city'],
-                    'relay_point_data' => $relayPointData,
+                    'relay_point_data' => json_encode($relayPointData),
                 ];
             }
         }
@@ -342,6 +494,7 @@ class CheckoutController extends Controller
             'total_amount' => $finalTotal,
             'shipping_name' => $shippingData['shipping_name'],
             'shipping_email' => $shippingData['shipping_email'],
+            'shipping_phone' => $shippingData['shipping_phone'] ?? null,
             'shipping_address' => $shippingData['shipping_address'],
             'shipping_city' => $shippingData['shipping_city'],
             'shipping_postal_code' => $shippingData['shipping_postal_code'],
@@ -363,84 +516,5 @@ class CheckoutController extends Controller
         }
 
         return $order;
-    }
-
-    /**
-     * API pour récupérer les points de livraison depuis le checkout
-     */
-    public function getDeliveryPoints(Request $request)
-    {
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'postal_code' => 'required|string|regex:/^\d{5}$/',
-            'city' => 'nullable|string|max:100'
-        ]);
-
-        if ($validator->fails()) {
-            return $this->deliveryErrorResponse('Code postal invalide (5 chiffres requis)');
-        }
-
-        try {
-            $result = $this->getDeliveryPointsForCheckout(
-                $request->input('postal_code'),
-                $request->input('city', ''),
-                15 // Rayon de 15km pour le checkout
-            );
-
-            if (!$result['success']) {
-                return $this->deliveryErrorResponse($result['error'] ?? 'Erreur lors de la recherche');
-            }
-
-            return $this->deliverySuccessResponse([
-                'points' => $result['points'],
-                'stats' => $result['stats'],
-                'message' => $result['message']
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Erreur récupération points checkout: ' . $e->getMessage());
-            return $this->deliveryErrorResponse('Erreur serveur lors de la recherche des points de livraison');
-        }
-    }
-
-    /**
-     * Valider un point de livraison sélectionné
-     */
-    public function validateSelectedDeliveryPoint(Request $request)
-    {
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'point_id' => 'required|string',
-            'postal_code' => 'required|string|regex:/^\d{5}$/'
-        ]);
-
-        if ($validator->fails()) {
-            return $this->deliveryErrorResponse('Paramètres invalides');
-        }
-
-        $pointInfo = $this->getDeliveryPointInfo(
-            $request->input('point_id'),
-            $request->input('postal_code')
-        );
-
-        if (!$pointInfo) {
-            return $this->deliveryErrorResponse('Point de livraison introuvable');
-        }
-
-        // Calculer le coût total avec les produits du panier
-        $cartTotal = $this->cart->getTotalHT();
-        $costCalculation = $this->calculateTotalShippingCost(
-            $request->input('point_id'),
-            $request->input('postal_code'),
-            $cartTotal
-        );
-
-        return $this->deliverySuccessResponse([
-            'point' => $pointInfo,
-            'cost_calculation' => $costCalculation,
-            'cart_summary' => [
-                'products_total' => $cartTotal,
-                'shipping_cost' => $pointInfo['delivery_cost'],
-                'total_ttc' => $cartTotal + $pointInfo['delivery_cost']
-            ]
-        ]);
     }
 }

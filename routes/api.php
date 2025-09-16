@@ -20,10 +20,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // Routes API Mondial Relay
-Route::prefix('mondial-relay')->name('mondial-relay.')->group(function () {
-    Route::post('/search', [MondialRelayController::class, 'searchRelayPoints'])->name('search');
-    Route::post('/lockers', [MondialRelayController::class, 'searchLockers'])->name('search.lockers');
-    Route::post('/relay-points', [MondialRelayController::class, 'searchRelayPointsOnly'])->name('search.relay');
+Route::prefix('mondial-relay')->group(function () {
+    Route::post('/relay-points', [MondialRelayController::class, 'getRelayPoints']);
+    Route::post('/create-relay-expedition', [MondialRelayController::class, 'createRelayExpedition']);
+    Route::post('/create-home-delivery', [MondialRelayController::class, 'createHomeDelivery']);
+    Route::post('/track-package', [MondialRelayController::class, 'trackPackage']);
+    Route::get('/test-connection', [MondialRelayController::class, 'testConnection']);
     
     // Route optimisée pour le checkout
     Route::post('/checkout-delivery-points', [MondialRelayController::class, 'getCheckoutDeliveryPoints'])->name('checkout.delivery.points');

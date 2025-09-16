@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dbe0f54ffbb448f6747732fdd84ae022",
+    "content-hash": "93e94bb2c8d80539b82ec1de5dc864c9",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -275,6 +275,62 @@
                 }
             ],
             "time": "2025-02-13T20:35:06+00:00"
+        },
+        {
+            "name": "bmwsly/mondial-relay-api",
+            "version": "1.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/BryanMeurisse/mondial-relay-api.git",
+                "reference": "3cbb6bce6debd524d2bc2b0f22d137f8a716d59a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/BryanMeurisse/mondial-relay-api/zipball/3cbb6bce6debd524d2bc2b0f22d137f8a716d59a",
+                "reference": "3cbb6bce6debd524d2bc2b0f22d137f8a716d59a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-soap": "*",
+                "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "mockery/mockery": "^1.5",
+                "orchestra/testbench": "^8.0|^9.0|^10.0",
+                "phpunit/phpunit": "^10.0|^11.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "MondialRelay": "Bmwsly\\MondialRelayApi\\Facades\\MondialRelay",
+                        "MondialRelayService": "Bmwsly\\MondialRelayApi\\Facades\\MondialRelayService"
+                    },
+                    "providers": [
+                        "Bmwsly\\MondialRelayApi\\MondialRelayServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Bmwsly\\MondialRelayApi\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Bryan M",
+                    "email": "contact@virage-numerique.com"
+                }
+            ],
+            "description": "Laravel package for Mondial Relay API integration focused on the essential features for your ecommerce website",
+            "support": {
+                "issues": "https://github.com/BryanMeurisse/mondial-relay-api/issues",
+                "source": "https://github.com/BryanMeurisse/mondial-relay-api/tree/v1.4.1"
+            },
+            "time": "2025-09-13T03:05:06+00:00"
         },
         {
             "name": "brick/math",

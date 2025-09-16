@@ -171,20 +171,7 @@
                                     </button>
                                 </div>
                                 
-                                <!-- Information sur les types de points -->
-                                <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 12px; color: #6c757d;">
-                                    <div style="display: flex; justify-content: space-around; text-align: center;">
-                                        <div>
-                                            <strong style="color: #27ae60;">🔒 Casiers automatiques</strong><br>
-                                            Accès 24h/24 - 7j/7
-                                        </div>
-                                        <div>
-                                            <strong style="color: #3498db;">🏪 Points relais</strong><br>
-                                            Accueil personnalisé
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                               
                             
                             <div id="relay-results" style="display: none;">
                                 <div id="relay-list"></div>
@@ -268,6 +255,7 @@
 .relay-point {
     transition: all 0.3s ease !important;
 }
+
 
 .relay-point:hover {
     transform: translateY(-1px);
@@ -361,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
         searchRelayBtn.disabled = true;
         
         // Afficher un message de recherche
-        relayList.innerHTML = '<p style="color: #3498db; text-align: center; padding: 20px;">🔍 Recherche de points relais et casiers automatiques...</p>';
+        relayList.innerHTML = '<p style="color: #3498db; text-align: center; padding: 20px;">🔍 Recherche avec le package Mondial Relay...</p>';
         relayResults.style.display = 'block';
         
         // Utiliser la ville du champ relay-city ou celle de livraison comme fallback
@@ -371,58 +359,54 @@ document.addEventListener('DOMContentLoaded', function() {
             city = cityField.value.trim();
         }
         
-        // Préparer les données pour l'API
-        const requestData = {
-            postal_code: postalCode,
-            city: city || '',
-            type: 'all',
-            limit: 30
-        };
-        
-        // Nouvelle API Mondial Relay
-        fetch('/api/mondial-relay/search', {
+        // NOUVELLE API AVEC LE PACKAGE BMWSLY
+        fetch('/checkout/delivery-points', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
-            body: JSON.stringify(requestData)
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.data && data.data.points.length > 0) {
-                    currentRelayPoints = data.data.points;
-                    displayRelayPoints(data.data.points);
-                    
-                    // Statistiques
-                    if (data.data.stats) {
-                        const stats = data.data.stats;
-                        const statsHtml = `
-                            <div style="background: #e8f5e8; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 12px;">
-                                <strong>📊 Résultats trouvés :</strong> 
-                                ${stats.total} points au total 
-                                (${stats.relay_points || 0} points relais, ${stats.lockers || 0} casiers)
-                            </div>
-                        `;
-                        relayList.innerHTML = statsHtml + relayList.innerHTML;
-                    }
-                } else {
-                    const message = data.data?.message || 'Aucun point de collecte trouvé pour ce code postal.';
-                    relayList.innerHTML = `<p style="color: #e74c3c;">${message}</p>`;
-                    relayResults.style.display = 'block';
-                    currentRelayPoints = [];
-                }
+            body: JSON.stringify({
+                postal_code: postalCode,
+                city: city || '',
+                limit: 30
             })
-            .catch(error => {
-                console.error('Erreur:', error);
-                relayList.innerHTML = '<p style="color: #e74c3c;">Erreur lors de la recherche. Veuillez réessayer.</p>';
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data && data.data.points.length > 0) {
+                currentRelayPoints = data.data.points;
+                displayRelayPoints(data.data.points);
+                
+                // Afficher les statistiques du package
+                if (data.data.stats) {
+                    const stats = data.data.stats;
+                    const statsHtml = `
+                        <div style="background: #e8f5e8; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 12px;">
+                            <strong>📦 Package Mondial Relay :</strong> 
+                            ${stats.total} points trouvés 
+                            (${stats.relay_points || 0} points relais, ${stats.lockers || 0} casiers)
+                        </div>
+                    `;
+                    relayList.innerHTML = statsHtml + relayList.innerHTML;
+                }
+            } else {
+                const message = data.message || 'Aucun point trouvé avec le package.';
+                relayList.innerHTML = `<p style="color: #e74c3c;">${message}</p>`;
                 relayResults.style.display = 'block';
                 currentRelayPoints = [];
-            })
-            .finally(() => {
-                searchRelayBtn.textContent = 'Rechercher';
-                searchRelayBtn.disabled = false;
-            });
+            }
+        })
+        .catch(error => {
+            console.error('Erreur package:', error);
+            relayList.innerHTML = '<p style="color: #e74c3c;">Erreur du package Mondial Relay. Veuillez réessayer.</p>';
+            relayResults.style.display = 'block';
+            currentRelayPoints = [];
+        })
+        .finally(() => {
+            searchRelayBtn.textContent = 'Rechercher';
+            searchRelayBtn.disabled = false;
+        });
     }
     
     // Afficher la liste des points relais

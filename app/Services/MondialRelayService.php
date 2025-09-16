@@ -2,864 +2,290 @@
 
 namespace App\Services;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
+use Bmwsly\MondialRelayApi\Facades\MondialRelayService as MondialRelayApiFacade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 
 class MondialRelayService
 {
-    private $soapClient;  // Client SOAP (utilisé pour tout)
-    private $config;
-
-    public function __construct()
-    {
-        $this->config = [
-            'enabled' => env('MONDIAL_RELAY_ENABLED', true),
-            'mode' => env('MONDIAL_RELAY_MODE', 'production'),
-            
-            // Configuration unique SOAP - Mondial Relay utilise uniquement SOAP
-            'wsdl_url' => env('MONDIAL_RELAY_WSDL_URL', 'http://www.mondialrelay.fr/webservice/Web_Services.asmx?WSDL'),
-            'enseigne' => env('MONDIAL_RELAY_ENSEIGNE', 'CC235KWE'),
-            'private_key' => env('MONDIAL_RELAY_PRIVATE_KEY', '1GixuOdd'),
-            'brand' => env('MONDIAL_RELAY_BRAND', 'CC'),
-        ];
-
-        // Client SOAP (sera initialisé à la demande)
-        $this->soapClient = null;
-    }
-
     /**
-     * Rechercher des points relais et lockers
+     * Rechercher les points relais pour le checkout (24R)
      */
-    public function findRelayPoints($params = [], $type = 'all')
+    public function findRelayPointsForCheckout(string $postalCode, string $city = '', int $maxResults = 30): array
     {
-        if (!$this->config['enabled']) {
-            return $this->mockRelayPoints($params);
-        }
-
-        try {
-            // Rechercher tous les points (relais + lockers)
-            $allResults = $this->searchByType($type, $params);
-            
-            if (!$allResults['success']) {
-                // Fallback sur les données mockées en cas d'erreur API
-                $mockResult = $this->mockRelayPoints($params);
-                Log::warning('Fallback vers données mockées', ['error' => $allResults['error'] ?? 'Erreur inconnue']);
-                return $mockResult;
-            }
-            
-            $points = $allResults['points'];
-            
-            // Log pour débogage
-            $relayCount = count(array_filter($points, fn($p) => $p['type'] === 'REL'));
-            $lockerCount = count(array_filter($points, fn($p) => $p['type'] === 'LOC'));
-            
-            Log::info('Recherche points relais/lockers', [
-                'type' => $type,
-                'total' => count($points),
-                'relay_points' => $relayCount,
-                'lockers' => $lockerCount,
-                'params' => $params
-            ]);
-
-            if (empty($points)) {
+        $cacheKey = "relay_points_{$postalCode}_{$city}_{$maxResults}";
+        
+        return Cache::remember($cacheKey, 3600, function () use ($postalCode, $city, $maxResults) {
+            try {
+                Log::info('Recherche points relais 24R', ['cp' => $postalCode, 'ville' => $city]);
+                
+                // VÉRIFIER que le package est configuré
+                if (!env('MONDIAL_RELAY_ENSEIGNE') || !env('MONDIAL_RELAY_PRIVATE_KEY')) {
+                    throw new \Exception('Configuration Mondial Relay manquante dans .env');
+                }
+                
+                Log::info('Configuration Mondial Relay', [
+                    'enseigne' => env('MONDIAL_RELAY_ENSEIGNE'),
+                    'mode' => env('MONDIAL_RELAY_MODE'),
+                    'private_key_length' => strlen(env('MONDIAL_RELAY_PRIVATE_KEY'))
+                ]);
+                
+                // TENTER l'appel à l'API
+                $relayPoints = MondialRelayApiFacade::findRelayPointsForShipment(
+                    postalCode: $postalCode,
+                    weightInGrams: 1000,
+                    deliveryMode: '24R',
+                    country: 'FR',
+                    maxResults: $maxResults
+                );
+                
+                // VÉRIFIER le résultat
+                if ($relayPoints === false || $relayPoints === null) {
+                    throw new \Exception('Le package a retourné false - problème d\'authentification ou de configuration');
+                }
+                
+                if (!is_array($relayPoints) && !is_iterable($relayPoints)) {
+                    throw new \Exception('Le package a retourné un format inattendu: ' . gettype($relayPoints));
+                }
+                
+                Log::info('Points relais trouvés', ['count' => count($relayPoints)]);
+                
+                $points = [];
+                foreach ($relayPoints as $relay) {
+                    try {
+                        // PROTECTION MAXIMALE pour éviter les erreurs du package
+                        $points[] = [
+                            'id' => $this->safeProperty($relay, 'number', 'UNKNOWN'),
+                            'num' => $this->safeProperty($relay, 'number', 'UNKNOWN'),
+                            'name' => $this->safeProperty($relay, 'name', 'Point Relais'),
+                            'address' => $this->safeGetFullAddress($relay),
+                            'postal_code' => $this->safeProperty($relay, 'postalCode', ''),
+                            'city' => $this->safeProperty($relay, 'city', ''),
+                            'country' => $this->safeProperty($relay, 'country', 'FR'),
+                            'latitude' => $this->safeProperty($relay, 'latitude', 0),
+                            'longitude' => $this->safeProperty($relay, 'longitude', 0),
+                            'distance' => $this->safeGetDistance($relay),
+                            'phone' => $this->safeProperty($relay, 'phone', ''),
+                            'type' => 'REL',
+                            'type_label' => 'Point Relais',
+                            'delivery_cost' => 3.90,
+                            'delivery_time' => '2-3 jours',
+                            'delivery_mode' => '24R',
+                            // SUPPRIMER les vérifications d'ouverture qui plantent
+                            'is_open_today' => true,
+                            'is_currently_open' => true,
+                            'google_maps_url' => $this->safeMethod($relay, 'getGoogleMapsUrl', ''),
+                            'opening_hours' => [],
+                        ];
+                    } catch (\Exception $pointError) {
+                        // Si un point individuel plante, on le passe et on continue
+                        Log::warning('Point relais ignoré à cause d\'une erreur', [
+                            'error' => $pointError->getMessage(),
+                            'relay_data' => is_object($relay) ? get_class($relay) : gettype($relay)
+                        ]);
+                        continue;
+                    }
+                }
+                
                 return [
                     'success' => true,
-                    'points' => [],
-                    'message' => 'Aucun point trouvé dans la zone de recherche',
+                    'points' => $points,
                     'stats' => [
-                        'total' => 0,
-                        'relay_points' => 0,
+                        'total' => count($points),
+                        'relay_points' => count($points),
                         'lockers' => 0
                     ]
                 ];
-            }
-            
-            // Trier par distance
-            usort($points, function($a, $b) {
-                return floatval($a['distance']) <=> floatval($b['distance']);
-            });
-
-            return [
-                'success' => true,
-                'points' => $points,
-                'stats' => [
-                    'total' => count($points),
-                    'relay_points' => $relayCount,
-                    'lockers' => $lockerCount
-                ]
-            ];
-
-        } catch (\Exception $e) {
-            Log::error('Erreur Mondial Relay findRelayPoints: ' . $e->getMessage());
-            
-            // En cas d'erreur, retourner des données de test
-            return $this->mockRelayPoints($params);
-        }
-    }
-
-    /**
-     * Initialiser le client SOAP (à la demande)
-     */
-    private function getSoapClient()
-    {
-        if ($this->soapClient === null) {
-            try {
-                $this->soapClient = new \SoapClient($this->config['wsdl_url'], [
-                    'trace' => true,
-                    'exceptions' => true,
-                    'soap_version' => SOAP_1_1,
-                    'cache_wsdl' => WSDL_CACHE_NONE
-                ]);
+                
             } catch (\Exception $e) {
-                Log::error('Erreur initialisation SOAP: ' . $e->getMessage());
-                throw $e;
-            }
-        }
-        return $this->soapClient;
-    }
-
-    /**
-     * Rechercher par type (REL via WSI4, LOC via WSI2 - tout en SOAP)
-     */
-    private function searchByType($action, $params = [], $rayonKm = 10)
-    {
-        $defaultParams = [
-            'Enseigne' => $this->config['enseigne'],
-            'Pays' => 'FR',
-            'Ville' => '',
-            'CP' => '',
-            'Latitude' => '',
-            'Longitude' => '',
-            'Taille' => '',
-            'Poids' => '1000',
-            'DelaiEnvoi' => '0',
-            'RayonRecherche' => (string)$rayonKm,
-            'NombreResultats' => '50'
-        ];
-
-        $searchParams = array_merge($defaultParams, $params);
-        $allPoints = [];
-        $errors = [];
-
-        try {
-            // --- REL : points relais classiques via WSI4 ---
-            if ($action === 'REL' || $action === 'all') {
-                Log::info('Recherche points relais REL via WSI4', ['params' => $searchParams]);
+                Log::error('Erreur recherche points relais', [
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'postal_code' => $postalCode
+                ]);
                 
-                $paramsREL = $searchParams;
-                $paramsREL['Action'] = 'REL';
-                $paramsREL['Security'] = $this->generateSignature($paramsREL);
-
-                try {
-                    $responseREL = $this->soapRequest('WSI4_PointRelais_Recherche', $paramsREL);
-
-                    if ($responseREL && isset($responseREL->WSI4_PointRelais_RechercheResult)) {
-                        $parsed = $this->parseRelayPointsResponse($responseREL->WSI4_PointRelais_RechercheResult, 'REL');
-                        if ($parsed['success']) {
-                            $allPoints = array_merge($allPoints, $parsed['points']);
-                            Log::info('Points REL trouvés via WSI4', ['count' => count($parsed['points'])]);
-                        } else {
-                            $errors[] = 'REL WSI4: ' . $parsed['error'];
-                        }
-                    }
-                } catch (\Exception $e) {
-                    $errors[] = 'REL WSI4: ' . $e->getMessage();
-                    Log::error("Erreur API REL WSI4: " . $e->getMessage());
-                }
-            }
-
-            // --- LOC : lockers via WSI2 (SOAP aussi) ---
-            if ($action === 'LOC' || $action === 'all') {
-                Log::info('Recherche lockers LOC via WSI2', ['cp' => $searchParams['CP'], 'rayon' => $rayonKm]);
-                
-                $fallbackResult = $this->searchV1LockersWSI2($searchParams, $rayonKm);
-                if ($fallbackResult['success']) {
-                    $allPoints = array_merge($allPoints, $fallbackResult['points']);
-                    Log::info('Points LOC trouvés via WSI2', ['count' => count($fallbackResult['points'])]);
-                } else {
-                    $errors[] = 'LOC WSI2: ' . $fallbackResult['error'];
-                }
-            }
-
-            return [
-                'success' => empty($errors) || !empty($allPoints),
-                'points' => $allPoints,
-                'errors' => $errors
-            ];
-
-        } catch (\Exception $e) {
-            Log::error('Erreur searchByType: ' . $e->getMessage());
-            return [
-                'success' => false,
-                'points' => [],
-                'error' => $e->getMessage()
-            ];
-        }
-    }
-
-    /**
-     * Fallback : recherche lockers via V1 WSI2 (ancienne méthode)
-     */
-    private function searchV1LockersWSI2($searchParams, $rayonKm)
-    {
-        try {
-            // Générer tous les CP autour du CP demandé pour couvrir le rayon
-            if (!empty($searchParams['Latitude']) && !empty($searchParams['Longitude'])) {
-                $cpList = $this->generateCPsAroundCoordinates(
-                    $searchParams['Latitude'], 
-                    $searchParams['Longitude'], 
-                    $rayonKm
-                );
-            } else {
-                $cpList = $this->generateCPsAround($searchParams['CP'], $rayonKm);
-            }
-
-            $lockerPoints = [];
-            foreach ($cpList as $currentCP) {
-                $paramsLOC = [
-                    'Enseigne' => $this->config['enseigne'],
-                    'Pays' => $searchParams['Pays'],
-                    'CP' => $currentCP,
-                    'NbResult' => $searchParams['NombreResultats'],
-                    'TypeActivite' => '24R'
-                ];
-
-                // Générer la signature correcte pour WSI2
-                $paramsLOC['Security'] = $this->generateSignatureWSI2($paramsLOC);
-
-                try {
-                    $responseLOC = $this->soapRequest('WSI2_PointRelais_Recherche', $paramsLOC);
-
-                    if ($responseLOC && isset($responseLOC->WSI2_PointRelais_RechercheResult)) {
-                        $result = $responseLOC->WSI2_PointRelais_RechercheResult;
-                        
-                        if (isset($result->STAT) && $result->STAT == '0') {
-                            if (isset($result->PointsRelais->PointRelais_Details)) {
-                                $lockers = $result->PointsRelais->PointRelais_Details;
-                                if (!is_array($lockers)) {
-                                    $lockers = [$lockers];
-                                }
-
-                                foreach ($lockers as $locker) {
-                                    $lockerPoints[$locker->Num] = [
-                                        'id' => $locker->Num,
-                                        'name' => $locker->LgAdr1 ?? '',
-                                        'address' => ($locker->LgAdr3 ?? '') . ' ' . ($locker->CP ?? '') . ' ' . ($locker->Ville ?? ''),
-                                        'postal_code' => $locker->CP ?? '',
-                                        'city' => $locker->Ville ?? '',
-                                        'country' => $locker->Pays ?? 'FR',
-                                        'latitude' => $locker->Latitude ?? '',
-                                        'longitude' => $locker->Longitude ?? '',
-                                        'distance' => $locker->Distance ?? '',
-                                        'phone' => $locker->Tel ?? '',
-                                        'type' => 'LOC',
-                                        'opening_hours' => $this->parseOpeningHours($locker),
-                                        'Num' => $locker->Num,
-                                        'Nom' => $locker->LgAdr1 ?? '',
-                                        'Adresse' => ($locker->LgAdr3 ?? '') . ' ' . ($locker->CP ?? '') . ' ' . ($locker->Ville ?? '')
-                                    ];
-                                }
-                            }
-                        }
-                    }
-                } catch (\Exception $e) {
-                    Log::warning("Erreur API LOC V1 CP {$currentCP}: " . $e->getMessage());
-                }
-            }
-
-            return [
-                'success' => true,
-                'points' => array_values($lockerPoints)
-            ];
-
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'error' => $e->getMessage()
-            ];
-        }
-    }
-
-    /**
-     * Méthode checkout optimisée pour la sélection en production
-     */
-    public function getCheckoutDeliveryPoints($codePostal, $ville = '', $rayonKm = 15, $nombreResultats = 30)
-    {
-        $cacheKey = "mondial_relay_checkout_{$codePostal}_{$ville}_{$rayonKm}_{$nombreResultats}";
-        
-        // Cache de 1 heure
-        return Cache::remember($cacheKey, 3600, function() use ($codePostal, $ville, $rayonKm, $nombreResultats) {
-            
-            $params = [
-                'CP' => $codePostal,
-                'Ville' => $ville,
-                'RayonRecherche' => (string)$rayonKm,
-                'NombreResultats' => (string)$nombreResultats
-            ];
-
-            $result = $this->findRelayPoints($params, 'all');
-            
-            if (!$result['success'] || empty($result['points'])) {
                 return [
                     'success' => false,
+                    'error' => $e->getMessage(),
                     'points' => [],
-                    'message' => 'Aucun point de livraison trouvé dans cette zone'
+                    'stats' => ['total' => 0, 'relay_points' => 0, 'lockers' => 0]
                 ];
             }
-
-            // Formatage spécifique pour le checkout
-            $checkoutPoints = [];
-            foreach ($result['points'] as $point) {
-                $checkoutPoints[] = [
-                    'id' => $point['id'],
-                    'name' => $point['name'],
-                    'type' => $point['type'],
-                    'type_label' => $point['type'] === 'REL' ? 'Point Relais' : 'Locker',
-                    'address' => $this->formatFullAddress($point),
-                    'postal_code' => $point['postal_code'],
-                    'city' => $point['city'],
-                    'distance' => round(floatval($point['distance'] ?? 0), 1),
-                    'distance_text' => round(floatval($point['distance'] ?? 0), 1) . ' km',
-                    'phone' => $point['phone'] ?? '',
-                    'opening_hours' => $point['opening_hours'] ?? [],
-                    'coordinates' => [
-                        'latitude' => floatval($point['latitude'] ?? 0),
-                        'longitude' => floatval($point['longitude'] ?? 0)
-                    ],
-                    'delivery_cost' => $this->calculateDeliveryCost($point['type']),
-                    'estimated_delivery' => '2-3 jours ouvrés',
-                    // Données techniques pour les commandes
-                    'relay_data' => [
-                        'Num' => $point['Num'] ?? $point['id'],
-                        'Nom' => $point['Nom'] ?? $point['name'],
-                        'Adresse' => $point['Adresse'] ?? $point['address'],
-                        'Type' => $point['type']
-                    ]
-                ];
-            }
-
-            // Trier par distance
-            usort($checkoutPoints, function($a, $b) {
-                return $a['distance'] <=> $b['distance'];
-            });
-
-            // Limiter le nombre de résultats
-            $checkoutPoints = array_slice($checkoutPoints, 0, $nombreResultats);
-
-            return [
-                'success' => true,
-                'points' => $checkoutPoints,
-                'stats' => [
-                    'total' => count($checkoutPoints),
-                    'relay_points' => count(array_filter($checkoutPoints, fn($p) => $p['type'] === 'REL')),
-                    'lockers' => count(array_filter($checkoutPoints, fn($p) => $p['type'] === 'LOC')),
-                    'search_radius' => $rayonKm,
-                    'postal_code' => $codePostal
-                ]
-            ];
         });
     }
-
-    // --- Méthodes utilitaires existantes (les garder telles quelles) ---
-
-    private function generateCPsAround($cp, $rayonKm = 10)
-    {
-        if (empty($cp) || strlen($cp) < 2) {
-            return [$cp];
-        }
-
-        $cpList = [$cp];
-        $departement = substr($cp, 0, 2);
-        
-        // Ajouter les départements limitrophes pour une recherche plus large
-        $departementsLimitrophes = $this->getDepartementsLimitrophes($departement);
-        
-        // Générer des variations autour du CP principal
-        $baseNumber = intval(substr($cp, 2));
-        $variations = range(max(0, $baseNumber - 50), $baseNumber + 50);
-        
-        foreach ($variations as $variation) {
-            $newCp = $departement . str_pad($variation, 3, '0', STR_PAD_LEFT);
-            if (strlen($newCp) === 5) {
-                $cpList[] = $newCp;
-            }
-        }
-        
-        // Ajouter quelques CP des départements voisins
-        foreach ($departementsLimitrophes as $deptVoisin) {
-            $cpList[] = $deptVoisin . '000';
-            $cpList[] = $deptVoisin . '100';
-        }
-
-        return array_unique($cpList);
-    }
-
-    private function getDepartementsLimitrophes($dept)
-    {
-        $limitrophes = [
-            '01' => ['38', '39', '69', '73', '74'],
-            '02' => ['08', '51', '59', '60', '77', '80'],
-            '03' => ['18', '23', '42', '58', '63', '71'],
-            '75' => ['77', '78', '91', '92', '93', '94', '95'],
-            '77' => ['02', '10', '51', '60', '75', '89', '91', '94', '95'],
-            '78' => ['27', '28', '60', '75', '91', '92', '95'],
-            // Ajouter d'autres selon les besoins
-        ];
-
-        return $limitrophes[$dept] ?? [];
-    }
-
-    private function generateCPsAroundCoordinates($latitude, $longitude, $rayonKm = 10)
-    {
-        // Approximation simple : 1 degré ≈ 111km
-        $deltaLat = $rayonKm / 111;
-        $deltaLon = $rayonKm / (111 * cos(deg2rad($latitude)));
-        
-        $cpList = [];
-        
-        // Générer une grille autour des coordonnées
-        for ($lat = $latitude - $deltaLat; $lat <= $latitude + $deltaLat; $lat += $deltaLat/2) {
-            for ($lon = $longitude - $deltaLon; $lon <= $longitude + $deltaLon; $lon += $deltaLon/2) {
-                // Convertir les coordonnées en CP approximatif (très simplifié)
-                // Dans un vrai système, il faudrait une API de géocodage inverse
-                $estimatedDept = $this->coordinatesToDepartement($lat, $lon);
-                if ($estimatedDept) {
-                    $cpList[] = $estimatedDept . '000';
-                    $cpList[] = $estimatedDept . '100';
-                    $cpList[] = $estimatedDept . '200';
-                }
-            }
-        }
-        
-        return array_unique($cpList);
-    }
-
-    private function coordinatesToDepartement($lat, $lon)
-    {
-        // Approximation grossière basée sur les coordonnées
-        // En production, utiliser une vraie API de géocodage
-        if ($lat >= 48.5 && $lat <= 49.2 && $lon >= 2.0 && $lon <= 2.8) {
-            return '75'; // Paris
-        }
-        if ($lat >= 45.0 && $lat <= 46.0 && $lon >= 4.5 && $lon <= 5.5) {
-            return '69'; // Lyon
-        }
-        
-        return '75'; // Default Paris
-    }
-
-    private function generateSignatureWSI2($params)
-    {
-        $signature = $params['Enseigne'];
-        $signature .= $params['Pays'] ?? '';
-        $signature .= $params['CP'] ?? '';
-        $signature .= $params['NbResult'] ?? '';
-        $signature .= $params['TypeActivite'] ?? '';
-        $signature .= $this->config['private_key'];
-        
-        return strtoupper(md5($signature));
-    }
-
-    public function trackPackage($expeditionNumber)
-    {
-        if (!$this->config['enabled']) {
-            return $this->mockTracking($expeditionNumber);
-        }
-
-        try {
-            $params = [
-                'Enseigne' => $this->config['enseigne'],
-                'Expedition' => $expeditionNumber,
-                'Langue' => 'FR'
-            ];
-
-            $params['Security'] = $this->generateSignature($params);
-
-            $response = $this->soapRequest('WSI2_TracingColisDetaille', $params);
-
-            if ($response && isset($response->WSI2_TracingColisDetailleResult)) {
-                return $this->parseTrackingResponse($response->WSI2_TracingColisDetailleResult);
-            }
-
-            throw new \Exception('Réponse API invalide');
-
-        } catch (\Exception $e) {
-            Log::error('Erreur Mondial Relay trackPackage: ' . $e->getMessage());
-            return $this->mockTracking($expeditionNumber);
-        }
-    }
-
-    private function soapRequest($method, $params)
+    
+    /**
+     * Créer une expédition vers un point relais (24R)
+     */
+    public function createRelayExpedition(array $sender, array $recipient, string $relayNumber, int $weightInGrams, string $orderNumber): array
     {
         try {
-            $soapClient = $this->getSoapClient();
+            Log::info('Création expédition point relais', ['relay' => $relayNumber, 'order' => $orderNumber]);
             
-            Log::info("Mondial Relay SOAP Request", [
-                'method' => $method,
-                'params' => array_merge($params, ['Security' => '[HIDDEN]'])
-            ]);
-
-            $response = $soapClient->__soapCall($method, [$params]);
-
-            Log::info("Mondial Relay SOAP Response", [
-                'method' => $method,
-                'response_type' => gettype($response),
-                'has_result' => isset($response->{$method.'Result'})
-            ]);
-
-            return $response;
-
-        } catch (\SoapFault $e) {
-            Log::error("Erreur SOAP Mondial Relay", [
-                'method' => $method,
-                'error' => $e->getMessage(),
-                'faultcode' => $e->faultcode ?? 'N/A',
-                'faultstring' => $e->faultstring ?? 'N/A'
-            ]);
-            throw $e;
+            $expedition = MondialRelayApiFacade::createExpeditionWithLabel(
+                sender: $sender,
+                recipient: $recipient,
+                relayNumber: $relayNumber,
+                weightInGrams: $weightInGrams,
+                deliveryMode: '24R',
+                orderNumber: $orderNumber,
+                articlesDescription: 'Commande e-commerce'
+            );
+            
+            return [
+                'success' => true,
+                'expedition_number' => $expedition->expeditionNumber,
+                'tracking_url' => $expedition->getTrackingUrl(),
+                'label_url_a4' => $expedition->getLabelUrl('A4'),
+                'label_url_a5' => $expedition->getLabelUrl('A5'),
+                'label_url_10x15' => $expedition->getLabelUrl('10x15'),
+            ];
+            
         } catch (\Exception $e) {
-            Log::error("Erreur générale SOAP Mondial Relay", [
-                'method' => $method,
+            Log::error('Erreur création expédition relais', ['error' => $e->getMessage()]);
+            
+            return [
+                'success' => false,
                 'error' => $e->getMessage()
-            ]);
-            throw $e;
+            ];
         }
     }
-
-    private function generateSignature($params)
-    {
-        $signature = '';
-        
-        // Ordre des champs pour WSI4_PointRelais_Recherche
-        $fields = ['Enseigne', 'Pays', 'Ville', 'CP', 'Latitude', 'Longitude', 'Taille', 'Poids', 'Action', 'DelaiEnvoi', 'RayonRecherche', 'NombreResultats'];
-        
-        foreach ($fields as $field) {
-            $signature .= $params[$field] ?? '';
-        }
-        
-        $signature .= $this->config['private_key'];
-        
-        return strtoupper(md5($signature));
-    }
-
-    private function parseRelayPointsResponse($result, $type = 'REL')
+    
+    /**
+     * Créer une expédition à domicile (24L)
+     */
+    public function createHomeDeliveryExpedition(array $sender, array $recipient, int $weightInGrams, string $orderNumber): array
     {
         try {
-            if (!isset($result->STAT) || $result->STAT != '0') {
-                return [
-                    'success' => false,
-                    'error' => 'Erreur API: ' . ($result->STAT ?? 'Statut inconnu')
-                ];
-            }
-
-            $points = [];
+            Log::info('Création expédition domicile', ['order' => $orderNumber]);
             
-            if (isset($result->PointsRelais->PointRelais_Details)) {
-                $relayPoints = $result->PointsRelais->PointRelais_Details;
-                
-                if (!is_array($relayPoints)) {
-                    $relayPoints = [$relayPoints];
-                }
-
-                foreach ($relayPoints as $point) {
-                    $points[] = [
-                        'id' => $point->Num,
-                        'name' => $point->LgAdr1,
-                        'address' => trim($point->LgAdr3 . ' ' . $point->CP . ' ' . $point->Ville),
-                        'postal_code' => $point->CP,
-                        'city' => $point->Ville,
-                        'country' => $point->Pays,
-                        'latitude' => $point->Latitude,
-                        'longitude' => $point->Longitude,
-                        'distance' => $point->Distance,
-                        'phone' => $point->Tel ?? '',
-                        'type' => $type,
-                        'opening_hours' => $this->parseOpeningHours($point),
-                        // Champs de compatibilité pour les commandes
-                        'Num' => $point->Num,
-                        'Nom' => $point->LgAdr1,
-                        'Adresse' => trim($point->LgAdr3 . ' ' . $point->CP . ' ' . $point->Ville)
-                    ];
-                }
-            }
-
+            $expedition = MondialRelayApiFacade::createHomeDeliveryExpeditionWithLabel(
+                sender: $sender,
+                recipient: $recipient,
+                weightInGrams: $weightInGrams,
+                deliveryMode: '24L',
+                orderNumber: $orderNumber,
+                articlesDescription: 'Commande e-commerce'
+            );
+            
             return [
                 'success' => true,
-                'points' => $points
+                'expedition_number' => $expedition->expeditionNumber,
+                'tracking_url' => $expedition->getTrackingUrl(),
+                'label_url_a4' => $expedition->getLabelUrl('A4'),
+                'label_url_a5' => $expedition->getLabelUrl('A5'),
+                'label_url_10x15' => $expedition->getLabelUrl('10x15'),
             ];
-
+            
         } catch (\Exception $e) {
+            Log::error('Erreur création expédition domicile', ['error' => $e->getMessage()]);
+            
             return [
                 'success' => false,
-                'error' => 'Erreur parsing: ' . $e->getMessage()
+                'error' => $e->getMessage()
             ];
         }
     }
-
-    private function parseOpeningHours($point)
-    {
-        $days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-        $hours = [];
-        
-        for ($i = 1; $i <= 7; $i++) {
-            $dayName = $days[$i - 1];
-            $openAM = $point->{"Horaires_Ouverture_Lundi_" . $i} ?? '';
-            $closeAM = $point->{"Horaires_Fermeture_Lundi_" . $i} ?? '';
-            $openPM = $point->{"Horaires_Ouverture_Lundi_" . ($i + 7)} ?? '';
-            $closePM = $point->{"Horaires_Fermeture_Lundi_" . ($i + 7)} ?? '';
-            
-            if ($openAM && $closeAM) {
-                $dayHours = $openAM . '-' . $closeAM;
-                if ($openPM && $closePM) {
-                    $dayHours .= ', ' . $openPM . '-' . $closePM;
-                }
-                $hours[$dayName] = $dayHours;
-            }
-        }
-        
-        return $hours;
-    }
-
-    private function parseShippingLabelResponse($result)
+    
+    /**
+     * Suivi de colis
+     */
+    public function trackPackage(string $expeditionNumber): array
     {
         try {
-            if (!isset($result->STAT) || $result->STAT != '0') {
-                return [
-                    'success' => false,
-                    'error' => 'Erreur création étiquette: ' . ($result->STAT ?? 'Statut inconnu')
-                ];
-            }
-
+            $summary = MondialRelayApiFacade::getPackageStatusSummary($expeditionNumber);
+            
             return [
                 'success' => true,
-                'expedition_number' => $result->ExpeditionNum ?? '',
-                'url_etiquette' => $result->URL_Etiquette ?? '',
-                'tracking_url' => 'https://www.mondialrelay.fr/suivi-de-colis/?NumeroExpedition=' . ($result->ExpeditionNum ?? '')
+                'status' => $summary['status'],
+                'is_delivered' => $summary['is_delivered'],
+                'tracking_url' => $summary['tracking_url'],
+                'latest_event' => $summary['latest_event']
             ];
-
+            
         } catch (\Exception $e) {
+            Log::error('Erreur suivi colis', ['expedition' => $expeditionNumber, 'error' => $e->getMessage()]);
+            
             return [
                 'success' => false,
-                'error' => 'Erreur parsing étiquette: ' . $e->getMessage()
+                'error' => $e->getMessage()
             ];
         }
     }
 
-    private function parseTrackingResponse($result)
+    /**
+     * Méthodes de protection contre les bugs du package
+     */
+    private function safeProperty($object, string $property, $default = null)
     {
         try {
-            if (!isset($result->STAT) || $result->STAT != '0') {
-                return [
-                    'success' => false,
-                    'error' => 'Erreur suivi: ' . ($result->STAT ?? 'Statut inconnu')
-                ];
+            if (!is_object($object)) {
+                return $default;
             }
-
-            $events = [];
             
-            if (isset($result->ret_WSI2_TracingColisDetaille)) {
-                $tracking = $result->ret_WSI2_TracingColisDetaille;
-                
-                if (!is_array($tracking)) {
-                    $tracking = [$tracking];
-                }
-
-                foreach ($tracking as $event) {
-                    $events[] = [
-                        'date' => $event->Date ?? '',
-                        'hour' => $event->Heure ?? '',
-                        'status' => $event->Libelle ?? '',
-                        'location' => $event->Pays ?? ''
-                    ];
-                }
+            if (property_exists($object, $property)) {
+                $value = $object->$property;
+                return $value !== false && $value !== null ? $value : $default;
             }
-
-            return [
-                'success' => true,
-                'events' => $events,
-                'current_status' => !empty($events) ? $events[0]['status'] : 'Statut inconnu'
-            ];
-
+            
+            return $default;
         } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'error' => 'Erreur parsing suivi: ' . $e->getMessage()
-            ];
+            return $default;
         }
     }
 
-    private function mockRelayPoints($params)
-    {
-        Log::info('Utilisation des données mockées Mondial Relay');
-        
-        $cp = $params['CP'] ?? '75001';
-        $ville = $params['Ville'] ?? 'Paris';
-        
-        return [
-            'success' => true,
-            'points' => [
-                [
-                    'id' => 'REL001',
-                    'name' => 'Tabac des Arts',
-                    'address' => '123 Rue de Rivoli 75001 Paris',
-                    'postal_code' => '75001',
-                    'city' => 'Paris',
-                    'country' => 'FR',
-                    'latitude' => '48.8566',
-                    'longitude' => '2.3522',
-                    'distance' => '0.5',
-                    'phone' => '01 42 60 30 30',
-                    'type' => 'REL',
-                    'opening_hours' => [
-                        'Lundi' => '09:00-19:00',
-                        'Mardi' => '09:00-19:00',
-                        'Mercredi' => '09:00-19:00',
-                        'Jeudi' => '09:00-19:00',
-                        'Vendredi' => '09:00-19:00',
-                        'Samedi' => '09:00-17:00',
-                        'Dimanche' => 'Fermé'
-                    ],
-                    'Num' => 'REL001',
-                    'Nom' => 'Tabac des Arts',
-                    'Adresse' => '123 Rue de Rivoli 75001 Paris'
-                ],
-                [
-                    'id' => 'LOC001',
-                    'name' => 'Locker Châtelet',
-                    'address' => '1 Place du Châtelet 75001 Paris',
-                    'postal_code' => '75001',
-                    'city' => 'Paris',
-                    'country' => 'FR',
-                    'latitude' => '48.8588',
-                    'longitude' => '2.3469',
-                    'distance' => '0.8',
-                    'phone' => '',
-                    'type' => 'LOC',
-                    'opening_hours' => [
-                        'Lundi' => '24h/24',
-                        'Mardi' => '24h/24',
-                        'Mercredi' => '24h/24',
-                        'Jeudi' => '24h/24',
-                        'Vendredi' => '24h/24',
-                        'Samedi' => '24h/24',
-                        'Dimanche' => '24h/24'
-                    ],
-                    'Num' => 'LOC001',
-                    'Nom' => 'Locker Châtelet',
-                    'Adresse' => '1 Place du Châtelet 75001 Paris'
-                ],
-                [
-                    'id' => 'REL002',
-                    'name' => 'Pressing du Louvre',
-                    'address' => '45 Rue Saint-Honoré 75001 Paris',
-                    'postal_code' => '75001',
-                    'city' => 'Paris',
-                    'country' => 'FR',
-                    'latitude' => '48.8606',
-                    'longitude' => '2.3376',
-                    'distance' => '1.2',
-                    'phone' => '01 42 33 44 55',
-                    'type' => 'REL',
-                    'opening_hours' => [
-                        'Lundi' => '08:00-20:00',
-                        'Mardi' => '08:00-20:00',
-                        'Mercredi' => '08:00-20:00',
-                        'Jeudi' => '08:00-20:00',
-                        'Vendredi' => '08:00-20:00',
-                        'Samedi' => '10:00-18:00',
-                        'Dimanche' => 'Fermé'
-                    ],
-                    'Num' => 'REL002',
-                    'Nom' => 'Pressing du Louvre',
-                    'Adresse' => '45 Rue Saint-Honoré 75001 Paris'
-                ]
-            ],
-            'stats' => [
-                'total' => 3,
-                'relay_points' => 2,
-                'lockers' => 1
-            ],
-            'is_mock' => true
-        ];
-    }
-
-    private function mockShippingLabel($params)
-    {
-        return [
-            'success' => true,
-            'expedition_number' => 'EXP' . time(),
-            'url_etiquette' => 'https://exemple.com/etiquette.pdf',
-            'tracking_url' => 'https://www.mondialrelay.fr/suivi-de-colis/',
-            'is_mock' => true
-        ];
-    }
-
-    private function mockTracking($expeditionNumber)
-    {
-        return [
-            'success' => true,
-            'events' => [
-                [
-                    'date' => date('Y-m-d'),
-                    'hour' => date('H:i'),
-                    'status' => 'Colis en cours de livraison',
-                    'location' => 'Centre de tri Paris'
-                ],
-                [
-                    'date' => date('Y-m-d', strtotime('-1 day')),
-                    'hour' => '14:30',
-                    'status' => 'Colis en transit',
-                    'location' => 'Plateforme logistique'
-                ],
-                [
-                    'date' => date('Y-m-d', strtotime('-2 days')),
-                    'hour' => '09:15',
-                    'status' => 'Colis pris en charge',
-                    'location' => 'Point d\'enlèvement'
-                ]
-            ],
-            'current_status' => 'Colis en cours de livraison',
-            'is_mock' => true
-        ];
-    }
-
-    public function testConnection()
+    private function safeMethod($object, string $method, $default = null)
     {
         try {
-            Log::info('Test de connexion Mondial Relay');
+            if (!is_object($object) || !method_exists($object, $method)) {
+                return $default;
+            }
             
-            $testParams = [
-                'CP' => '75001',
-                'RayonRecherche' => '5',
-                'NombreResultats' => '5'
-            ];
-            
-            $result = $this->findRelayPoints($testParams, 'REL');
-            
-            return [
-                'success' => $result['success'],
-                'message' => $result['success'] ? 'Connexion réussie' : 'Connexion échouée',
-                'points_found' => count($result['points'] ?? []),
-                'is_mock' => $result['is_mock'] ?? false
-            ];
-            
+            $result = $object->$method();
+            return $result !== false && $result !== null ? $result : $default;
         } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => 'Erreur de connexion: ' . $e->getMessage()
-            ];
+            return $default;
         }
     }
 
-    private function formatFullAddress($point)
+    private function safeGetFullAddress($relay): string
     {
-        return trim($point['address'] ?? $point['Adresse'] ?? '');
+        try {
+            if (method_exists($relay, 'getFullAddress')) {
+                $address = $relay->getFullAddress();
+                if ($address && $address !== false) {
+                    return $address;
+                }
+            }
+            
+            // Fallback manuel
+            $parts = [];
+            if ($addr = $this->safeProperty($relay, 'address')) $parts[] = $addr;
+            if ($cp = $this->safeProperty($relay, 'postalCode')) $parts[] = $cp;
+            if ($city = $this->safeProperty($relay, 'city')) $parts[] = $city;
+            
+            return !empty($parts) ? implode(', ', $parts) : 'Adresse non disponible';
+        } catch (\Exception $e) {
+            return 'Adresse non disponible';
+        }
     }
 
-    private function calculateDeliveryCost($type)
+    private function safeGetDistance($relay): string
     {
-        return $type === 'LOC' ? 3.90 : 4.90; // Prix indicatifs
+        try {
+            if (method_exists($relay, 'getFormattedDistance')) {
+                $distance = $relay->getFormattedDistance();
+                if ($distance && $distance !== false) {
+                    return $distance;
+                }
+            }
+            
+            // Fallback sur propriété directe
+            $distance = $this->safeProperty($relay, 'distance', 0);
+            return is_numeric($distance) ? number_format($distance / 1000, 1) . ' km' : '0 km';
+        } catch (\Exception $e) {
+            return '0 km';
+        }
     }
 }
