@@ -9,12 +9,17 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\MondialRelayController;
+use App\Http\Controllers\LegalController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Route::get('/admin', [DashboardController::class, 'index'])->name('admin')->middleware(['auth']);
 
 Route::resource('products', ProductController::class);
+
+// Routes légales
+Route::get('/cgv', [LegalController::class, 'cgv'])->name('legal.cgv');
+Route::get('/livraisons-retours', [LegalController::class, 'shippingReturns'])->name('legal.shipping-returns');
 
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');

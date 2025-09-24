@@ -10,7 +10,7 @@
         </div>
         <div class="hero-content" style="background: rgba(34, 34, 34, 0.95); padding: 40px 20px; text-align: center; position: relative; z-index: 2;">
             <div class="hero-text">
-                <p class="hero-subtitle">| DES ÉDITIONS ÉPHÉMÈRES EXCLUSIVES IMAGINÉES PAR DES ILLUSTRATEURS INDÉPENDANTS |</p>
+                <p class="hero-subtitle" style="font-size: clamp(0.8rem, 2.5vw, 1.2rem); line-height: 1.2; word-spacing: -0.1em;">| DES ÉDITIONS ÉPHÉMÈRES EXCLUSIVES IMAGINÉES PAR DES ILLUSTRATEURS INDÉPENDANTS |</p>
             </div>
         </div>
     </section>
@@ -109,7 +109,7 @@
             <p class="section-subtitle">Soyez le premier à découvrir nos nouvelles collections et bénéficiez d'offres exclusives</p>
             <div class="newsletter-container">
                 <input type="email" placeholder="Votre adresse email" class="form-input newsletter-form" style="width: 400px;">
-                <button class="btn-home">
+                <button class="btn-home" style="margin-top: 0;">
                     S'ABONNER
                 </button>
             </div>
@@ -124,7 +124,7 @@
                 <h3 class="section-subtitle">| CONTACTEZ-NOUS POUR TOUTE DEMANDE D'INFORMATION |</h3>
             </div>
             
-            <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
+            {{-- <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
                 <!-- Informations de contact -->
                 <div class="card">
                     <h4 class="card-title">CONTACTEZ-NOUS</h4>
@@ -168,7 +168,7 @@
                             ENVOYER UN EMAIL
                         </a>
                     </div>
-                </div>
+                </div> --}}
                 
                 <!-- Formulaire de contact -->
                 <div class="form-container">

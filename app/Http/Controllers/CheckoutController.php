@@ -42,7 +42,7 @@ class CheckoutController extends Controller
 
         return view('checkout.auth', [
             'cart' => $this->cart,
-            'total' => $this->cart->getTotalTTC(),
+            'total' => $this->cart->getTotal(),
         ]);
     }
 
@@ -96,18 +96,14 @@ class CheckoutController extends Controller
         session(['checkout_data' => $validatedData]);
 
         $shippingCost = $this->cart->getShippingCost($validatedData['shipping_method']);
-        $totalHT = $this->cart->getTotalHT();
-        $tva = $this->cart->getTVA();
-        $totalTTC = $this->cart->getTotalTTC();
-        $finalTotal = $totalTTC + $shippingCost;
+        $total = $this->cart->getTotal();
+        $finalTotal = $total + $shippingCost;
 
         return view('checkout.payment', [
             'cart' => $this->cart,
             'shippingData' => $validatedData,
             'shippingCost' => $shippingCost,
-            'totalHT' => $totalHT,
-            'tva' => $tva,
-            'totalTTC' => $totalTTC,
+            'total' => $total,
             'finalTotal' => $finalTotal,
         ]);
     }
@@ -128,18 +124,14 @@ class CheckoutController extends Controller
         }
 
         $shippingCost = $this->cart->getShippingCost($shippingData['shipping_method']);
-        $totalHT = $this->cart->getTotalHT();
-        $tva = $this->cart->getTVA();
-        $totalTTC = $this->cart->getTotalTTC();
-        $finalTotal = $totalTTC + $shippingCost;
+        $total = $this->cart->getTotal();
+        $finalTotal = $total + $shippingCost;
 
         return view('checkout.payment', [
             'cart' => $this->cart,
             'shippingData' => $shippingData,
             'shippingCost' => $shippingCost,
-            'totalHT' => $totalHT,
-            'tva' => $tva,
-            'totalTTC' => $totalTTC,
+            'total' => $total,
             'finalTotal' => $finalTotal,
         ]);
     }
@@ -469,7 +461,7 @@ class CheckoutController extends Controller
     protected function createOrder($shippingData)
     {
         $shippingCost = $this->cart->getShippingCost($shippingData['shipping_method']);
-        $finalTotal = $this->cart->getTotalTTC() + $shippingCost;
+        $finalTotal = $this->cart->getTotal() + $shippingCost;
 
         // Préparer les données pour le point relais
         $relayPointData = null;

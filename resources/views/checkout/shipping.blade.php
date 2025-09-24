@@ -119,7 +119,7 @@
                             <div class="checkout-option-content">
                                 <div class="checkout-option-info">
                                     <h4>Livraison à domicile</h4>
-                                    <p>Livraison en 3-5 jours ouvrés</p>
+                                    <p>Livraison en 3-5 jours ouvrés après fin des précommandes</p>
                                 </div>
                                 <div class="checkout-option-price">4.99€</div>
                             </div>
@@ -133,7 +133,7 @@
                             <div class="checkout-option-content">
                                 <div class="checkout-option-info">
                                     <h4>Point relais & Casiers</h4>
-                                    <p>Livraison en 2-4 jours ouvrés</p>
+                                    <p>Livraison en 2-4 jours ouvrés après fin des précommandes</p>
                                 </div>
                                 <div class="checkout-option-price">2.99€</div>
                             </div>
@@ -149,25 +149,30 @@
                             </h4>
                             
                             <div class="relay-search">
-                                <div class="checkout-form-group" style="display: flex; gap: 10px; align-items: end;">
-                                    <div>
+                                <div class="checkout-form-group" style="display: flex; gap: 15px; align-items: flex-end;">
+                                    <div style="flex: 0 0 140px;">
                                         <label for="relay-postal-code" class="checkout-label">Code postal</label>
                                         <input type="text" 
                                                id="relay-postal-code" 
                                                placeholder="Ex: 75001"
                                                class="checkout-input"
-                                               style="max-width: 120px;">
+                                               style="width: 100%;">
                                     </div>
-                                    <div>
+                                    <div style="flex: 1; min-width: 180px;">
                                         <label for="relay-city" class="checkout-label">Ville</label>
                                         <input type="text" 
                                                id="relay-city" 
                                                placeholder="Ex: Paris"
                                                class="checkout-input"
-                                               style="max-width: 150px;">
+                                               style="width: 100%;">
                                     </div>
-                                    <button type="button" id="search-relay-btn" class="btn btn-sm btn-primary">
+                                    <button type="button" id="search-relay-btn" class="btn-glass" style="
+                                        white-space: nowrap;
+                                        margin: 0 0 20px 0;
+                                        flex-shrink: 0;
+                                    ">
                                         Rechercher
+                                    </button>
                                     </button>
                                 </div>
                                 
@@ -207,16 +212,8 @@
                     
                     <div class="checkout-totals">
                         <div class="checkout-total-line">
-                            <span>Sous-total HT:</span>
-                            <span>{{ number_format($cart->getTotalHT(), 2) }}€</span>
-                        </div>
-                        <div class="checkout-total-line">
-                            <span>TVA (20%):</span>
-                            <span>{{ number_format($cart->getTVA(), 2) }}€</span>
-                        </div>
-                        <div class="checkout-total-line">
-                            <span>Sous-total TTC:</span>
-                            <span>{{ number_format($cart->getTotalTTC(), 2) }}€</span>
+                            <span>Sous-total:</span>
+                            <span>{{ number_format($cart->getTotal(), 2) }}€</span>
                         </div>
                         <div class="checkout-total-line">
                             <span>Livraison:</span>
@@ -247,51 +244,130 @@
 </div>
 
 <style>
-/* Styles pour le widget Mondial Relay */
+/* Styles glass design pour le widget Mondial Relay */
 .relay-search {
     margin-bottom: 20px;
 }
 
 .relay-point {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease !important;
+    margin-bottom: 10px;
 }
 
-
 .relay-point:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .relay-point.selected {
-    background-color: #e8f5e8 !important;
-    border-color: #27ae60 !important;
+    background: rgba(39, 174, 96, 0.25) !important;
+    border-color: rgba(39, 174, 96, 0.4) !important;
+    box-shadow: 0 8px 32px rgba(39, 174, 96, 0.2);
+}
+
+.select-relay-btn {
+    background: rgba(52, 152, 219, 0.7) !important;
+    border: 1px solid rgba(52, 152, 219, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease !important;
 }
 
 .select-relay-btn:hover {
-    background-color: #2980b9 !important;
+    background: rgba(41, 128, 185, 0.8) !important;
+    border-color: rgba(41, 128, 185, 0.4) !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 8px 25px rgba(41, 128, 185, 0.3) !important;
 }
 
 #mondial-relay-widget .checkout-section {
-    border: 1px solid #3498db;
-    border-radius: 8px;
-    padding: 20px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+#mondial-relay-widget .checkout-section:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 #mondial-relay-widget .checkout-section-title {
-    color: #2c3e50;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 10px;
+    color: var(--astro-black);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 12px;
     margin-bottom: 20px;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #relay-results {
     max-height: 400px;
     overflow-y: auto;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    background: white;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 16px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles spécifiques pour le bouton de recherche */
+#search-relay-btn {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: var(--astro-text-primary) !important;
+}
+
+#search-relay-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    color: var(--astro-text-primary) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+#search-relay-btn:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Style glass pour les champs de saisie */
+#relay-postal-code, #relay-city {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    color: var(--astro-black) !important;
+    padding: 12px 16px !important;
+    transition: all 0.3s ease !important;
+}
+
+#relay-postal-code:focus, #relay-city:focus {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(52, 152, 219, 0.4) !important;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1) !important;
+    outline: none !important;
+}
+
+#relay-postal-code::placeholder, #relay-city::placeholder {
+    color: rgba(0, 0, 0, 0.6) !important;
 }
 </style>
 
@@ -312,11 +388,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let currentRelayPoints = [];
     
-    const baseTotalTTC = {{ $cart->getTotalTTC() }};
+    const baseTotal = {{ $cart->getTotal() }};
     
     function updateTotal() {
         const shipping = homeShipping.checked ? 4.99 : 2.99;
-        const total = baseTotalTTC + shipping;
+        const total = baseTotal + shipping;
         
         shippingCost.textContent = shipping.toFixed(2) + '€';
         finalTotal.textContent = total.toFixed(2) + '€';
@@ -348,8 +424,31 @@ document.addEventListener('DOMContentLoaded', function() {
         searchRelayBtn.textContent = 'Recherche...';
         searchRelayBtn.disabled = true;
         
-        // Afficher un message de recherche
-        relayList.innerHTML = '<p style="color: #3498db; text-align: center; padding: 20px;">🔍 Recherche avec le package Mondial Relay...</p>';
+        // Afficher un message de recherche avec style glass
+        relayList.innerHTML = `
+            <div style="
+                background: rgba(52, 152, 219, 0.15);
+                border: 1px solid rgba(52, 152, 219, 0.2);
+                border-radius: 16px;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                box-shadow: 0 8px 32px rgba(52, 152, 219, 0.1);
+                padding: 24px;
+                text-align: center;
+                color: #3498db;
+                font-weight: 600;
+                text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+                animation: pulse 1.5s ease-in-out infinite alternate;
+            ">
+                🔍 Recherche avec le package Mondial Relay...
+            </div>
+            <style>
+                @keyframes pulse {
+                    0% { opacity: 0.7; transform: scale(1); }
+                    100% { opacity: 1; transform: scale(1.02); }
+                }
+            </style>
+        `;
         relayResults.style.display = 'block';
         
         // Utiliser la ville du champ relay-city ou celle de livraison comme fallback
@@ -378,12 +477,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentRelayPoints = data.data.points;
                 displayRelayPoints(data.data.points);
                 
-                // Afficher les statistiques du package
+                // Afficher les statistiques du package avec style glass
                 if (data.data.stats) {
                     const stats = data.data.stats;
                     const statsHtml = `
-                        <div style="background: #e8f5e8; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 12px;">
-                            <strong>📦 Package Mondial Relay :</strong> 
+                        <div style="
+                            background: rgba(39, 174, 96, 0.15);
+                            border: 1px solid rgba(39, 174, 96, 0.2);
+                            border-radius: 16px;
+                            backdrop-filter: blur(10px);
+                            -webkit-backdrop-filter: blur(10px);
+                            box-shadow: 0 8px 32px rgba(39, 174, 96, 0.1);
+                            padding: 16px;
+                            margin-bottom: 20px;
+                            text-align: center;
+                            font-size: 14px;
+                            color: var(--astro-black);
+                            font-weight: 600;
+                            text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+                        ">
+                            <strong style="color: #27ae60;">📦 Package Mondial Relay :</strong> 
                             ${stats.total} points trouvés 
                             (${stats.relay_points || 0} points relais, ${stats.lockers || 0} casiers)
                         </div>
@@ -392,14 +505,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 const message = data.message || 'Aucun point trouvé avec le package.';
-                relayList.innerHTML = `<p style="color: #e74c3c;">${message}</p>`;
+                relayList.innerHTML = `
+                    <div style="
+                        background: rgba(231, 76, 60, 0.15);
+                        border: 1px solid rgba(231, 76, 60, 0.2);
+                        border-radius: 16px;
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                        box-shadow: 0 8px 32px rgba(231, 76, 60, 0.1);
+                        padding: 20px;
+                        text-align: center;
+                        color: white;
+                        font-weight: 600;
+                    ">
+                        ❌ ${message}
+                    </div>
+                `;
                 relayResults.style.display = 'block';
                 currentRelayPoints = [];
             }
         })
         .catch(error => {
             console.error('Erreur package:', error);
-            relayList.innerHTML = '<p style="color: #e74c3c;">Erreur du package Mondial Relay. Veuillez réessayer.</p>';
+            relayList.innerHTML = `
+                <div style="
+                    background: rgba(231, 76, 60, 0.15);
+                    border: 1px solid rgba(231, 76, 60, 0.2);
+                    border-radius: 16px;
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    box-shadow: 0 8px 32px rgba(231, 76, 60, 0.1);
+                    padding: 20px;
+                    text-align: center;
+                    color: white;
+                    font-weight: 600;
+                ">
+                    ⚠️ Erreur du package Mondial Relay. Veuillez réessayer.
+                </div>
+            `;
             relayResults.style.display = 'block';
             currentRelayPoints = [];
         })
@@ -409,9 +552,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Afficher la liste des points relais
+    // Afficher la liste des points relais avec style glass
     function displayRelayPoints(points) {
-        let html = '<h5 style="margin-bottom: 15px;">Points de collecte disponibles :</h5>';
+        let html = `
+            <h5 style="
+                margin-bottom: 20px;
+                color: var(--astro-black);
+                font-weight: 700;
+                text-align: center;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                background: rgba(255,255,255,0.1);
+                padding: 12px 20px;
+                border-radius: 12px;
+                backdrop-filter: blur(5px);
+                -webkit-backdrop-filter: blur(5px);
+                border: 1px solid rgba(255,255,255,0.15);
+            ">
+                📍 Points de collecte disponibles
+            </h5>
+        `;
         
         // Séparer les points relais et les lockers
         const relayPoints = points.filter(p => p.type === 'REL');
@@ -419,7 +578,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Afficher d'abord les lockers (souvent plus pratiques)
         if (lockers.length > 0) {
-            html += '<h6 style="margin: 15px 0 10px 0; color: #27ae60; font-weight: bold;">🔒 Casiers automatiques (24h/24)</h6>';
+            html += `
+                <h6 style="
+                    margin: 20px 0 15px 0; 
+                    color: #27ae60; 
+                    font-weight: 700;
+                    background: rgba(39, 174, 96, 0.1);
+                    padding: 10px 16px;
+                    border-radius: 12px;
+                    backdrop-filter: blur(5px);
+                    -webkit-backdrop-filter: blur(5px);
+                    border: 1px solid rgba(39, 174, 96, 0.2);
+                    text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+                    border-left: 4px solid #27ae60;
+                ">
+                    🔒 Casiers automatiques (24h/24)
+                </h6>
+            `;
             lockers.forEach(point => {
                 html += generatePointHTML(point, '#27ae60', '🔒');
             });
@@ -427,7 +602,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Puis les points relais classiques
         if (relayPoints.length > 0) {
-            html += '<h6 style="margin: 15px 0 10px 0; color: #3498db; font-weight: bold;">🏪 Points relais</h6>';
+            html += `
+                <h6 style="
+                    margin: 20px 0 15px 0; 
+                    color: #3498db; 
+                    font-weight: 700;
+                    background: rgba(52, 152, 219, 0.1);
+                    padding: 10px 16px;
+                    border-radius: 12px;
+                    backdrop-filter: blur(5px);
+                    -webkit-backdrop-filter: blur(5px);
+                    border: 1px solid rgba(52, 152, 219, 0.2);
+                    text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+                    border-left: 4px solid #3498db;
+                ">
+                    🏪 Points relais
+                </h6>
+            `;
             relayPoints.forEach(point => {
                 html += generatePointHTML(point, '#3498db', '🏪');
             });
@@ -445,51 +636,105 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Générer le HTML pour un point de collecte
+    // Générer le HTML pour un point de collecte avec style glass
     function generatePointHTML(point, color, icon) {
         const isLocker = point.type === 'LOC';
         const typeLabel = isLocker ? 'Casier automatique' : 'Point relais';
         const availabilityText = isLocker ? 'Accès 24h/24 - 7j/7' : 'Voir horaires sur place';
         
+        // Convertir la couleur hex en rgba pour l'effet glass
+        const glassColor = color === '#27ae60' ? 'rgba(39, 174, 96, 0.15)' : 'rgba(52, 152, 219, 0.15)';
+        const borderColor = color === '#27ae60' ? 'rgba(39, 174, 96, 0.3)' : 'rgba(52, 152, 219, 0.3)';
+        const accentColor = color === '#27ae60' ? 'rgba(39, 174, 96, 0.7)' : 'rgba(52, 152, 219, 0.7)';
+        
         return `
             <div class="relay-point" data-point-id="${point.id}" style="
-                border: 1px solid #ddd; 
-                padding: 15px; 
-                margin-bottom: 10px; 
+                background: rgba(255, 255, 255, 0.15);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 16px;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                padding: 20px;
+                margin-bottom: 12px;
                 cursor: pointer;
-                border-radius: 5px;
                 transition: all 0.3s ease;
                 border-left: 4px solid ${color};
-            " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='white'">
+                position: relative;
+                overflow: hidden;
+            ">
+                <!-- Effet de brillance subtil -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);"></div>
+                
                 <div style="display: flex; justify-content: space-between; align-items: start;">
                     <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; margin-bottom: 5px;">
-                            <span style="margin-right: 8px; font-size: 16px;">${icon}</span>
-                            <h6 style="margin: 0; font-weight: bold; color: #2c3e50;">${point.name}</h6>
-                            <span style="margin-left: 10px; background: ${color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; text-transform: uppercase;">
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <span style="margin-right: 10px; font-size: 18px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">${icon}</span>
+                            <h6 style="margin: 0; font-weight: 700; color: var(--astro-black); text-shadow: 0 1px 2px rgba(0,0,0,0.1); font-size: 16px;">${point.name}</h6>
+                            <span style="
+                                margin-left: 12px; 
+                                background: ${accentColor}; 
+                                color: white; 
+                                padding: 4px 12px; 
+                                border-radius: 20px; 
+                                font-size: 11px; 
+                                text-transform: uppercase; 
+                                font-weight: 600;
+                                backdrop-filter: blur(10px);
+                                -webkit-backdrop-filter: blur(10px);
+                                border: 1px solid rgba(255,255,255,0.2);
+                                text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                            ">
                                 ${typeLabel}
                             </span>
                         </div>
-                        <p style="margin: 0 0 5px 0; color: #7f8c8d;">${point.address}</p>
-                        <p style="margin: 0 0 5px 0; color: #7f8c8d;">${point.postal_code} ${point.city}</p>
-                        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 8px;">
-                            <small style="color: #16a085; font-weight: bold;">
+                        <p style="margin: 0 0 6px 0; color: rgba(0,0,0,0.7); font-weight: 500; text-shadow: 0 1px 2px rgba(255,255,255,0.5);">${point.address}</p>
+                        <p style="margin: 0 0 8px 0; color: rgba(0,0,0,0.7); font-weight: 500; text-shadow: 0 1px 2px rgba(255,255,255,0.5);">${point.postal_code} ${point.city}</p>
+                        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 10px;">
+                            <small style="
+                                color: #16a085; 
+                                font-weight: 600;
+                                background: rgba(22, 160, 133, 0.1);
+                                padding: 4px 8px;
+                                border-radius: 8px;
+                                backdrop-filter: blur(5px);
+                                -webkit-backdrop-filter: blur(5px);
+                                border: 1px solid rgba(22, 160, 133, 0.2);
+                            ">
                                 ⏰ ${availabilityText}
                             </small>
                         </div>
-                        ${point.phone ? `<small style="color: #7f8c8d;">📞 ${point.phone}</small>` : ''}
+                        ${point.phone ? `
+                            <small style="
+                                color: rgba(0,0,0,0.6); 
+                                display: block; 
+                                margin-top: 6px;
+                                background: rgba(255,255,255,0.1);
+                                padding: 3px 6px;
+                                border-radius: 6px;
+                                backdrop-filter: blur(5px);
+                                -webkit-backdrop-filter: blur(5px);
+                                border: 1px solid rgba(255,255,255,0.1);
+                                width: fit-content;
+                            ">📞 ${point.phone}</small>
+                        ` : ''}
                     </div>
                     <button type="button" class="select-relay-btn" data-point='${JSON.stringify(point)}' style="
-                        background: ${color};
+                        background: ${accentColor};
                         color: white;
-                        border: none;
-                        padding: 10px 16px;
-                        border-radius: 6px;
+                        border: 1px solid rgba(255,255,255,0.2);
+                        padding: 12px 18px;
+                        border-radius: 12px;
                         cursor: pointer;
-                        font-size: 12px;
-                        font-weight: bold;
+                        font-size: 13px;
+                        font-weight: 600;
                         transition: all 0.3s ease;
-                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                        margin-left: 15px;
+                    ">
                         Sélectionner
                     </button>
                 </div>
