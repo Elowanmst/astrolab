@@ -99,10 +99,10 @@
                 <p><strong>{{ session('cart_success')['product_name'] }}</strong> a été ajouté à votre panier</p>
                 
                 <div class="cart-popup-buttons">
-                    <a href="{{ route('home') }}" class="btn btn-secondary">
+                    <a href="{{ route('home') }}" class="btn-glass btn-glass-secondary">
                         <i class="fas fa-arrow-left"></i> Continuer mes achats
                     </a>
-                    <a href="{{ route('cart.index') }}" class="btn btn-primary">
+                    <a href="{{ route('cart.index') }}" class="btn-glass btn-glass-primary">
                         <i class="fas fa-shopping-cart"></i> Voir mon panier
                     </a>
                 </div>

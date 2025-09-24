@@ -143,16 +143,8 @@
                 
                 <div class="checkout-totals">
                     <div class="checkout-total-line">
-                        <span>Sous-total HT:</span>
-                        <span>{{ number_format($totalHT, 2) }}€</span>
-                    </div>
-                    <div class="checkout-total-line">
-                        <span>TVA (20%):</span>
-                        <span>{{ number_format($tva, 2) }}€</span>
-                    </div>
-                    <div class="checkout-total-line">
-                        <span>Sous-total TTC:</span>
-                        <span>{{ number_format($totalTTC, 2) }}€</span>
+                        <span>Sous-total:</span>
+                        <span>{{ number_format($total, 2) }}€</span>
                     </div>
                     <div class="checkout-total-line">
                         <span>Livraison:</span>
@@ -168,7 +160,7 @@
                     <div class="checkout-checkbox">
                         <input type="checkbox" id="terms" required>
                         <label for="terms">
-                            J'accepte les <a href="#">conditions générales de vente</a>
+                            J'accepte les <a href="{{ route('legal.cgv') }}" target="_blank">conditions générales de vente</a>
                         </label>
                     </div>
                 </div>

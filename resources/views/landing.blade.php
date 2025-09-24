@@ -244,52 +244,7 @@
                 <h3 class="section-subtitle">| GILDAS CHAUVEL - FONDATEUR D'ASTROLAB |</h3>
             </div>
             
-            <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
-                <!-- Informations de contact -->
-                <div class="card">
-                    <h4 class="card-title">CONTACTEZ-NOUS</h4>
-                    <div class="card-text">
-                        <div class="contact-info-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-phone"></i>
-                            </div>
-                            <div class="contact-details">
-                                <h4>Téléphone</h4>
-                                <p>06 00 00 00 00</p>
-                            </div>
-                        </div>
-                        <div class="contact-info-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div class="contact-details">
-                                <h4>Email</h4>
-                                <p>gildas@astrolab.fr</p>
-                            </div>
-                        </div>
-                        <div class="contact-info-item">
-                            <div class="contact-icon">
-                                <i class="fab fa-instagram"></i>
-                            </div>
-                            <div class="contact-details">
-                                <h4>Instagram</h4>
-                                <a href="https://instagram.com/" target="_blank" style="color: white; text-decoration: none;">
-                                    @astrolab_official
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- CTA urgence -->
-                    <div class="card preorder-cta-card" style="margin-top: 24px;">
-                        <h4 class="card-title" style="color: white;">ENVIE DE PRÉCOMMANDER ?</h4>
-                        <p class="card-text" style="color: rgba(255,255,255,0.9);">Contactez-nous dès maintenant pour réserver votre pièce avant la fin de la collection</p>
-                        <a href="mailto:gildas@astrolab.fr" class="btn-home">
-                            ENVOYER UN EMAIL
-                        </a>
-                    </div>
-                </div>
-                
+            <div style="max-width: 600px; margin: 0 auto;">
                 <!-- Formulaire de contact -->
                 <div class="form-container">
                     <h4 class="card-title">ENVOYEZ-NOUS UN MESSAGE</h4>
@@ -370,6 +325,9 @@
             </div>
             
             <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 32px; margin-top: 32px;">
+                <p class="card-text" style="margin-bottom: 12px;">
+                    Astrolab est une marque de coup d'envoi
+                </p>
                 <p class="card-text">
                     © 2025 ASTROLAB - Tous droits réservés | 
                     Créé par <a href="https://ec-craft.fr" target="_blank" style="color: rgba(255,255,255,0.7);">ec-craft.fr</a>

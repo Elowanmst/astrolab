@@ -27,6 +27,13 @@ class Cart
         if (isset($cart[$itemKey])) {
             $cart[$itemKey]['quantity'] += $quantity;
         } else {
+            // Récupérer l'URL de l'image avec fallback
+            $imageUrl = $product->getFirstMediaUrl('products', 'thumb');
+            if (empty($imageUrl) && $product->getMedia('products')->count() > 0) {
+                // Fallback vers l'image originale si la thumbnail n'existe pas
+                $imageUrl = $product->getFirstMediaUrl('products');
+            }
+            
             $cart[$itemKey] = [
                 'product_id' => $product->id,
                 'name' => $product->name,
@@ -34,7 +41,7 @@ class Cart
                 'quantity' => $quantity,
                 'size' => $size,
                 'color' => $color,
-                'image' => $product->getFirstMediaUrl('products', 'thumb'),
+                'image' => $imageUrl,
             ];
         }
 
@@ -82,14 +89,9 @@ class Cart
         return $this->total();
     }
 
-    public function getTVA($rate = 0.20)
+    public function getTotal()
     {
-        return $this->getTotalHT() * $rate;
-    }
-
-    public function getTotalTTC($tvaRate = 0.20)
-    {
-        return $this->getTotalHT() * (1 + $tvaRate);
+        return $this->getTotalHT();
     }
 
     public function getShippingCost($shippingMethodCode = 'home')
@@ -125,9 +127,9 @@ class Cart
         return \App\Models\ShippingMethod::active()->ordered()->get();
     }
 
-    public function getFinalTotal($shippingMethod = 'home', $tvaRate = 0.20)
+    public function getFinalTotal($shippingMethod = 'home')
     {
-        return $this->getTotalTTC($tvaRate) + $this->getShippingCost($shippingMethod);
+        return $this->getTotal() + $this->getShippingCost($shippingMethod);
     }
 
     public function isEmpty()

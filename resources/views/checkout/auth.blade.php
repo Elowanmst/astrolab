@@ -47,13 +47,9 @@
                         <span>Total HT:</span>
                         <span>{{ number_format($cart->getTotalHT(), 2) }}€</span>
                     </div>
-                    <div class="checkout-total-line">
-                        <span>TVA (20%):</span>
-                        <span>{{ number_format($cart->getTVA(), 2) }}€</span>
-                    </div>
                     <div class="checkout-total-line final">
-                        <span>Total TTC:</span>
-                        <span>{{ number_format($cart->getTotalTTC(), 2) }}€</span>
+                        <span>Total:</span>
+                        <span>{{ number_format($cart->getTotal(), 2) }}€</span>
                     </div>
                     <p style="color: var(--astro-text-secondary); font-size: 0.8rem; margin-top: 0.5rem; font-weight: 500;">+ Frais de livraison (calculés à l'étape suivante)</p>
                 </div>

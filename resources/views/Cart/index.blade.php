@@ -15,7 +15,18 @@
                 @foreach($cartItems as $item)
                     <div class="cart-item">
                         <div class="item-image">
-                            <img src="{{ asset('storage/' . ($item['image'] ?? 'default-image.jpg')) }}" alt="{{ $item['name'] }}">
+                            @if(!empty($item['image']))
+                                <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="image-placeholder" style="display: none;">
+                                    <i class="fas fa-image"></i>
+                                    <span>IMG</span>
+                                </div>
+                            @else
+                                <div class="image-placeholder">
+                                    <i class="fas fa-image"></i>
+                                    <span>IMG</span>
+                                </div>
+                            @endif
                         </div>
                         <div class="item-details">
                             <h3 class="item-name">| {{ mb_strtoupper($item['name'], 'UTF-8') }} |</h3>
