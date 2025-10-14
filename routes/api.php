@@ -28,7 +28,7 @@ Route::prefix('mondial-relay')->group(function () {
     Route::get('/test-connection', [MondialRelayController::class, 'testConnection']);
     
     // Route optimisée pour le checkout
-    Route::post('/checkout-delivery-points', [MondialRelayController::class, 'getCheckoutDeliveryPoints'])->name('checkout.delivery.points');
+    Route::post('/checkout-delivery-points', [MondialRelayController::class, 'getCheckoutDeliveryPoints'])->name('checkout.delivery.points.api');
     Route::get('/test-connection', [MondialRelayController::class, 'testConnection'])->name('test');
     Route::post('/point-details', [MondialRelayController::class, 'getPointDetails'])->name('point.details');
 });
