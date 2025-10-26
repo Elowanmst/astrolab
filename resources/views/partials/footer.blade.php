@@ -2,7 +2,7 @@
 <footer class="footer-section">
     <div class="max-width text-center">
         <div class="space-y">
-            <h3 class="section-title">ASTROLAB</h3>
+            <h3 class="section-title-foot">ASTROLAB</h3>
             <p class="card-text">Créations exclusives • Éditions limitées • Qualité premium</p>
         </div>
         

@@ -28,7 +28,7 @@ class User extends Authenticatable implements FilamentUser
         'city',
         'postal_code',
         'country',
-        'newsletter_subscribed',
+        // 'newsletter_subscribed',
         'birth_date',
         'is_admin',
         'billing_address',
@@ -70,7 +70,7 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'birth_date' => 'datetime',
             'is_admin' => 'boolean',
-            'newsletter_subscribed' => 'boolean',
+            // 'newsletter_subscribed' => 'boolean',
         ];
     }
 

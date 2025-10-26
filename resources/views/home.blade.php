@@ -4,7 +4,7 @@
 <div class="landing-container" style="padding-top: 0;">
     
     <!-- Hero Section avec bannière dynamique -->
-    <section class="bg-home hero-section" style="height: 70vh; display: flex; flex-direction: column;">
+    <section class="bg-home hero-section" style="height: 70vh;">
         <div class="hero-banner" style="flex: 1; background-image: url('{{ $homeSettings['hero_image'] ? asset('storage/' . $homeSettings['hero_image']) : '/assets/img/BANIERE-COLLECTION-SITE-ASTROLAB.webp' }}'); background-size: cover; background-position: center; background-repeat: no-repeat; position: relative; display: flex; align-items: center; justify-content: center;">
             <div class="hero-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.1);"></div>
         </div>
@@ -55,11 +55,11 @@
             </div>
             
             <!-- Bouton vers la boutique -->
-            <div class="text-center space-y">
+            {{-- <div class="text-center space-y">
                 <a href="{{ route('products.index') }}" class="btn-home">
                     VOIR TOUTE LA COLLECTION
                 </a>
-            </div>
+            </div> --}}
             
             <!-- Call to Action -->
             {{-- <div class="text-center space-y">
@@ -85,7 +85,7 @@
             <h2 class="section-title">ILLUSTRATEURS - GRAPHISTES</h2>
             <h3 class="section-subtitle">| SUIVEZ MATHIS DOUILLARD & AXEL CHAPET SUR LEURS RÉSEAUX POUR DÉCOUVRIR LEUR UNIVERS |</h3>
             
-            <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
+            <div class="grid-3">
                 <div class="card">
                     <div class="card-icon" style="width: 120px; height: 120px; background-color: #666; border-radius: 50%; margin: 0 auto 24px;"></div>
                     <h4 class="card-title">MATHIS DOUILLARD</h4>
@@ -103,7 +103,7 @@
     </section>
     
     <!-- Section Newsletter -->
-    <section id="newsletter" class="section-container footer-section">
+    {{-- <section id="newsletter" class="section-container footer-section">
         <div class="max-width text-center">
             <h2 class="section-title">RESTEZ INFORMÉ</h2>
             <p class="section-subtitle">Soyez le premier à découvrir nos nouvelles collections et bénéficiez d'offres exclusives</p>
@@ -114,7 +114,7 @@
                 </button>
             </div>
         </div>
-    </section>
+    </section> --}}
     
     <!-- Section Contact -->
     <section id="contact" class="section-container">

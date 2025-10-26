@@ -42,7 +42,7 @@ class ProfileController extends Controller
             'address' => ['nullable', 'string', 'max:500'],
             'city' => ['nullable', 'string', 'max:100'],
             'postal_code' => ['nullable', 'string', 'max:10'],
-            'newsletter' => ['boolean'],
+            // 'newsletter' => ['boolean'],
         ]);
 
         $user->update([
