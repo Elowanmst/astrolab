@@ -262,6 +262,14 @@ body {
     border: 1px solid var(--astro-border);
 }
 
+
+/* === ILLUSTRATEURS === */
+.grid-3 {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
+}
+
 /* === FORMULAIRES === */
 input[type="text"],
 input[type="email"], 
@@ -1384,6 +1392,13 @@ a:hover {
     overflow: hidden;
 }
 
+@media (max-width: 768px) {
+    .hero-section {
+        display: none;
+    }
+}
+
+
 .hero-banner {
     flex: 1;
     min-height: 50vh;
@@ -1501,6 +1516,19 @@ a:hover {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+.section-title-foot {
+    font-size: 3rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+    margin-bottom: var(--astro-spacing-lg);
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #ffffff, #ccc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-top: 40px;
 }
 
 .section-subtitle {
@@ -1809,6 +1837,7 @@ a:hover {
     color: var(--astro-text-primary);
     font-family: var(--astro-font-family);
     transition: var(--astro-transition);
+    appearance: none;
 }
 
 .form-input:focus, .newsletter-form:focus {

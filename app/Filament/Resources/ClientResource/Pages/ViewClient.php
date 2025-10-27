@@ -77,9 +77,9 @@ class ViewClient extends ViewRecord
                             ->state(function ($record) {
                                 return number_format($record->orders()->sum('total_amount'), 2) . ' €';
                             }),
-                        Infolists\Components\IconEntry::make('newsletter_subscribed')
-                            ->label('Abonné newsletter')
-                            ->boolean(),
+                        // Infolists\Components\IconEntry::make('newsletter_subscribed')
+                        //     ->label('Abonné newsletter')
+                        //     ->boolean(),
                         Infolists\Components\TextEntry::make('created_at')
                             ->label('Date d\'inscription')
                             ->dateTime('d/m/Y à H:i'),

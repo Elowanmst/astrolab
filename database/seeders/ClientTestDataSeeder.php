@@ -27,7 +27,7 @@ class ClientTestDataSeeder extends Seeder
                 'shipping_city' => ['Paris', 'Lyon', 'Marseille'][$index],
                 'shipping_postal_code' => ['75002', '69002', '13002'][$index],
                 'shipping_country' => 'France',
-                'newsletter_subscribed' => rand(0, 1),
+                // 'newsletter_subscribed' => rand(0, 1),
                 'email_verified_at' => now()->subDays(rand(1, 30)),
             ]);
         }

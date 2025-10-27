@@ -97,9 +97,9 @@ class ClientResource extends Resource
 
                 Forms\Components\Section::make('Préférences')
                     ->schema([
-                        Forms\Components\Toggle::make('newsletter_subscribed')
-                            ->label('Abonné à la newsletter')
-                            ->default(false),
+                        // Forms\Components\Toggle::make('newsletter_subscribed')
+                        //     ->label('Abonné à la newsletter')
+                        //     ->default(false),
                         Forms\Components\DateTimePicker::make('created_at')
                             ->label('Date d\'inscription')
                             ->disabled(),
@@ -129,9 +129,9 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('billing_city')
                     ->label('Ville')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('newsletter_subscribed')
-                    ->label('Newsletter')
-                    ->boolean(),
+                // Tables\Columns\IconColumn::make('newsletter_subscribed')
+                //     ->label('Newsletter')
+                //     ->boolean(),
                 Tables\Columns\IconColumn::make('email_verified_at')
                     ->label('Email vérifié')
                     ->boolean()
@@ -154,9 +154,9 @@ class ClientResource extends Resource
                 Tables\Filters\Filter::make('verified')
                     ->label('Email vérifié')
                     ->query(fn (Builder $query): Builder => $query->whereNotNull('email_verified_at')),
-                Tables\Filters\Filter::make('newsletter')
-                    ->label('Abonné newsletter')
-                    ->query(fn (Builder $query): Builder => $query->where('newsletter_subscribed', true)),
+                // Tables\Filters\Filter::make('newsletter')
+                //     ->label('Abonné newsletter')
+                //     ->query(fn (Builder $query): Builder => $query->where('newsletter_subscribed', true)),
                 Tables\Filters\Filter::make('has_orders')
                     ->label('A passé des commandes')
                     ->query(fn (Builder $query): Builder => $query->has('orders')),

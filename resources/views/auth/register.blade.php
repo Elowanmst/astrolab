@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-black text-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen text-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
         <div>
             <h1 class="text-center text-4xl font-bold">ASTROLAB</h1>
@@ -71,7 +71,7 @@
                            class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent">
                 </div>
 
-                <div class="flex items-center">
+                {{-- <div class="flex items-center">
                     <input type="checkbox" 
                            name="newsletter" 
                            id="newsletter" 
@@ -80,7 +80,7 @@
                     <label for="newsletter" class="ml-2 block text-sm text-gray-300">
                         Je souhaite recevoir la newsletter d'Astrolab
                     </label>
-                </div>
+                </div> --}}
             </div>
 
             <div>
