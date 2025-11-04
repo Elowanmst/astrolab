@@ -2256,11 +2256,11 @@ a:hover {
         100% { transform: scale(1); }
     }
 }
-    .navbar-cta,
+    /* .navbar-cta,
     .navbar-cart-icon,
     .navbar-user-menu {
         display: none;
-    }
+    } */
     
     .hero-section {
         height: 60vh;
