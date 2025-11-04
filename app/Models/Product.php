@@ -8,6 +8,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Image\Enums\CropPosition;
+use App\Enums\ProductSize;
 
 class Product extends Model implements HasMedia
 {
@@ -24,6 +25,10 @@ class Product extends Model implements HasMedia
         'size',
         'material',
         'gender'
+    ];
+
+    protected $casts = [
+        'size' => ProductSize::class,
     ];
     
     public function category()

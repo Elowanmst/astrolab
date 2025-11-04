@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use App\Enums\ProductSize;
 
 
 class ProductResource extends Resource
@@ -68,6 +69,12 @@ class ProductResource extends Resource
                             ->required()
                             ->helperText('Sélectionnez la couleur ou entrez un code hexadécimal (ex: #FF0000)'),
                     ]), // Active la création rapide d'une couleur
+                
+                Forms\Components\Select::make('size')
+                    ->options(\App\Enums\ProductSize::getOptions())
+                    ->label('Taille')
+                    ->helperText('Sélectionnez la taille disponible pour ce produit')
+                    ->nullable(),
             ]);
     }
 

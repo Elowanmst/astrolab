@@ -135,12 +135,12 @@
                 <div class="product-option-group">
                     <label class="option-label">Taille</label>
                     <div class="size-selector">
+                        <button type="button" class="size-option" data-size="XXS">XXS</button>
                         <button type="button" class="size-option" data-size="XS">XS</button>
                         <button type="button" class="size-option" data-size="S">S</button>
                         <button type="button" class="size-option" data-size="M">M</button>
                         <button type="button" class="size-option" data-size="L">L</button>
                         <button type="button" class="size-option" data-size="XL">XL</button>
-                        <button type="button" class="size-option" data-size="XXL">XXL</button>
                     </div>
                     <input type="hidden" name="size" id="selected-size">
                 </div>
@@ -223,40 +223,40 @@
                 </thead>
                 <tbody>
                     <tr>
+                        <td>XXS</td>
+                        <td>82-86</td>
+                        <td>62-66</td>
+                        <td>66</td>
+                    </tr>
+                    <tr>
                         <td>XS</td>
-                        <td>88-92</td>
-                        <td>68-72</td>
+                        <td>86-90</td>
+                        <td>66-70</td>
                         <td>68</td>
                     </tr>
                     <tr>
                         <td>S</td>
-                        <td>92-96</td>
-                        <td>72-76</td>
+                        <td>90-94</td>
+                        <td>70-74</td>
                         <td>70</td>
                     </tr>
                     <tr>
                         <td>M</td>
-                        <td>96-100</td>
-                        <td>76-80</td>
+                        <td>94-98</td>
+                        <td>74-78</td>
                         <td>72</td>
                     </tr>
                     <tr>
                         <td>L</td>
-                        <td>100-104</td>
-                        <td>80-84</td>
+                        <td>98-102</td>
+                        <td>78-82</td>
                         <td>74</td>
                     </tr>
                     <tr>
                         <td>XL</td>
-                        <td>104-108</td>
-                        <td>84-88</td>
+                        <td>102-106</td>
+                        <td>82-86</td>
                         <td>76</td>
-                    </tr>
-                    <tr>
-                        <td>XXL</td>
-                        <td>108-112</td>
-                        <td>88-92</td>
-                        <td>78</td>
                     </tr>
                 </tbody>
             </table>
@@ -264,7 +264,7 @@
     </div>
 </div>
 
-<button id="openModal" class="btn-primary">Contactez-nous</button>
+
 
 <script>
 // Fallback au cas où le script principal ne se charge pas à temps
@@ -301,6 +301,61 @@ if (typeof closeSizeGuide === 'undefined') {
         }
     }
 }
+
+// Amélioration du contraste pour les couleurs claires
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonction pour détecter si une couleur est claire
+    function isLightColor(color) {
+        // Convertir la couleur hex en RGB
+        let r, g, b;
+        
+        if (color.startsWith('#')) {
+            const hex = color.slice(1);
+            r = parseInt(hex.substr(0, 2), 16);
+            g = parseInt(hex.substr(2, 2), 16);
+            b = parseInt(hex.substr(4, 2), 16);
+        } else if (color.startsWith('rgb')) {
+            const matches = color.match(/\d+/g);
+            r = parseInt(matches[0]);
+            g = parseInt(matches[1]);
+            b = parseInt(matches[2]);
+        } else {
+            return false;
+        }
+        
+        // Calculer la luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.8; // Seuil pour déterminer si c'est clair
+    }
+    
+    // Appliquer des styles spéciaux aux couleurs claires
+    const colorOptions = document.querySelectorAll('.color-option');
+    colorOptions.forEach(option => {
+        const bgColor = option.style.backgroundColor;
+        if (bgColor && isLightColor(bgColor)) {
+            option.classList.add('light-color');
+        }
+    });
+});
+
+// CSS dynamique pour les couleurs claires
+const style = document.createElement('style');
+style.textContent = `
+    .color-option.light-color {
+        border: 3px solid #d0d0d0 !important;
+    }
+    
+    .color-input:checked + .color-option.light-color::after {
+        background: rgba(0, 0, 0, 0.95) !important;
+        border: 2px solid #222 !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.4) !important;
+    }
+    
+    .color-option.light-color:hover {
+        border-color: #999 !important;
+    }
+`;
+document.head.appendChild(style);
 </script>
 
 @endsection

@@ -14,12 +14,40 @@
             </div>
         </div>
     </section>
+
+    <!-- Section Countdown -->
+    @if($countdown && $countdown->is_active && !$countdown->isExpired())
+    <section class="countdown-section" id="countdown-section">
+        @if($countdown->title)
+            <h2 class="countdown-title">{{ strtoupper($countdown->title) }}</h2>
+        @endif
+        
+        <div class="countdown-container">
+            <div class="countdown-item">
+                <span class="countdown-number" id="days">00</span>
+                <span class="countdown-label">Jours</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-number" id="hours">00</span>
+                <span class="countdown-label">Heures</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-number" id="minutes">00</span>
+                <span class="countdown-label">Minutes</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-number" id="seconds">00</span>
+                <span class="countdown-label">Secondes</span>
+            </div>
+        </div>
+    </section>
+    @endif
     
     <!-- Séparateur lumineux -->
     <div class="divider"></div>
     
     <!-- Section Boutique -->
-    <section id="boutique" class="section-container text-center">
+    <section id="boutique" class="section-container text-center mt0">
         <div class="max-width">
             @if($collection)
                 <h2 class="section-title">{{ strtoupper($collection->name) }}</h2>
@@ -208,6 +236,64 @@
 
 <!-- JavaScript pour les animations -->
 <script>
+    // === COUNTDOWN FUNCTIONALITY ===
+@if($countdown && $countdown->is_active && !$countdown->isExpired())
+(function() {
+    const countdownEndDate = new Date('{{ $countdown->end_date->format('Y-m-d H:i:s') }}').getTime();
+    
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const timeLeft = countdownEndDate - now;
+        
+        if (timeLeft <= 0) {
+            // Masquer la section countdown quand terminé
+            const countdownSection = document.getElementById('countdown-section');
+            if (countdownSection) {
+                countdownSection.style.transition = 'opacity 0.5s ease';
+                countdownSection.style.opacity = '0';
+                setTimeout(() => {
+                    countdownSection.style.display = 'none';
+                }, 500);
+            }
+            return;
+        }
+        
+        // Calculs
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        // Mise à jour des éléments
+        const daysEl = document.getElementById('days');
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        
+        if (daysEl) daysEl.textContent = days.toString().padStart(2, '0');
+        if (hoursEl) hoursEl.textContent = hours.toString().padStart(2, '0');
+        if (minutesEl) minutesEl.textContent = minutes.toString().padStart(2, '0');
+        if (secondsEl) secondsEl.textContent = seconds.toString().padStart(2, '0');
+        
+        // Effet d'urgence pour les dernières 24 heures
+        const countdownSection = document.getElementById('countdown-section');
+        if (timeLeft < (24 * 60 * 60 * 1000) && countdownSection) {
+            countdownSection.classList.add('countdown-urgent');
+        }
+    }
+    
+    // Mise à jour immédiate
+    updateCountdown();
+    
+    // Mise à jour chaque seconde
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    
+    // Nettoyage au déchargement de la page
+    window.addEventListener('beforeunload', () => {
+        clearInterval(countdownInterval);
+    });
+})();
+@endif
 // === INITIALISATION AU CHARGEMENT DE LA PAGE ===
 document.addEventListener('DOMContentLoaded', function() {
     // === ANIMATIONS AU SCROLL ===
@@ -225,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, observerOptions);
 
     // Observer les éléments à animer
-    const elementsToAnimate = document.querySelectorAll('.section-container, .card, .product-card');
+    const elementsToAnimate = document.querySelectorAll('.section-container, .card, .product-card, .countdown-section');
     elementsToAnimate.forEach(el => observer.observe(el));
 });
 

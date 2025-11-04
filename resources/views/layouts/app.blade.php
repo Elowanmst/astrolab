@@ -38,6 +38,19 @@
                     <li class="nav-item">
                         <a href="#contact" class="nav-link">Contact</a>
                     </li>
+                    
+                    <!-- Lien panier pour mobile -->
+                    <li class="nav-item mobile-cart-item">
+                        <a href="{{ route('cart.index') }}" class="nav-link mobile-cart-link">
+                            <i class="fas fa-shopping-bag"></i>
+                            Panier
+                            @inject('cart', 'App\Services\Cart')
+                            @if($cart->count() > 0)
+                                <span class="mobile-cart-badge">{{ $cart->count() }}</span>
+                            @endif
+                        </a>
+                    </li>
+                    
                     @if(str_ends_with(Auth::user()->email ?? '', '@astrolab.com'))
                         <li class="nav-item">
                             <a href="/admin" class="nav-link" target="_blank">Admin</a>
