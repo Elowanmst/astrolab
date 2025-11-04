@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Banner;
 use App\Models\Collection;
 use App\Models\HomePageSetting;
+use App\Models\CountdownSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -38,6 +39,9 @@ class HomeController extends Controller
         // Récupérer les produits
         $products = Product::with('media')->get();
 
-        return view('home', compact('products', 'banner', 'collection', 'homeSettings'));
+        // Récupérer le countdown actif
+        $countdown = CountdownSetting::getActive();
+
+        return view('home', compact('products', 'banner', 'collection', 'homeSettings', 'countdown'));
     }  
 }

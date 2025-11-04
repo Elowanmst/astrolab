@@ -352,17 +352,44 @@ input[type="number"].qty-input {
 }
 
 .color-input:checked + .color-option::after {
-    content: '';
+    content: '✓';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: var(--astro-primary);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
     opacity: 1;
     z-index: 2;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Style spécial pour les couleurs claires */
+.color-option[style*="background-color: #ffffff"],
+.color-option[style*="background-color: #FFFFFF"],
+.color-option[style*="background-color: white"],
+.color-option[style*="background-color: #fff"],
+.color-option[style*="background-color: #FFF"] {
+    border: 3px solid #e0e0e0;
+}
+
+.color-input:checked + .color-option[style*="background-color: #ffffff"]::after,
+.color-input:checked + .color-option[style*="background-color: #FFFFFF"]::after,
+.color-input:checked + .color-option[style*="background-color: white"]::after,
+.color-input:checked + .color-option[style*="background-color: #fff"]::after,
+.color-input:checked + .color-option[style*="background-color: #FFF"]::after {
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 .color-name {
@@ -674,6 +701,7 @@ input[type="number"].qty-input:focus {
     
     .product-detail-container {
         padding: 1rem;
+        margin-top: 26px;
     }
 }
 
