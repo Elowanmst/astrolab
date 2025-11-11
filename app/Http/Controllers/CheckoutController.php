@@ -49,27 +49,35 @@ class CheckoutController extends Controller
     /**
      * Étape 2 : Informations de livraison et mode de livraison
      */
-    public function shipping(Request $request)
-    {
-        if ($this->cart->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
-        }
+public function shipping(Request $request)
+{
+    // Si le panier est vide, on redirige
+    if ($this->cart->isEmpty()) {
+        return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
+    }
 
-        // Gérer la création de compte ou connexion si nécessaire
-        $user = null;
+    // Si c'est un POST depuis la page précédente
+    if ($request->isMethod('post')) {
         if ($request->checkout_type === 'register') {
+            // Créer le compte et connecter l'utilisateur
             $user = $this->createAccount($request);
             Auth::login($user);
         } elseif ($request->checkout_type === 'login') {
+            // Authentifier l'utilisateur existant
             $this->attemptLogin($request);
-            $user = Auth::user();
         }
 
-        return view('checkout.shipping', [
-            'cart' => $this->cart,
-            'user' => Auth::user(),
-        ]);
+        // Redirection vers la même page en GET pour éviter les problèmes de CSS/JS
+        return redirect()->route('checkout.shipping');
     }
+
+    // GET : afficher la page shipping
+    return view('checkout.shipping', [
+        'cart' => $this->cart,
+        'user' => Auth::user(),
+    ]);
+}
+
 
     /**
      * Étape 3 : Récapitulatif et paiement
