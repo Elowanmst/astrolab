@@ -55,7 +55,7 @@
                     <p class="section-subtitle">{{ strtoupper($collection->description) }}</p>
                 @endif
             @else
-                <h2 class="section-title">COLLECTION STELLAE 01</h2>
+                <h2 class="section-title">COLLECTION STELLON 01</h2>
                 <p class="section-subtitle">DÉCOUVREZ NOTRE PREMIÈRE COLLECTION EXCLUSIVE</p>
             @endif
             
