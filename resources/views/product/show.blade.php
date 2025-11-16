@@ -189,7 +189,7 @@
             <div class="shipping-info">
                 <div class="shipping-item">
                     <i class="fas fa-truck"></i>
-                    <span>Livraison gratuite en France métropolitaine</span>
+                    <span>Livraison en France métropolitaine</span>
                 </div>
                 <div class="shipping-item">
                     <i class="fas fa-undo"></i>
