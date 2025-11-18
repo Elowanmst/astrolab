@@ -175,9 +175,8 @@ public function shipping(Request $request)
                 'total' => $order->total_amount
             ]);
 
-            // Créer le PaymentIntent (sans confirmer)
-            $paymentData = ['payment_method' => $request->payment_method];
-            $paymentResult = $this->paymentService->processPayment($paymentData, $order);
+            // Créer le PaymentIntent (sans confirmer) - PCI DSS Compliant
+            $paymentResult = $this->paymentService->processStripePayment($order);
             
             Log::info('PaymentIntent créé', $paymentResult);
 
@@ -193,7 +192,7 @@ public function shipping(Request $request)
             $order->update([
                 'payment_status' => 'pending',
                 'payment_method' => 'stripe',
-                'transaction_id' => $paymentResult['transaction_id'],
+                'transaction_id' => $paymentResult['payment_intent_id'],
                 'status' => 'pending_payment',
             ]);
 
@@ -203,7 +202,7 @@ public function shipping(Request $request)
             return response()->json([
                 'success' => true,
                 'client_secret' => $paymentResult['client_secret'],
-                'payment_intent_id' => $paymentResult['transaction_id'],
+                'payment_intent_id' => $paymentResult['payment_intent_id'],
                 'order_id' => $order->id,
                 'message' => 'PaymentIntent créé avec succès'
             ]);
@@ -272,7 +271,10 @@ public function shipping(Request $request)
                 'card_last_4' => substr($request->card_number, -4),
             ]);
 
-            $paymentResult = $this->paymentService->processPayment($paymentData, $order);
+            // ATTENTION : Cette méthode viola la conformité PCI DSS
+            // Redirection vers la nouvelle méthode sécurisée
+            Log::error('Tentative d\'utilisation de l\'ancienne méthode non-PCI compliant');
+            throw new \Exception('Cette méthode de paiement n\'est plus supportée pour des raisons de sécurité PCI DSS');
             
             Log::info('Résultat du paiement', ['payment_result' => $paymentResult]);
 
@@ -612,16 +614,18 @@ public function shipping(Request $request)
         ]);
 
         try {
-            // Récupérer le PaymentIntent depuis Stripe
-            \Stripe\Stripe::setApiKey(config('stripe.secret_key'));
+            // Utiliser notre PaymentService PCI-compliant pour confirmer le paiement
+            $confirmResult = $this->paymentService->confirmStripePayment($request->payment_intent_id);
             
-            $paymentIntent = \Stripe\PaymentIntent::retrieve($request->payment_intent_id);
-            
-            Log::info('PaymentIntent récupéré', [
-                'id' => $paymentIntent->id,
-                'status' => $paymentIntent->status,
-                'amount' => $paymentIntent->amount,
-            ]);
+            Log::info('Résultat confirmation PaymentService', $confirmResult);
+
+            if (!$confirmResult['success']) {
+                Log::error('Échec confirmation PaymentService', $confirmResult);
+                return response()->json([
+                    'success' => false,
+                    'error' => $confirmResult['error'] ?? 'Erreur lors de la confirmation'
+                ], 400);
+            }
 
             // Trouver la transaction en base
             $transaction = PaymentTransaction::where('transaction_id', $request->payment_intent_id)->first();
@@ -644,7 +648,7 @@ public function shipping(Request $request)
             }
 
             // Vérifier le statut du paiement
-            if ($paymentIntent->status === 'succeeded') {
+            if ($confirmResult['status'] === 'succeeded') {
                 DB::beginTransaction();
 
                 // Mettre à jour la transaction
@@ -654,8 +658,8 @@ public function shipping(Request $request)
                         $transaction->processor_response ?? [],
                         [
                             'confirmed_at' => now()->toISOString(),
-                            'final_status' => $paymentIntent->status,
-                            'payment_method_id' => $request->payment_method_id,
+                            'final_status' => $confirmResult['status'],
+                            'payment_method_id' => $confirmResult['payment_method_id'],
                         ]
                     ),
                 ]);
@@ -664,7 +668,7 @@ public function shipping(Request $request)
                 $order->update([
                     'payment_status' => 'paid',
                     'payment_method' => 'stripe',
-                    'transaction_id' => $paymentIntent->id,
+                    'transaction_id' => $confirmResult['payment_intent_id'],
                     'status' => 'confirmed',
                 ]);
 
@@ -679,7 +683,7 @@ public function shipping(Request $request)
 
                 Log::info('Paiement confirmé avec succès', [
                     'order_id' => $order->id,
-                    'payment_intent_id' => $paymentIntent->id,
+                    'payment_intent_id' => $confirmResult['payment_intent_id'],
                 ]);
 
                 return response()->json([
@@ -693,18 +697,18 @@ public function shipping(Request $request)
                 // Paiement échoué
                 $transaction->update([
                     'status' => 'failed',
-                    'failure_reason' => "Statut Stripe: {$paymentIntent->status}",
+                    'failure_reason' => "Statut Stripe: {$confirmResult['status']}",
                 ]);
 
                 Log::warning('Paiement non réussi', [
-                    'payment_intent_id' => $paymentIntent->id,
-                    'status' => $paymentIntent->status,
+                    'payment_intent_id' => $confirmResult['payment_intent_id'],
+                    'status' => $confirmResult['status'],
                 ]);
 
                 return response()->json([
                     'success' => false,
-                    'error' => "Paiement non réussi. Statut: {$paymentIntent->status}",
-                    'status' => $paymentIntent->status,
+                    'error' => "Paiement non réussi. Statut: {$confirmResult['status']}",
+                    'status' => $confirmResult['status'],
                 ]);
             }
 
