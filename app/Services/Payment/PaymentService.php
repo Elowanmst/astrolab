@@ -1,4 +1,5 @@
 <?php
+// app/Services/Payment/PaymentService.php
 
 namespace App\Services\Payment;
 
@@ -12,299 +13,230 @@ class PaymentService
 
     public function __construct()
     {
-        $this->processor = config('payment.default_processor', 'stripe');
+        $this->processor = config('payment.default_processor', 'simulation');
     }
 
-    /**
-     * Traiter un paiement
-     */
     public function processPayment(array $paymentData, Order $order)
     {
+        Log::info('=== DÉBUT TRAITEMENT PAIEMENT ===', [
+            'processor' => $this->processor,
+            'order_id' => $order->id,
+            'amount' => $order->total_amount
+        ]);
+
         switch ($this->processor) {
             case 'stripe':
+                Log::info('Traitement avec Stripe');
                 return $this->processStripePayment($paymentData, $order);
             
-            case 'paypal':
-                return $this->processPayPalPayment($paymentData, $order);
-            
-            case 'lyra':
-                return $this->processLyraPayment($paymentData, $order);
+            case 'simulation':
+                Log::info('Traitement avec Simulation');
+                return $this->processSimulationPayment($paymentData, $order);
             
             default:
-
-                throw new \Exception("Processeur de paiement non configuré : {$this->processor}. Veuillez configurer PAYMENT_PROCESSOR=stripe dans votre .env");
+                Log::error('Processeur inconnu', ['processor' => $this->processor]);
+                throw new \Exception("Processeur de paiement non configuré : {$this->processor}");
         }
     }
 
     /**
-     * Simulation de paiement (pour les tests)
-     */
-    protected function processSimulationPayment(array $paymentData, Order $order)
-    {
-        // Créer la transaction en base
-        $transaction = PaymentTransaction::create([
-            'order_id' => $order->id,
-            'transaction_id' => 'SIM_' . time() . '_' . $order->id,
-            'processor' => 'simulation',
-            'status' => 'pending',
-            'amount' => $order->total_amount,
-            'fees' => 0,
-            'currency' => 'EUR',
-            'payment_method' => 'card',
-            'card_last_4' => substr($paymentData['card_number'], -4),
-            'card_brand' => $this->detectCardBrand($paymentData['card_number']),
-            'processed_at' => now(),
-        ]);
-
-        // Simuler un délai de traitement
-        sleep(1);
-
-        // Cartes de test spécifiques pour contrôler le résultat
-        $cardNumber = preg_replace('/\s+/', '', $paymentData['card_number']);
-        $testResult = $this->getTestResult($cardNumber);
-
-        // Log pour le développement
-        Log::info('Simulation de paiement', [
-            'order_id' => $order->id,
-            'transaction_id' => $transaction->transaction_id,
-            'amount' => $order->total_amount,
-            'card_last_4' => substr($paymentData['card_number'], -4),
-            'test_result' => $testResult,
-        ]);
-
-        if ($testResult['success']) {
-            $transaction->update([
-                'status' => 'completed',
-                'processor_response' => [
-                    'success' => true,
-                    'message' => $testResult['message'],
-                    'test_card' => $cardNumber,
-                    'simulated_at' => now()->toISOString(),
-                ]
-            ]);
-
-            return [
-                'success' => true,
-                'transaction_id' => $transaction->transaction_id,
-                'message' => $testResult['message'],
-                'processor' => 'simulation',
-            ];
-        } else {
-            $transaction->update([
-                'status' => 'failed',
-                'failure_reason' => $testResult['message'],
-                'processor_response' => [
-                    'success' => false,
-                    'error' => $testResult['message'],
-                    'test_card' => $cardNumber,
-                    'simulated_at' => now()->toISOString(),
-                ]
-            ]);
-
-            return [
-                'success' => false,
-                'error' => $testResult['message'],
-                'processor' => 'simulation',
-            ];
-        }
-    }
-
-    /**
-     * Détermine le résultat du test selon la carte utilisée
-     */
-    private function getTestResult($cardNumber)
-    {
-        switch ($cardNumber) {
-            case '4242424242424242':
-                return ['success' => true, 'message' => '✅ Paiement test réussi - Carte Visa valide'];
-                
-            case '5555555555554444':
-                return ['success' => true, 'message' => '✅ Paiement test réussi - Carte Mastercard valide'];
-                
-            case '4000000000000002':
-                return ['success' => false, 'message' => '❌ Carte déclinée - Fonds insuffisants'];
-                
-            case '4000000000000127':
-                return ['success' => false, 'message' => '❌ Carte expirée'];
-                
-            case '4000000000000119':
-                return ['success' => false, 'message' => '❌ Erreur de traitement - Réessayez plus tard'];
-                
-            default:
-                // Simulation aléatoire pour les autres cartes (95% de succès)
-                if (rand(1, 100) <= 95) {
-                    return ['success' => true, 'message' => '✅ Paiement simulé avec succès'];
-                } else {
-                    return ['success' => false, 'message' => '❌ Paiement refusé (simulation aléatoire)'];
-                }
-
-        }
-    }
-
-    /**
-     * Traitement Stripe (nécessite stripe/stripe-php)
+     * NOUVELLE MÉTHODE STRIPE SÉCURISÉE
+     * Crée un PaymentIntent et retourne le client_secret pour le frontend
      */
     protected function processStripePayment(array $paymentData, Order $order)
     {
+        // Vérifier que Stripe est installé
         if (!class_exists('Stripe\Stripe')) {
-            throw new \Exception('Stripe SDK non installé. Exécutez: composer require stripe/stripe-php');
+            Log::error('Stripe SDK non installé');
+            return [
+                'success' => false,
+                'error' => 'Stripe SDK non installé. Exécutez: composer require stripe/stripe-php',
+                'processor' => 'stripe',
+            ];
         }
 
-        try {
-            // Définir la clé API Stripe depuis la configuration des services
-            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+        // Vérifier les clés
+        $secretKey = config('stripe.secret_key') ?: config('services.stripe.secret');
+        if (!$secretKey) {
+            Log::error('Clé secrète Stripe manquante');
+            return [
+                'success' => false,
+                'error' => 'Configuration Stripe incomplète - Clé secrète manquante',
+                'processor' => 'stripe',
+            ];
+        }
 
-            // Créer un PaymentIntent
+        Log::info('Configuration Stripe', [
+            'secret_key_present' => !empty($secretKey),
+            'secret_key_prefix' => substr($secretKey, 0, 7),
+        ]);
+
+        try {
+            // Configurer Stripe
+            \Stripe\Stripe::setApiKey($secretKey);
+
+            // Pour les tests, on peut utiliser une carte de test directe
+            // ATTENTION : Ceci est UNIQUEMENT pour les tests en mode développement
+            if (app()->environment('local') && $this->isTestCard($paymentData['card_number'])) {
+                return $this->processTestCard($paymentData, $order);
+            }
+
+            // NOUVEAU : Créer le PaymentIntent sans données de carte
             $paymentIntent = \Stripe\PaymentIntent::create([
                 'amount' => round($order->total_amount * 100), // En centimes
-                'currency' => config('payment.processors.stripe.currency', 'eur'),
-                'payment_method_data' => [
-                    'type' => 'card',
-                    'card' => [
-                        'number' => $paymentData['card_number'],
-                        'exp_month' => substr($paymentData['card_expiry'], 0, 2),
-                        'exp_year' => '20' . substr($paymentData['card_expiry'], 3, 2),
-                        'cvc' => $paymentData['card_cvv'],
-                    ],
-                ],
-                'confirm' => true,
+                'currency' => 'eur',
                 'description' => "Commande Astrolab #{$order->order_number}",
                 'metadata' => [
                     'order_id' => $order->id,
                     'order_number' => $order->order_number,
-                    'customer_email' => $order->user->email ?? $order->guest_email,
-                    'customer_name' => $order->user->name ?? $order->guest_name,
                 ],
-                'receipt_email' => $order->user->email ?? $order->guest_email,
+                'payment_method_types' => ['card'],
+                // Mode manuel - sera confirmé côté frontend
+                'confirmation_method' => 'manual',
+                'confirm' => false,
             ]);
 
-            // Log pour le suivi
-            Log::info('Paiement Stripe traité', [
+            // Créer une transaction en base
+            $transaction = PaymentTransaction::create([
                 'order_id' => $order->id,
-                'payment_intent_id' => $paymentIntent->id,
+                'transaction_id' => $paymentIntent->id,
+                'processor' => 'stripe',
+                'status' => 'pending',
                 'amount' => $order->total_amount,
-                'status' => $paymentIntent->status,
+                'currency' => 'EUR',
+                'payment_method' => 'card',
+                'processed_at' => now(),
+                'processor_response' => [
+                    'payment_intent_id' => $paymentIntent->id,
+                    'status' => $paymentIntent->status,
+                    'client_secret' => $paymentIntent->client_secret,
+                    'created' => now()->toISOString(),
+                ]
             ]);
 
+            Log::info('PaymentIntent Stripe créé (en attente confirmation)', [
+                'payment_intent_id' => $paymentIntent->id,
+                'status' => $paymentIntent->status,
+                'amount' => $paymentIntent->amount,
+                'client_secret' => $paymentIntent->client_secret ? 'PRESENT' : 'MISSING',
+            ]);
+
+            // Retourner le client_secret pour confirmation côté frontend
             return [
-                'success' => $paymentIntent->status === 'succeeded',
+                'success' => true, // Création réussie, confirmation en attente
                 'transaction_id' => $paymentIntent->id,
-                'message' => $paymentIntent->status === 'succeeded' 
-                    ? 'Paiement traité avec succès par Stripe' 
-                    : 'Paiement en cours de traitement',
+                'client_secret' => $paymentIntent->client_secret,
+                'requires_action' => true,
+                'message' => 'PaymentIntent créé, confirmation requise côté client',
                 'processor' => 'stripe',
-                'payment_intent' => $paymentIntent,
+                'status' => $paymentIntent->status,
             ];
 
         } catch (\Stripe\Exception\CardException $e) {
-            // Erreur de carte (carte déclinée, etc.)
+            Log::error('Erreur carte Stripe', [
+                'error' => $e->getMessage(),
+                'decline_code' => $e->getDeclineCode(),
+            ]);
+
             return [
                 'success' => false,
-                'error' => 'Carte refusée: ' . $e->getError()->message,
-                'processor' => 'stripe',
-            ];
-        } catch (\Stripe\Exception\RateLimitException $e) {
-            // Trop de requêtes à l'API
-            return [
-                'success' => false,
-                'error' => 'Erreur de limite de taux, réessayez plus tard',
-                'processor' => 'stripe',
-            ];
-        } catch (\Stripe\Exception\InvalidRequestException $e) {
-            // Paramètres invalides
-            return [
-                'success' => false,
-                'error' => 'Paramètres de paiement invalides',
+                'error' => 'Carte refusée: ' . $e->getMessage(),
                 'processor' => 'stripe',
             ];
         } catch (\Stripe\Exception\AuthenticationException $e) {
-            // Clés API invalides
+            Log::error('Erreur authentification Stripe', ['error' => $e->getMessage()]);
+            
             return [
                 'success' => false,
-                'error' => 'Erreur d\'authentification Stripe',
-                'processor' => 'stripe',
-            ];
-        } catch (\Stripe\Exception\ApiConnectionException $e) {
-            // Problème de réseau
-            return [
-                'success' => false,
-                'error' => 'Erreur de connexion au service de paiement',
+                'error' => 'Erreur de configuration Stripe (clés invalides)',
                 'processor' => 'stripe',
             ];
         } catch (\Exception $e) {
+            Log::error('Erreur Stripe générale', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return [
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => 'Erreur de paiement: ' . $e->getMessage(),
                 'processor' => 'stripe',
             ];
         }
     }
 
     /**
-     * Traitement PayPal (nécessite paypal/rest-api-sdk-php)
+     * Vérifier si c'est une carte de test Stripe
      */
-    protected function processPayPalPayment(array $paymentData, Order $order)
+    private function isTestCard($cardNumber)
     {
-        // Implementation PayPal ici
-        throw new \Exception('PayPal non encore implémenté');
+        $cardNumber = preg_replace('/\s+/', '', $cardNumber);
+        $testCards = [
+            '4242424242424242', // Visa succès
+            '4000000000000002', // Visa déclinée
+            '4000000000009995', // Visa insufficient_funds
+            '5555555555554444', // Mastercard succès
+        ];
+        
+        return in_array($cardNumber, $testCards);
     }
 
     /**
-     * Traitement Lyra/PayZen (nécessite lyracom/rest-php-sdk)
+     * Traiter une carte de test en développement
      */
-    protected function processLyraPayment(array $paymentData, Order $order)
+    private function processTestCard(array $paymentData, Order $order)
     {
-        // Implementation Lyra ici
-        throw new \Exception('Lyra/PayZen non encore implémenté');
-    }
-
-    /**
-     * Calculer les frais de transaction
-     */
-    public function calculateFees($amount)
-    {
-        $fees = config('payment.fees.' . $this->processor, [
-            'percentage' => 0,
-            'fixed' => 0,
+        $cardNumber = preg_replace('/\s+/', '', $paymentData['card_number']);
+        
+        // Créer une transaction
+        $transaction = PaymentTransaction::create([
+            'order_id' => $order->id,
+            'transaction_id' => 'test_' . time() . '_' . $order->id,
+            'processor' => 'stripe_test',
+            'status' => 'completed',
+            'amount' => $order->total_amount,
+            'currency' => 'EUR',
+            'payment_method' => 'card',
+            'card_last_4' => substr($cardNumber, -4),
+            'card_brand' => $this->detectCardBrand($cardNumber),
+            'processed_at' => now(),
         ]);
 
-        return ($amount * $fees['percentage'] / 100) + $fees['fixed'];
+        // Simuler selon la carte
+        if ($cardNumber === '4242424242424242') {
+            Log::info('Carte test Stripe - Succès simulé');
+            return [
+                'success' => true,
+                'transaction_id' => $transaction->transaction_id,
+                'message' => 'Test Stripe - Paiement simulé avec succès',
+                'processor' => 'stripe_test',
+                'status' => 'succeeded',
+            ];
+        } else {
+            Log::info('Carte test Stripe - Échec simulé');
+            $transaction->update(['status' => 'failed']);
+            return [
+                'success' => false,
+                'error' => 'Carte de test refusée',
+                'processor' => 'stripe_test',
+            ];
+        }
     }
 
-    /**
-     * Obtenir les informations du processeur actuel
-     */
-    public function getProcessorInfo()
+    // Garder la simulation pour les tests
+    protected function processSimulationPayment(array $paymentData, Order $order)
     {
-        return config('payment.processors.' . $this->processor);
+        // ... votre code existant
     }
 
-    /**
-     * Détecter la marque de carte depuis le numéro
-     */
     private function detectCardBrand($cardNumber)
     {
         $cardNumber = preg_replace('/\s+/', '', $cardNumber);
         
-        // Visa
-        if (preg_match('/^4[0-9]{12}(?:[0-9]{3})?$/', $cardNumber)) {
+        if (preg_match('/^4/', $cardNumber)) {
             return 'visa';
-        }
-        
-        // Mastercard
-        if (preg_match('/^5[1-5][0-9]{14}$/', $cardNumber) || 
-            preg_match('/^2[2-7][0-9]{14}$/', $cardNumber)) {
+        } elseif (preg_match('/^5[1-5]/', $cardNumber)) {
             return 'mastercard';
-        }
-        
-        // American Express
-        if (preg_match('/^3[47][0-9]{13}$/', $cardNumber)) {
-            return 'amex';
-        }
-        
-        // Discover
-        if (preg_match('/^6(?:011|5[0-9]{2})[0-9]{12}$/', $cardNumber)) {
-            return 'discover';
         }
         
         return 'unknown';

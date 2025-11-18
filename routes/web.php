@@ -30,6 +30,7 @@ Route::post('/checkout/shipping', [CheckoutController::class, 'shipping']);
 Route::get('/checkout/payment', [CheckoutController::class, 'showPayment'])->name('checkout.payment.show');
 Route::post('/checkout/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
 Route::post('/checkout/process', [CheckoutController::class, 'processPayment'])->name('checkout.process');
+Route::post('/checkout/confirm-payment', [CheckoutController::class, 'confirmPayment'])->name('checkout.confirm-payment');
 Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
 // UNE SEULE route pour les points de livraison
