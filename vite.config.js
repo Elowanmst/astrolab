@@ -6,9 +6,9 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css', 
+                'resources/js/app.js',
                 'resources/css/product-detail.css',
                 'resources/css/checkout.css',
-                'resources/js/app.js',
                 'resources/js/modal.js',
                 'resources/js/size.js',
                 'resources/js/product-detail.js'

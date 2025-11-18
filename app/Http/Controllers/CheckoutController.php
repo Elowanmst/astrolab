@@ -7,6 +7,7 @@ use App\Mail\OrderConfirmation;
 use App\Mail\NewOrderNotification;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\PaymentTransaction;
 use App\Models\User;
 use App\Services\Cart;
 use App\Services\Payment\PaymentService;
@@ -126,28 +127,105 @@ public function shipping(Request $request)
         }
 
         // Vérifier si les données de livraison sont en session
-        $shippingData = session('checkout_data');
-        if (!$shippingData) {
+        $checkoutData = session('checkout_data');
+        if (!$checkoutData) {
             return redirect()->route('checkout.shipping')->with('error', 'Veuillez d\'abord remplir les informations de livraison.');
         }
 
-        $shippingCost = $this->cart->getShippingCost($shippingData['shipping_method']);
         $total = $this->cart->getTotal();
-        $finalTotal = $total + $shippingCost;
 
-        return view('checkout.payment', [
+        // Utiliser la nouvelle vue Stripe
+        return view('checkout.payment-stripe', [
             'cart' => $this->cart,
-            'shippingData' => $shippingData,
-            'shippingCost' => $shippingCost,
+            'checkoutData' => $checkoutData,
             'total' => $total,
-            'finalTotal' => $finalTotal,
         ]);
     }
 
     /**
-     * Traitement du paiement et création de la commande
+     * NOUVELLE VERSION : Traitement du paiement pour créer le PaymentIntent
      */
     public function processPayment(Request $request)
+    {
+        Log::info('=== CRÉATION PAYMENTINTENT ===', [
+            'request' => $request->all(),
+        ]);
+
+        // Validation basique pour la création du PaymentIntent
+        $request->validate([
+            'payment_method' => 'required|in:card',
+        ]);
+
+        $checkoutData = session('checkout_data');
+        if (!$checkoutData) {
+            Log::error('Données checkout manquantes');
+            return response()->json([
+                'success' => false,
+                'error' => 'Données de commande manquantes'
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Créer la commande
+            $order = $this->createOrder($checkoutData);
+            Log::info('Commande créée pour PaymentIntent', [
+                'order_id' => $order->id,
+                'total' => $order->total_amount
+            ]);
+
+            // Créer le PaymentIntent (sans confirmer)
+            $paymentData = ['payment_method' => $request->payment_method];
+            $paymentResult = $this->paymentService->processPayment($paymentData, $order);
+            
+            Log::info('PaymentIntent créé', $paymentResult);
+
+            if (!$paymentResult['success']) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'error' => $paymentResult['error'] ?? 'Erreur création PaymentIntent'
+                ], 400);
+            }
+
+            // Sauvegarder l'ordre avec le PaymentIntent
+            $order->update([
+                'payment_status' => 'pending',
+                'payment_method' => 'stripe',
+                'transaction_id' => $paymentResult['transaction_id'],
+                'status' => 'pending_payment',
+            ]);
+
+            DB::commit();
+
+            // Retourner le client_secret pour Stripe Elements
+            return response()->json([
+                'success' => true,
+                'client_secret' => $paymentResult['client_secret'],
+                'payment_intent_id' => $paymentResult['transaction_id'],
+                'order_id' => $order->id,
+                'message' => 'PaymentIntent créé avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur création PaymentIntent', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur serveur: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * ANCIENNE VERSION : Traitement du paiement direct (à supprimer après tests)
+     */
+    public function processPaymentOld(Request $request)
     {
         // Log du début du processus
         Log::info('=== DÉBUT PROCESSUS PAIEMENT ===', [
@@ -516,5 +594,163 @@ public function shipping(Request $request)
         }
 
         return $order;
+    }
+
+    /**
+     * NOUVELLE MÉTHODE : Confirmer un paiement Stripe côté serveur
+     */
+    public function confirmPayment(Request $request)
+    {
+        Log::info('=== CONFIRMATION PAIEMENT STRIPE ===', [
+            'payment_intent_id' => $request->payment_intent_id,
+            'payment_method_id' => $request->payment_method_id,
+        ]);
+
+        $request->validate([
+            'payment_intent_id' => 'required|string',
+            'payment_method_id' => 'required|string',
+        ]);
+
+        try {
+            // Récupérer le PaymentIntent depuis Stripe
+            \Stripe\Stripe::setApiKey(config('stripe.secret_key'));
+            
+            $paymentIntent = \Stripe\PaymentIntent::retrieve($request->payment_intent_id);
+            
+            Log::info('PaymentIntent récupéré', [
+                'id' => $paymentIntent->id,
+                'status' => $paymentIntent->status,
+                'amount' => $paymentIntent->amount,
+            ]);
+
+            // Trouver la transaction en base
+            $transaction = PaymentTransaction::where('transaction_id', $request->payment_intent_id)->first();
+            if (!$transaction) {
+                Log::error('Transaction non trouvée', ['payment_intent_id' => $request->payment_intent_id]);
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Transaction non trouvée'
+                ], 404);
+            }
+
+            // Trouver la commande
+            $order = Order::find($transaction->order_id);
+            if (!$order) {
+                Log::error('Commande non trouvée', ['order_id' => $transaction->order_id]);
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Commande non trouvée'
+                ], 404);
+            }
+
+            // Vérifier le statut du paiement
+            if ($paymentIntent->status === 'succeeded') {
+                DB::beginTransaction();
+
+                // Mettre à jour la transaction
+                $transaction->update([
+                    'status' => 'completed',
+                    'processor_response' => array_merge(
+                        $transaction->processor_response ?? [],
+                        [
+                            'confirmed_at' => now()->toISOString(),
+                            'final_status' => $paymentIntent->status,
+                            'payment_method_id' => $request->payment_method_id,
+                        ]
+                    ),
+                ]);
+
+                // Mettre à jour la commande
+                $order->update([
+                    'payment_status' => 'paid',
+                    'payment_method' => 'stripe',
+                    'transaction_id' => $paymentIntent->id,
+                    'status' => 'confirmed',
+                ]);
+
+                // Envoyer les emails
+                $this->sendOrderEmails($order);
+
+                // Vider le panier
+                $this->cart->clear();
+                session()->forget('checkout_data');
+
+                DB::commit();
+
+                Log::info('Paiement confirmé avec succès', [
+                    'order_id' => $order->id,
+                    'payment_intent_id' => $paymentIntent->id,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'redirect_url' => route('checkout.success', $order->id),
+                    'order_id' => $order->id,
+                    'message' => 'Paiement confirmé avec succès'
+                ]);
+
+            } else {
+                // Paiement échoué
+                $transaction->update([
+                    'status' => 'failed',
+                    'failure_reason' => "Statut Stripe: {$paymentIntent->status}",
+                ]);
+
+                Log::warning('Paiement non réussi', [
+                    'payment_intent_id' => $paymentIntent->id,
+                    'status' => $paymentIntent->status,
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'error' => "Paiement non réussi. Statut: {$paymentIntent->status}",
+                    'status' => $paymentIntent->status,
+                ]);
+            }
+
+        } catch (\Stripe\Exception\InvalidRequestException $e) {
+            Log::error('Erreur PaymentIntent invalide', [
+                'error' => $e->getMessage(),
+                'payment_intent_id' => $request->payment_intent_id,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'PaymentIntent invalide: ' . $e->getMessage()
+            ], 400);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur confirmation paiement', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur serveur: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Envoyer les emails de commande
+     */
+    private function sendOrderEmails(Order $order)
+    {
+        try {
+            Mail::to($order->shipping_email)->send(new OrderConfirmation($order));
+            Log::info('Email confirmation client envoyé', ['order_id' => $order->id]);
+        } catch (\Exception $e) {
+            Log::error('Erreur email client', ['error' => $e->getMessage()]);
+        }
+
+        try {
+            $adminEmail = config('mail.admin_email', 'admin@astrolab.com');
+            Mail::to($adminEmail)->send(new NewOrderNotification($order));
+            Log::info('Email notification admin envoyé', ['order_id' => $order->id]);
+        } catch (\Exception $e) {
+            Log::error('Erreur email admin', ['error' => $e->getMessage()]);
+        }
     }
 }
