@@ -1818,6 +1818,7 @@ a:hover {
     color: var(--astro-text-secondary);
     line-height: 1.6;
     font-family: 'Inter', sans-serif !important;
+    font-size: 1.1rem;
 }
 
 /* === FORMULAIRES LANDING === */
