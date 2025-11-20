@@ -1817,6 +1817,7 @@ a:hover {
 .product-description {
     color: var(--astro-text-secondary);
     line-height: 1.6;
+    font-family: 'Inter', sans-serif !important;
 }
 
 /* === FORMULAIRES LANDING === */

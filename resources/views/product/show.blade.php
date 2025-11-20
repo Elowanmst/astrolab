@@ -15,59 +15,59 @@
         <span class="breadcrumb-separator">></span>
         <span class="breadcrumb-current">{{ $product->name }}</span>
     </div>
-
+    
     <div class="product-detail-grid">
         <!-- Galerie d'images -->
         <div class="product-gallery-section">
             <div class="main-image-container">
                 @if($product->getMedia('products')->count() > 0)
-                    @foreach ($product->getMedia('products') as $index => $media)
-                        <img 
-                            src="{{ $media->getUrl() }}" 
-                            alt="{{ $product->name }} - Image {{ $index + 1 }}"
-                            class="main-product-image {{ $index === 0 ? 'active' : '' }}"
-                            data-image-index="{{ $index }}"
-                        >
-                    @endforeach
+                @foreach ($product->getMedia('products') as $index => $media)
+                <img 
+                src="{{ $media->getUrl() }}" 
+                alt="{{ $product->name }} - Image {{ $index + 1 }}"
+                class="main-product-image {{ $index === 0 ? 'active' : '' }}"
+                data-image-index="{{ $index }}"
+                >
+                @endforeach
                 @else
-                    <div class="no-image-placeholder">
-                        <i class="fas fa-image"></i>
-                        <p>Image bientôt disponible</p>
-                    </div>
+                <div class="no-image-placeholder">
+                    <i class="fas fa-image"></i>
+                    <p>Image bientôt disponible</p>
+                </div>
                 @endif
                 
                 <!-- Badges sur l'image -->
                 <div class="product-badges">
                     @if($product->stock < 5 && $product->stock > 0)
-                        <span class="badge badge-low-stock">Dernières pièces</span>
+                    <span class="badge badge-low-stock">Dernières pièces</span>
                     @elseif($product->stock === 0)
-                        <span class="badge badge-out-of-stock">Rupture de stock</span>
+                    <span class="badge badge-out-of-stock">Rupture de stock</span>
                     @endif
                 </div>
             </div>
-
+            
             <!-- Miniatures -->
             @if($product->getMedia('products')->count() > 1)
-                <div class="thumbnail-gallery">
-                    @foreach ($product->getMedia('products') as $index => $media)
-                        <div class="thumbnail-item {{ $index === 0 ? 'active' : '' }}" data-image-index="{{ $index }}">
-                            <img 
-                                src="{{ $media->getUrl() }}" 
-                                alt="{{ $product->name }} - Miniature {{ $index + 1 }}"
-                            >
-                        </div>
-                    @endforeach
+            <div class="thumbnail-gallery">
+                @foreach ($product->getMedia('products') as $index => $media)
+                <div class="thumbnail-item {{ $index === 0 ? 'active' : '' }}" data-image-index="{{ $index }}">
+                    <img 
+                    src="{{ $media->getUrl() }}" 
+                    alt="{{ $product->name }} - Miniature {{ $index + 1 }}"
+                    >
                 </div>
+                @endforeach
+            </div>
             @endif
         </div>
-
+        
         <!-- Informations produit -->
         <div class="product-info-section">
             <!-- En-tête produit -->
             <div class="product-header">
                 <h1 class="product-title">| {{ strtoupper($product->name) }} |</h1>
                 @if($product->category)
-                    <span class="product-category">{{ $product->category->name }}</span>
+                <span class="product-category">{{ $product->category->name }}</span>
                 @endif
                 
                 <div class="product-price-container">
@@ -75,62 +75,63 @@
                     <span class="price-tax-info">TTC</span>
                 </div>
             </div>
-
+            
             <!-- Description -->
             @if($product->description)
-                <div class="product-description">
-                    <h3>Description</h3>
-                    <p>{{ $product->description }}</p>
-                </div>
+            <div class="product-description">
+                <h3>Description</h3>
+                {!! \Illuminate\Support\Str::markdown($product->description) !!}
+            </div>
             @endif
-
+            
+            
             <!-- Informations techniques -->
             {{-- <div class="product-specs">
                 @if($product->material)
-                    <div class="spec-item">
-                        <span class="spec-label">Matière :</span>
-                        <span class="spec-value">{{ $product->material }}</span>
-                    </div>
+                <div class="spec-item">
+                    <span class="spec-label">Matière :</span>
+                    <span class="spec-value">{{ $product->material }}</span>
+                </div>
                 @endif
                 @if($product->gender)
-                    <div class="spec-item">
-                        <span class="spec-label">Genre :</span>
-                        <span class="spec-value">{{ $product->gender }}</span>
-                    </div>
+                <div class="spec-item">
+                    <span class="spec-label">Genre :</span>
+                    <span class="spec-value">{{ $product->gender }}</span>
+                </div>
                 @endif
             </div> --}}
-
+            
             <!-- Formulaire d'ajout au panier -->
             <form action="{{ route('cart.add', ['product' => $product->id]) }}" method="POST" class="add-to-cart-form">
                 @csrf
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-
+                
                 <!-- Sélection des couleurs -->
                 @if($product->colors->count() > 0)
-                    <div class="product-option-group">
-                        <label class="option-label">Couleur</label>
-                        <div class="color-selector">
-                            @foreach($product->colors as $color)
-                                <div class="color-option-container">
-                                    <input 
-                                        type="radio" 
-                                        name="color" 
-                                        value="{{ $color->id }}" 
-                                        id="color-{{ $color->id }}"
-                                        class="color-input"
-                                        {{ $loop->first ? 'checked' : '' }}
-                                    >
-                                    <label for="color-{{ $color->id }}" class="color-option" 
-                                           style="background-color: {{ $color->hex ?? '#cccccc' }};"
-                                           title="{{ $color->name }}">
-                                        <span class="color-name">{{ $color->name }}</span>
-                                    </label>
-                                </div>
-                            @endforeach
+                <div class="product-option-group">
+                    <label class="option-label">Couleur</label>
+                    <div class="color-selector">
+                        @foreach($product->colors as $color)
+                        <div class="color-option-container">
+                            <input 
+                            type="radio" 
+                            name="color" 
+                            value="{{ $color->id }}" 
+                            id="color-{{ $color->id }}"
+                            class="color-input"
+                            {{ $loop->first ? 'checked' : '' }}
+                            >
+                            <label for="color-{{ $color->id }}" class="color-option" 
+                                style="background-color: {{ $color->hex ?? '#cccccc' }};"
+                                title="{{ $color->name }}">
+                                <span class="color-name">{{ $color->name }}</span>
+                            </label>
                         </div>
+                        @endforeach
                     </div>
+                </div>
                 @endif
-
+                
                 <!-- Sélection de la taille -->
                 <div class="product-option-group">
                     <label class="option-label">Taille</label>
@@ -144,14 +145,14 @@
                     </div>
                     <input type="hidden" name="size" id="selected-size">
                 </div>
-
+                
                 <!-- Guide des tailles -->
                 <div class="size-guide-link">
                     <a href="#" onclick="openSizeGuide()" class="guide-link">
                         <i class="fas fa-ruler"></i> Guide des tailles
                     </a>
                 </div>
-
+                
                 <!-- Quantité -->
                 <div class="product-option-group">
                     <label for="quantity" class="option-label">Quantité</label>
@@ -161,10 +162,10 @@
                         <button type="button" class="qty qty-plus" onclick="changeQuantity(1)">+</button>
                     </div>
                     @if($product->stock ?? 0 > 0)
-                        <small class="stock-info">{{ $product->stock ?? 'Plusieurs' }} en stock</small>
+                    <small class="stock-info">{{ $product->stock ?? 'Plusieurs' }} en stock</small>
                     @endif
                 </div>
-
+                
                 <!-- Boutons d'action -->
                 <div class="product-actions">
                     <button type="submit" class="btn-add-to-cart" {{ ($product->stock ?? 1) === 0 ? 'disabled' : '' }}>
@@ -184,7 +185,7 @@
                     </div> --}}
                 </div>
             </form>
-
+            
             <!-- Informations de livraison -->
             <div class="shipping-info">
                 <div class="shipping-item">
@@ -267,80 +268,80 @@
 
 
 <script>
-// Fallback au cas où le script principal ne se charge pas à temps
-if (typeof changeQuantity === 'undefined') {
-    function changeQuantity(change) {
-        const quantityInput = document.getElementById('quantity');
-        const currentValue = parseInt(quantityInput.value);
-        const minValue = parseInt(quantityInput.min) || 1;
-        const maxValue = parseInt(quantityInput.max) || 999;
-        
-        const newValue = currentValue + change;
-        
-        if (newValue >= minValue && newValue <= maxValue) {
-            quantityInput.value = newValue;
+    // Fallback au cas où le script principal ne se charge pas à temps
+    if (typeof changeQuantity === 'undefined') {
+        function changeQuantity(change) {
+            const quantityInput = document.getElementById('quantity');
+            const currentValue = parseInt(quantityInput.value);
+            const minValue = parseInt(quantityInput.min) || 1;
+            const maxValue = parseInt(quantityInput.max) || 999;
+            
+            const newValue = currentValue + change;
+            
+            if (newValue >= minValue && newValue <= maxValue) {
+                quantityInput.value = newValue;
+            }
         }
-    }
-}
-
-// Fallback pour les autres fonctions
-if (typeof openSizeGuide === 'undefined') {
-    function openSizeGuide() {
-        const modal = document.getElementById('sizeGuideModal');
-        if (modal) {
-            modal.style.display = 'flex';
-        }
-    }
-}
-
-if (typeof closeSizeGuide === 'undefined') {
-    function closeSizeGuide() {
-        const modal = document.getElementById('sizeGuideModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-    }
-}
-
-// Amélioration du contraste pour les couleurs claires
-document.addEventListener('DOMContentLoaded', function() {
-    // Fonction pour détecter si une couleur est claire
-    function isLightColor(color) {
-        // Convertir la couleur hex en RGB
-        let r, g, b;
-        
-        if (color.startsWith('#')) {
-            const hex = color.slice(1);
-            r = parseInt(hex.substr(0, 2), 16);
-            g = parseInt(hex.substr(2, 2), 16);
-            b = parseInt(hex.substr(4, 2), 16);
-        } else if (color.startsWith('rgb')) {
-            const matches = color.match(/\d+/g);
-            r = parseInt(matches[0]);
-            g = parseInt(matches[1]);
-            b = parseInt(matches[2]);
-        } else {
-            return false;
-        }
-        
-        // Calculer la luminance
-        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        return luminance > 0.8; // Seuil pour déterminer si c'est clair
     }
     
-    // Appliquer des styles spéciaux aux couleurs claires
-    const colorOptions = document.querySelectorAll('.color-option');
-    colorOptions.forEach(option => {
-        const bgColor = option.style.backgroundColor;
-        if (bgColor && isLightColor(bgColor)) {
-            option.classList.add('light-color');
+    // Fallback pour les autres fonctions
+    if (typeof openSizeGuide === 'undefined') {
+        function openSizeGuide() {
+            const modal = document.getElementById('sizeGuideModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
         }
+    }
+    
+    if (typeof closeSizeGuide === 'undefined') {
+        function closeSizeGuide() {
+            const modal = document.getElementById('sizeGuideModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+    }
+    
+    // Amélioration du contraste pour les couleurs claires
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fonction pour détecter si une couleur est claire
+        function isLightColor(color) {
+            // Convertir la couleur hex en RGB
+            let r, g, b;
+            
+            if (color.startsWith('#')) {
+                const hex = color.slice(1);
+                r = parseInt(hex.substr(0, 2), 16);
+                g = parseInt(hex.substr(2, 2), 16);
+                b = parseInt(hex.substr(4, 2), 16);
+            } else if (color.startsWith('rgb')) {
+                const matches = color.match(/\d+/g);
+                r = parseInt(matches[0]);
+                g = parseInt(matches[1]);
+                b = parseInt(matches[2]);
+            } else {
+                return false;
+            }
+            
+            // Calculer la luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            return luminance > 0.8; // Seuil pour déterminer si c'est clair
+        }
+        
+        // Appliquer des styles spéciaux aux couleurs claires
+        const colorOptions = document.querySelectorAll('.color-option');
+        colorOptions.forEach(option => {
+            const bgColor = option.style.backgroundColor;
+            if (bgColor && isLightColor(bgColor)) {
+                option.classList.add('light-color');
+            }
+        });
     });
-});
-
-// CSS dynamique pour les couleurs claires
-const style = document.createElement('style');
-style.textContent = `
+    
+    // CSS dynamique pour les couleurs claires
+    const style = document.createElement('style');
+    style.textContent = `
     .color-option.light-color {
         border: 3px solid #d0d0d0 !important;
     }
@@ -355,7 +356,7 @@ style.textContent = `
         border-color: #999 !important;
     }
 `;
-document.head.appendChild(style);
+    document.head.appendChild(style);
 </script>
 
 @endsection
