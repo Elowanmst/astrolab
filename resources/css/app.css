@@ -60,6 +60,7 @@
 html {
     background-color: var(--astro-bg-dark);
     font-family: var(--astro-font-family);
+    scroll-behavior: smooth;
 }
 
 body {

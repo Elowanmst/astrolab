@@ -48,10 +48,10 @@
                         <a href="{{ route('home') }}" class="nav-link">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#boutique" class="nav-link">Boutique</a>
+                        <a href="{{ route('home') }}#boutique" class="nav-link">Boutique</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#contact" class="nav-link">Contact</a>
+                        <a href="{{ route('home') }}#contact" class="nav-link">Contact</a>
                     </li>
                     
                     <!-- Lien panier pour mobile -->
