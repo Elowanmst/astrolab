@@ -15,7 +15,7 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="shortcut icon" href="/favicon.ico" />
 
-    
+
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/modal.js', 'resources/js/size.js'])
 
 
@@ -30,6 +30,8 @@
         @vite(['resources/css/checkout.css'])
     @endif
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
 </head>
 <body>
     <nav class="landing-navbar">
@@ -46,10 +48,10 @@
                         <a href="{{ route('home') }}" class="nav-link">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#boutique" class="nav-link">Boutique</a>
+                        <a href="{{ route('home') }}#boutique" class="nav-link">Boutique</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#contact" class="nav-link">Contact</a>
+                        <a href="{{ route('home') }}#contact" class="nav-link">Contact</a>
                     </li>
                     
                     <!-- Lien panier pour mobile -->
