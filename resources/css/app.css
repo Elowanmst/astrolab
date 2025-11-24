@@ -271,6 +271,39 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
 }
 
+/* Cards Illustrateurs */
+.card-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Animation d'entrée au chargement */
+    animation: rotateIn 1s ease-out forwards;
+
+    /* Hover léger */
+    transition: transform 0.3s ease;
+}
+
+.card-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Hover sur la carte */
+.card:hover .card-icon {
+    transform: scale(1.1); /* léger zoom */
+    /* on ne remet PAS d'animation ici pour éviter le relancement */
+}
+
+
+
 /* === FORMULAIRES === */
 input[type="text"],
 input[type="email"], 
@@ -2055,20 +2088,6 @@ a:hover {
     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
 }
 
-.card-icon {
-    font-size: 3rem;
-    margin-bottom: var(--astro-spacing-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: rotateIn 1s ease-out 0.3s both;
-    transition: transform 0.3s ease;
-}
-
-.card:hover .card-icon {
-    transform: scale(1.2) rotate(10deg);
-    animation: pulse 1s ease-in-out infinite;
-}
 
 /* Boutons ecommerce classiques */
 .btn-modern {
