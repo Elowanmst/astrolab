@@ -2291,10 +2291,10 @@ a:hover {
         font-size: 2rem;
     }
     
-    .grid-3 {
+    /* .grid-3 {
         grid-template-columns: 1fr;
         gap: var(--astro-spacing-md);
-    }
+    } */
     
     .products-grid {
         grid-template-columns: 1fr;

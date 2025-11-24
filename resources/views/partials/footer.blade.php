@@ -26,7 +26,7 @@
             <div>
                 <h4 class="card-title">SUIVEZ-NOUS</h4>
                 <div class="card-text">
-                    <a href="https://instagram.com/" target="_blank" style="color: rgba(255,255,255,0.8); font-size: 32px; transition: all 0.3s ease;">
+                    <a href="https://www.instagram.com/astrolab.boutique/?hl=fr" target="_blank" style="color: rgba(255,255,255,0.8); font-size: 32px; transition: all 0.3s ease;">
                         <i class="fab fa-instagram"></i>
                     </a>
                 </div>
