@@ -82,12 +82,12 @@ return [
         'methods' => [
             'home' => [
                 'name' => 'Livraison à domicile',
-                'price' => 4.90,
+                'price' => 6.99,
                 'free_above' => 50.00,
             ],
             'pickup' => [
                 'name' => 'Retrait en magasin',
-                'price' => 0.00,
+                'price' => 9.00,
                 'free_above' => 0.00,
             ],
         ],

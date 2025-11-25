@@ -107,28 +107,36 @@
         </div>
     </section>
     
-    <!-- Section Illustrateurs -->
-    <section id="illustrateurs" class="section-container">
-        <div class="max-width text-center">
-            <h2 class="section-title">ILLUSTRATEURS - GRAPHISTES</h2>
-            <h3 class="section-subtitle">| SUIVEZ MATHIS DOUILLARD & AXEL CHAPET SUR LEURS RÉSEAUX POUR DÉCOUVRIR LEUR UNIVERS |</h3>
-            
-            <div class="grid-3">
-                <div class="card">
-                    <div class="card-icon" style="width: 120px; height: 120px; background-color: #666; border-radius: 50%; margin: 0 auto 24px;"></div>
-                    <h4 class="card-title">MATHIS DOUILLARD</h4>
-                    <p class="card-text">Illustrateur & Designer graphique</p>
-                    <a href="#" class="btn-home">SUIVRE MATHIS</a>
+<!-- Section Illustrateurs -->
+<section id="illustrateurs" class="section-container">
+    <div class="max-width text-center">
+        <h2 class="section-title">ILLUSTRATEURS - GRAPHISTES</h2>
+        <h3 class="section-subtitle">
+            | SUIVEZ MATHIS DOUILLARD & AXEL CHAPET SUR LEURS RÉSEAUX POUR DÉCOUVRIR LEUR UNIVERS |
+        </h3>
+        
+        <div class="grid-3">
+            <div class="card">
+                <div class="card-icon">
+                    <img src="{{ asset('assets/img/mathis.webp') }}" alt="Mathis Douillard">
                 </div>
-                <div class="card">
-                    <div class="card-icon" style="width: 120px; height: 120px; background-color: #666; border-radius: 50%; margin: 0 auto 24px;"></div>
-                    <h4 class="card-title">AXEL CHAPET</h4>
-                    <p class="card-text">Illustrateur & Designer graphique</p>
-                    <a href="#" class="btn-home">SUIVRE AXEL</a>
+                <h4 class="card-title">MATHIS DOUILLARD</h4>
+                <p class="card-text">Illustrateur & Designer graphique</p>
+                <a href="https://www.instagram.com/astrolab.boutique/?hl=fr" class="btn-home">SUIVRE MATHIS</a>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <img src="{{ asset('assets/img/axel.webp') }}" alt="Axel Chapet">
                 </div>
+                <h4 class="card-title">AXEL CHAPET</h4>
+                <p class="card-text">Illustrateur & Designer graphique</p>
+                <a href="https://www.instagram.com/m.zeklox/?hl=fr" class="btn-home">SUIVRE AXEL</a>
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
     
     <!-- Section Newsletter -->
     {{-- <section id="newsletter" class="section-container footer-section">
