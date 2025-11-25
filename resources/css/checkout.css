@@ -476,6 +476,41 @@
     border-top: 1px solid var(--astro-border);
 }
 
+/* Styles pour les informations du point relais */
+.checkout-relay-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 8px;
+}
+
+.checkout-relay-info .checkout-info-row {
+    border-bottom: none;
+    padding: 0.25rem 0;
+}
+
+.checkout-relay-info .checkout-info-row:first-child {
+    color: #3b82f6;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.checkout-relay-info .checkout-info-row:first-child i {
+    margin-right: 0.5rem;
+}
+
+.checkout-relay-details {
+    padding-left: 1.5rem;
+    border-left: 3px solid #3b82f6;
+    margin-left: 0.5rem;
+}
+
+.checkout-relay-details .checkout-info-row small {
+    color: var(--astro-text-secondary);
+    font-size: 0.85rem;
+}
+
 .checkout-items-list {
     margin-top: 1rem;
 }
@@ -547,29 +582,36 @@
     margin-left: auto;
     display: flex;
     gap: 0.5rem;
+    align-items: center;
 }
 
 .payment-badge {
-    padding: 0.25rem 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    padding: 2px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.payment-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.payment-badge svg {
+    display: block;
     border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
 }
 
-.payment-badge.visa {
-    background: #1a365d;
-    color: #3182ce;
-}
-
-.payment-badge.mastercard {
-    background: #742a2a;
-    color: #e53e3e;
-}
-
-.payment-badge.cb {
-    background: #22543d;
-    color: #38a169;
+/* Specific adjustments for each card type */
+.payment-badge.visa svg,
+.payment-badge.mastercard svg,
+.payment-badge.cb svg {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 /* Terms and security */

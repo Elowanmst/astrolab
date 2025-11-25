@@ -141,6 +141,29 @@
             </div>
         </div>
     </div>
+    @endif
+
+    <!-- Popup erreur ajout au panier -->
+    @if(session('cart_error'))
+    <div id="cart-error-popup" class="cart-popup-overlay">
+        <div class="cart-popup">
+            <div class="cart-popup-content">
+                <i class="fas fa-exclamation-circle cart-popup-icon error-icon"></i>
+                <h3>Erreur</h3>
+                <p>{{ session('cart_error')['message'] }}</p>
+                
+                <div class="cart-popup-buttons">
+                    <button class="btn-glass btn-glass-primary" onclick="closeCartErrorPopup()">
+                        <i class="fas fa-check"></i> Compris
+                    </button>
+                </div>
+                
+                <button class="cart-popup-close" onclick="closeCartErrorPopup()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
     function closeCartPopup() {
@@ -155,6 +178,24 @@
     // Fermer avec Escape
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeCartPopup();
+    });
+    </script>
+    @endif
+    
+    @if(session('cart_error'))
+    <script>
+    function closeCartErrorPopup() {
+        document.getElementById('cart-error-popup').style.display = 'none';
+    }
+
+    // Fermer en cliquant à l'extérieur
+    document.getElementById('cart-error-popup').addEventListener('click', function(e) {
+        if (e.target === this) closeCartErrorPopup();
+    });
+
+    // Fermer avec Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeCartErrorPopup();
     });
     </script>
     @endif

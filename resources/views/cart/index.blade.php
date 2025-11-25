@@ -12,7 +12,7 @@
     @if(count($cartItems) > 0)
         <div class="cart-content">
             <div class="cart-items">
-                @foreach($cartItems as $item)
+                @foreach($cartItems as $itemKey => $item)
                     <div class="cart-item">
                         <div class="item-image">
                             @if(!empty($item['image']))
@@ -30,14 +30,20 @@
                         </div>
                         <div class="item-details">
                             <h3 class="item-name">| {{ mb_strtoupper($item['name'], 'UTF-8') }} |</h3>
+                            @if(isset($item['size']) && $item['size'])
+                                <p class="item-size">Taille: {{ $item['size'] }}</p>
+                            @endif
+                            @if(isset($item['color']) && $item['color'])
+                                <p class="item-color">Couleur: {{ $item['color'] }}</p>
+                            @endif
                             <p class="item-price">{{ number_format($item['price'], 2) }} €</p>
                         </div>
                         <div class="item-quantity">
                             <label>QUANTITÉ</label>
                             <div class="quantity-controls">
-                                <button class="qty-btn minus" data-id="{{ $item['product_id'] }}">-</button>
+                                <button class="qty-btn minus" data-item-key="{{ $itemKey }}">-</button>
                                 <span class="qty-value">{{ $item['quantity'] }}</span>
-                                <button class="qty-btn plus" data-id="{{ $item['product_id'] }}">+</button>
+                                <button class="qty-btn plus" data-item-key="{{ $itemKey }}" data-stock-available="{{ $item['stock_available'] ?? 99 }}">+</button>
                             </div>
                         </div>
                         <div class="item-total">
@@ -45,7 +51,7 @@
                             <p class="total-price">{{ number_format($item['price'] * $item['quantity'], 2) }} €</p>
                         </div>
                         <div class="item-remove">
-                            <form action="{{ route('cart.remove', $item['product_id']) }}" method="POST" class="remove-form">
+                            <form action="{{ route('cart.remove', $itemKey) }}" method="POST" class="remove-form">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="remove-btn" title="Supprimer">
@@ -94,4 +100,61 @@
         </div>
     @endif
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des boutons de quantité
+    document.querySelectorAll('.qty-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemKey = this.dataset.itemKey;
+            const isPlus = this.classList.contains('plus');
+            const qtyValue = this.parentElement.querySelector('.qty-value');
+            let currentQty = parseInt(qtyValue.textContent);
+            
+            if (isPlus) {
+                const stockAvailable = parseInt(this.dataset.stockAvailable) || 99;
+                if (currentQty >= stockAvailable) {
+                    alert(`Stock insuffisant. Maximum disponible : ${stockAvailable}`);
+                    return;
+                }
+                currentQty++;
+            } else {
+                currentQty--;
+            }
+            
+            // Ne pas aller en dessous de 0
+            if (currentQty < 0) currentQty = 0;
+            
+            updateQuantity(itemKey, currentQty);
+        });
+    });
+    
+    function updateQuantity(itemKey, quantity) {
+        fetch('{{ route("cart.updateQuantity") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                item_key: itemKey,
+                quantity: quantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Recharger la page pour mettre à jour les totaux
+                location.reload();
+            } else {
+                alert(data.message || 'Erreur lors de la mise à jour de la quantité');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la mise à jour de la quantité');
+        });
+    }
+});
+</script>
 @endsection

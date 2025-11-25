@@ -57,15 +57,31 @@ public function shipping(Request $request)
         return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
     }
 
+    // Vérifier si l'utilisateur est connecté mais que son email n'est pas vérifié
+    if (Auth::check() && !Auth::user()->hasVerifiedEmail()) {
+        return redirect()->route('verification.notice')
+            ->with('message', 'Veuillez vérifier votre adresse email avant de continuer votre commande.');
+    }
+
     // Si c'est un POST depuis la page précédente
     if ($request->isMethod('post')) {
         if ($request->checkout_type === 'register') {
             // Créer le compte et connecter l'utilisateur
             $user = $this->createAccount($request);
             Auth::login($user);
+            
+            // Rediriger vers la vérification email après création du compte
+            return redirect()->route('verification.notice')
+                ->with('message', 'Compte créé avec succès ! Veuillez vérifier votre email pour continuer.');
         } elseif ($request->checkout_type === 'login') {
             // Authentifier l'utilisateur existant
             $this->attemptLogin($request);
+            
+            // Vérifier l'email après connexion
+            if (!Auth::user()->hasVerifiedEmail()) {
+                return redirect()->route('verification.notice')
+                    ->with('message', 'Veuillez vérifier votre adresse email avant de continuer.');
+            }
         }
 
         // Redirection vers la même page en GET pour éviter les problèmes de CSS/JS
@@ -99,6 +115,35 @@ public function shipping(Request $request)
         // Validation spécifique pour le point relais
         if ($validatedData['shipping_method'] === 'pickup' && empty($validatedData['selected_relay_point'])) {
             return back()->withErrors(['selected_relay_point' => 'Veuillez sélectionner un point relais.'])->withInput();
+        }
+
+        // Traitement des données du point relais si nécessaire
+        if ($validatedData['shipping_method'] === 'pickup' && !empty($validatedData['selected_relay_point'])) {
+            try {
+                Log::info('🔍 Raw relay point data:', ['data' => $validatedData['selected_relay_point']]);
+                
+                $relayPointData = json_decode($validatedData['selected_relay_point'], true);
+                Log::info('🔍 Parsed relay point data:', ['parsed' => $relayPointData]);
+                
+                if ($relayPointData) {
+                    // Ajouter les données du point relais aux données validées
+                    $validatedData['relay_point_id'] = $relayPointData['id'] ?? '';
+                    $validatedData['relay_point_name'] = $relayPointData['name'] ?? '';
+                    $validatedData['relay_point_address'] = $relayPointData['address'] ?? '';
+                    $validatedData['relay_point_postal_code'] = $relayPointData['postal_code'] ?? $relayPointData['postalCode'] ?? '';
+                    $validatedData['relay_point_city'] = $relayPointData['city'] ?? '';
+                    
+                    Log::info('✅ Relay point data processed:', [
+                        'id' => $validatedData['relay_point_id'],
+                        'name' => $validatedData['relay_point_name'],
+                        'address' => $validatedData['relay_point_address'],
+                        'postal_code' => $validatedData['relay_point_postal_code'],
+                        'city' => $validatedData['relay_point_city']
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Erreur parsing relay point data', ['error' => $e->getMessage()]);
+            }
         }
 
         // Stocker les données de livraison en session
@@ -193,7 +238,7 @@ public function shipping(Request $request)
                 'payment_status' => 'pending',
                 'payment_method' => 'stripe',
                 'transaction_id' => $paymentResult['payment_intent_id'],
-                'status' => 'pending_payment',
+                'status' => 'pending',
             ]);
 
             DB::commit();
@@ -522,11 +567,26 @@ public function shipping(Request $request)
             'register_password' => 'required|string|min:8|confirmed',
         ]);
 
-        return User::create([
+        $user = User::create([
             'name' => $request->register_name,
             'email' => $request->register_email,
             'password' => Hash::make($request->register_password),
+            'email_verified_at' => null, // Email non vérifié lors de la création
         ]);
+
+        // Envoyer l'email de vérification
+        try {
+            $user->sendEmailVerificationNotification();
+            Log::info('Email de vérification envoyé', ['user_id' => $user->id, 'email' => $user->email]);
+        } catch (\Exception $e) {
+            Log::error('Erreur envoi email vérification', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return $user;
     }
 
     protected function attemptLogin(Request $request)
@@ -756,5 +816,35 @@ public function shipping(Request $request)
         } catch (\Exception $e) {
             Log::error('Erreur email admin', ['error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Page de confirmation de paiement réussi
+     */
+    public function paymentSuccess($orderId = null)
+    {
+        $order = null;
+        
+        if ($orderId) {
+            $order = Order::find($orderId);
+            
+            // Vérifier que la commande existe et que le paiement est confirmé
+            if (!$order || $order->payment_status !== 'completed') {
+                return redirect()->route('payment.failed')
+                    ->with('error', 'Commande introuvable ou paiement non confirmé.');
+            }
+        }
+        
+        return view('payment.success', compact('order'));
+    }
+
+    /**
+     * Page d'échec de paiement
+     */
+    public function paymentFailed()
+    {
+        $error = request('error', session('payment_error', 'Une erreur est survenue lors du paiement.'));
+        
+        return view('payment.failed', compact('error'));
     }
 }

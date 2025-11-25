@@ -10,6 +10,7 @@ enum ProductSize: string
     case M = 'M';
     case L = 'L';
     case XL = 'XL';
+    case XXL = 'XXL';
 
     public function getLabel(): string
     {
@@ -20,6 +21,7 @@ enum ProductSize: string
             self::M => 'M (Medium)',
             self::L => 'L (Large)',
             self::XL => 'XL (Extra Large)',
+            self::XXL => 'XXL (Extra Extra Large)',
         };
     }
 

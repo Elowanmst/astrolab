@@ -106,44 +106,33 @@
                 @csrf
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                 
-                <!-- Sélection des couleurs -->
-                @if($product->colors->count() > 0)
-                <div class="product-option-group">
-                    <label class="option-label">Couleur</label>
-                    <div class="color-selector">
-                        @foreach($product->colors as $color)
-                        <div class="color-option-container">
-                            <input 
-                            type="radio" 
-                            name="color" 
-                            value="{{ $color->id }}" 
-                            id="color-{{ $color->id }}"
-                            class="color-input"
-                            {{ $loop->first ? 'checked' : '' }}
-                            >
-                            <label for="color-{{ $color->id }}" class="color-option" 
-                                style="background-color: {{ $color->hex ?? '#cccccc' }};"
-                                title="{{ $color->name }}">
-                                <span class="color-name">{{ $color->name }}</span>
-                            </label>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
-                
                 <!-- Sélection de la taille -->
                 <div class="product-option-group">
                     <label class="option-label">Taille</label>
                     <div class="size-selector">
-                        <button type="button" class="size-option" data-size="XXS">XXS</button>
-                        <button type="button" class="size-option" data-size="XS">XS</button>
-                        <button type="button" class="size-option" data-size="S">S</button>
-                        <button type="button" class="size-option" data-size="M">M</button>
-                        <button type="button" class="size-option" data-size="L">L</button>
-                        <button type="button" class="size-option" data-size="XL">XL</button>
+                        @foreach(\App\Enums\ProductSize::cases() as $size)
+                            @php
+                                $stock = $product->getStockForSize($size->value);
+                                $isAvailable = $stock > 0;
+                            @endphp
+                            <button 
+                                type="button" 
+                                class="size-option {{ !$isAvailable ? 'size-disabled' : '' }}" 
+                                data-size="{{ $size->value }}"
+                                data-stock="{{ $stock }}"
+                                {{ !$isAvailable ? 'disabled' : '' }}
+                                title="{{ $isAvailable ? $stock . ' en stock' : 'Rupture de stock' }}"
+                            >
+                                <span class="size-text {{ !$isAvailable ? 'strikethrough' : '' }}">{{ $size->value }}</span>
+                            </button>
+                        @endforeach
                     </div>
                     <input type="hidden" name="size" id="selected-size">
+                    
+                    <!-- Affichage du stock pour la taille sélectionnée -->
+                    <div id="selected-size-stock" class="size-stock-info" style="display: none;">
+                        <small class="stock-info"></small>
+                    </div>
                 </div>
                 
                 <!-- Guide des tailles -->
@@ -158,19 +147,17 @@
                     <label for="quantity" class="option-label">Quantité</label>
                     <div class="quantity-selector">
                         <button type="button" class="qty qty-minus" onclick="changeQuantity(-1)">-</button>
-                        <input type="number" name="quantity" id="quantity" min="1" max="{{ $product->stock ?? 99 }}" value="1" class="qty-input">
+                        <input type="number" name="quantity" id="quantity" min="1" max="1" value="1" class="qty-input">
                         <button type="button" class="qty qty-plus" onclick="changeQuantity(1)">+</button>
                     </div>
-                    @if($product->stock ?? 0 > 0)
-                    <small class="stock-info">{{ $product->stock ?? 'Plusieurs' }} en stock</small>
-                    @endif
+                    <small id="quantity-stock-info" class="stock-info">Sélectionnez une taille pour voir le stock disponible</small>
                 </div>
                 
                 <!-- Boutons d'action -->
                 <div class="product-actions">
-                    <button type="submit" class="btn-add-to-cart" {{ ($product->stock ?? 1) === 0 ? 'disabled' : '' }}>
+                    <button type="submit" class="btn-add-to-cart" id="add-to-cart-btn" disabled>
                         <i class="fas fa-shopping-bag"></i>
-                        {{ ($product->stock ?? 1) === 0 ? 'Rupture de stock' : 'Ajouter au panier' }}
+                        Sélectionnez une taille
                     </button>
                     
                     {{-- <div class="secondary-actions">
@@ -258,6 +245,12 @@
                         <td>102-106</td>
                         <td>82-86</td>
                         <td>76</td>
+                    </tr>
+                    <tr>
+                        <td>XXL</td>
+                        <td>106-110</td>
+                        <td>86-90</td>
+                        <td>78</td>
                     </tr>
                 </tbody>
             </table>

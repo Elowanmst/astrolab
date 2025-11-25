@@ -41,10 +41,10 @@ class PaymentService
                 'metadata' => [
                     'order_id' => $order->id,
                     'order_number' => $order->order_number,
-                    'customer_email' => $order->email,
+                    'customer_email' => $order->shipping_email,
                 ],
                 'description' => "Commande #{$order->order_number}",
-                'receipt_email' => $order->email,
+                'receipt_email' => $order->shipping_email,
                 'shipping' => [
                     'name' => trim("{$order->shipping_first_name} {$order->shipping_last_name}"),
                     'address' => [

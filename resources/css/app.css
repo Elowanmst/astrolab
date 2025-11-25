@@ -598,6 +598,10 @@ nav button:hover {
     margin-bottom: 15px;
 }
 
+.cart-popup-icon.error-icon {
+    color: #e74c3c;
+}
+
 .cart-popup h3 {
     color: var(--astro-text-primary);
     margin-bottom: 10px;

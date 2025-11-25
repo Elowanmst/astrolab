@@ -6,10 +6,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\VerifyEmailNotification;
+use App\Services\EmailVerificationTimerService;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 
-class User extends Authenticatable implements FilamentUser 
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail 
 {
     
     use HasFactory, Notifiable;
@@ -39,6 +42,7 @@ class User extends Authenticatable implements FilamentUser
         'shipping_city',
         'shipping_postal_code',
         'shipping_country',
+        'last_verification_email_sent_at',
     ];
     
     // Les utilisateurs admin ou avec un email @astrolab.com peuvent accéder au panneau d'administration Filament
@@ -70,6 +74,7 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'birth_date' => 'datetime',
             'is_admin' => 'boolean',
+            'last_verification_email_sent_at' => 'datetime',
             // 'newsletter_subscribed' => 'boolean',
         ];
     }
@@ -77,5 +82,48 @@ class User extends Authenticatable implements FilamentUser
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Send the email verification notification.
+     * Implémente un système de timer pour éviter le spam.
+     */
+    public function sendEmailVerificationNotification()
+    {
+        // Vérifier si l'utilisateur peut envoyer un nouvel email
+        if (!EmailVerificationTimerService::canSendVerificationEmail($this)) {
+            $remainingMessage = EmailVerificationTimerService::getRemainingCooldownMessage($this);
+            throw new \Exception("Email de vérification déjà envoyé récemment. {$remainingMessage}");
+        }
+
+        // Envoyer la notification
+        $this->notify(new VerifyEmailNotification);
+        
+        // Enregistrer l'heure d'envoi
+        EmailVerificationTimerService::recordEmailSent($this);
+    }
+
+    /**
+     * Vérifie si l'utilisateur peut envoyer un email de vérification
+     */
+    public function canSendVerificationEmail(): bool
+    {
+        return EmailVerificationTimerService::canSendVerificationEmail($this);
+    }
+
+    /**
+     * Retourne le temps restant avant de pouvoir renvoyer un email
+     */
+    public function getVerificationEmailCooldownSeconds(): int
+    {
+        return EmailVerificationTimerService::getRemainingCooldownSeconds($this);
+    }
+
+    /**
+     * Retourne un message formaté du temps restant
+     */
+    public function getVerificationEmailCooldownMessage(): string
+    {
+        return EmailVerificationTimerService::getRemainingCooldownMessage($this);
     }
 }
