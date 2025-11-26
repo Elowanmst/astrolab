@@ -18,10 +18,30 @@ Route::resource('products', ProductController::class);
 Route::get('/cgv', [LegalController::class, 'cgv'])->name('legal.cgv');
 Route::get('/livraisons-retours', [LegalController::class, 'shippingReturns'])->name('legal.shipping-returns');
 
+// Routes de vérification email
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+    $request->fulfill();
+    return redirect('/')->with('message', 'Email vérifié avec succès !');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
+    try {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('message', 'Lien de vérification envoyé !');
+    } catch (\Exception $e) {
+        return back()->with('error', $e->getMessage());
+    }
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
 // Routes panier
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
-Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+Route::delete('/cart/remove/{itemKey}', [CartController::class, 'remove'])->name('cart.remove');
+Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])->name('cart.updateQuantity');
 
 // Routes checkout
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
@@ -32,6 +52,10 @@ Route::post('/checkout/payment', [CheckoutController::class, 'payment'])->name('
 Route::post('/checkout/process', [CheckoutController::class, 'processPayment'])->name('checkout.process');
 Route::post('/checkout/confirm-payment', [CheckoutController::class, 'confirmPayment'])->name('checkout.confirm-payment');
 Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+
+// Pages de confirmation et d'échec de paiement
+Route::get('/payment/success/{order?}', [CheckoutController::class, 'paymentSuccess'])->name('payment.success');
+Route::get('/payment/failed', [CheckoutController::class, 'paymentFailed'])->name('payment.failed');
 
 // UNE SEULE route pour les points de livraison
 Route::post('/checkout/delivery-points', [CheckoutController::class, 'getDeliveryPoints'])->name('checkout.delivery.points');

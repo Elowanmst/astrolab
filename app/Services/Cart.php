@@ -16,16 +16,33 @@ class Cart
 
     public function add(Product $product, int $quantity = 1, $size = null, $color = null)
     {
+        // Vérifier que la taille est fournie
+        if (!$size) {
+            throw new \InvalidArgumentException('La taille est obligatoire');
+        }
+
+        // Vérifier le stock disponible pour cette taille
+        $availableStock = $product->getStockForSize($size);
+        if ($availableStock <= 0) {
+            throw new \Exception('Cette taille n\'est plus en stock');
+        }
+
         $cart = $this->get();
         
         // Créer une clé unique basée sur le produit, la taille et la couleur
-        $itemKey = $product->id;
-        if ($size || $color) {
-            $itemKey .= '_' . ($size ?? 'no-size') . '_' . ($color ?? 'no-color');
+        $itemKey = $product->id . '_' . $size . '_' . ($color ?? 'no-color');
+
+        // Calculer la nouvelle quantité totale
+        $currentQuantity = isset($cart[$itemKey]) ? $cart[$itemKey]['quantity'] : 0;
+        $newTotalQuantity = $currentQuantity + $quantity;
+
+        // Vérifier que la nouvelle quantité ne dépasse pas le stock
+        if ($newTotalQuantity > $availableStock) {
+            throw new \Exception("Stock insuffisant. Stock disponible: {$availableStock}, quantité demandée: {$newTotalQuantity}");
         }
 
         if (isset($cart[$itemKey])) {
-            $cart[$itemKey]['quantity'] += $quantity;
+            $cart[$itemKey]['quantity'] = $newTotalQuantity;
         } else {
             // Récupérer l'URL de l'image avec fallback
             $imageUrl = $product->getFirstMediaUrl('products', 'thumb');
@@ -42,16 +59,17 @@ class Cart
                 'size' => $size,
                 'color' => $color,
                 'image' => $imageUrl,
+                'stock_available' => $availableStock,
             ];
         }
 
         Session::put($this->key, $cart);
     }
 
-    public function remove($productId)
+    public function remove($itemKey)
     {
         $cart = $this->get();
-        unset($cart[$productId]);
+        unset($cart[$itemKey]);
         Session::put($this->key, $cart);
     }
 

@@ -38,11 +38,6 @@ class ProductResource extends Resource
                     ->required()
                     ->minValue(0)
                     ->maxValue(1000000),
-                Forms\Components\TextInput::make('stock')
-                    ->numeric()
-                    ->required()
-                    ->minValue(0)
-                    ->maxValue(1000000),
                 Forms\Components\Select::make('category_id')
                     ->relationship('category', 'name')
                     ->required(),
@@ -69,12 +64,35 @@ class ProductResource extends Resource
                             ->required()
                             ->helperText('Sélectionnez la couleur ou entrez un code hexadécimal (ex: #FF0000)'),
                     ]), // Active la création rapide d'une couleur
-                
-                Forms\Components\Select::make('size')
-                    ->options(\App\Enums\ProductSize::getOptions())
-                    ->label('Taille')
-                    ->helperText('Sélectionnez la taille disponible pour ce produit')
-                    ->nullable(),
+                    
+                // Nouveau : Gestion des stocks par taille
+                Forms\Components\Section::make('Stocks par taille')
+                    ->description('Gérer le stock pour chaque taille disponible')
+                    ->schema([
+                        Forms\Components\Repeater::make('sizeStocks')
+                            ->relationship('sizeStocks')
+                            ->schema([
+                                Forms\Components\Select::make('size')
+                                    ->options(\App\Enums\ProductSize::getOptions())
+                                    ->required()
+                                    ->distinct()
+                                    ->label('Taille'),
+                                Forms\Components\TextInput::make('stock')
+                                    ->numeric()
+                                    ->required()
+                                    ->minValue(0)
+                                    ->default(0)
+                                    ->label('Stock'),
+                            ])
+                            ->columns(2)
+                            ->addActionLabel('Ajouter une taille')
+                            ->collapsible()
+                            ->reorderableWithButtons()
+                            ->deleteAction(
+                                fn ($action) => $action->requiresConfirmation()
+                            ),
+                    ])
+                    ->collapsible(),
             ]);
     }
 
@@ -91,9 +109,22 @@ class ProductResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('price')
                     ->sortable()
-                    ->money('USD'),
-                Tables\Columns\TextColumn::make('stock')
-                    ->sortable(),
+                    ->money('EUR'),
+                Tables\Columns\TextColumn::make('total_stock')
+                    ->label('Stock total')
+                    ->getStateUsing(fn ($record) => $record->getTotalStock())
+                    ->sortable()
+                    ->badge()
+                    ->color(fn ($state) => match (true) {
+                        $state === 0 => 'danger',
+                        $state <= 10 => 'warning', 
+                        default => 'success'
+                    }),
+                Tables\Columns\TextColumn::make('available_sizes')
+                    ->label('Tailles disponibles')
+                    ->getStateUsing(fn ($record) => implode(', ', $record->getAvailableSizes()))
+                    ->limit(30)
+                    ->tooltip(fn ($record) => implode(', ', $record->getAvailableSizes())),
                 Tables\Columns\TextColumn::make('category.name')
                     ->label('Category')
                     ->sortable()

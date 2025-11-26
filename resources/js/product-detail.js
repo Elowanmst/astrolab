@@ -22,12 +22,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // === SÉLECTION DES TAILLES ===
+    // === SÉLECTION DES TAILLES AVEC GESTION DU STOCK ===
     const sizeOptions = document.querySelectorAll('.size-option');
     const selectedSizeInput = document.getElementById('selected-size');
+    const quantityInput = document.getElementById('quantity');
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    const quantityStockInfo = document.getElementById('quantity-stock-info');
 
     sizeOptions.forEach(option => {
         option.addEventListener('click', function() {
+            // Ignorer si la taille est désactivée
+            if (this.disabled || this.classList.contains('size-disabled')) {
+                return;
+            }
+
             // Retirer la sélection précédente
             sizeOptions.forEach(opt => opt.classList.remove('selected'));
             
@@ -36,9 +44,59 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Mettre à jour le champ caché
             const size = this.dataset.size;
+            const stock = parseInt(this.dataset.stock) || 0;
             selectedSizeInput.value = size;
+            
+            // Mettre à jour la quantité maximum
+            quantityInput.max = stock;
+            if (parseInt(quantityInput.value) > stock) {
+                quantityInput.value = Math.min(stock, 1);
+            }
+            
+            // Mettre à jour le bouton d'ajout au panier
+            if (stock > 0) {
+                addToCartBtn.disabled = false;
+                addToCartBtn.innerHTML = '<i class="fas fa-shopping-bag"></i> Ajouter au panier';
+            } else {
+                addToCartBtn.disabled = true;
+                addToCartBtn.innerHTML = '<i class="fas fa-ban"></i> Rupture de stock';
+            }
+            
+            // Mettre à jour l'info de stock
+            updateStockInfo(stock);
         });
     });
+
+    // Fonction pour mettre à jour l'affichage du stock
+    function updateStockInfo(stock) {
+        let message = '';
+        let className = '';
+        
+        if (stock === 0) {
+            message = 'Rupture de stock';
+            className = 'stock-out';
+        } else if (stock <= 5) {
+            message = `Stock faible : ${stock} restant${stock > 1 ? 's' : ''}`;
+            className = 'stock-low';
+        } else if (stock <= 50) {
+            message = `${stock} en stock`;
+            className = 'stock-good';
+        } else {
+            // Stock > 50 : ne pas afficher l'information de stock
+            message = '';
+            className = '';
+        }
+        
+        quantityStockInfo.textContent = message;
+        quantityStockInfo.className = `stock-info ${className}`;
+        
+        // Masquer l'élément si pas de message
+        if (message === '') {
+            quantityStockInfo.style.display = 'none';
+        } else {
+            quantityStockInfo.style.display = 'block';
+        }
+    }
 
     // === SÉLECTION DES COULEURS ===
     const colorInputs = document.querySelectorAll('.color-input');
@@ -84,17 +142,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // === FONCTIONS UTILITAIRES ===
 
-// Changer la quantité
+// Changer la quantité avec vérification du stock
 function changeQuantity(change) {
     const quantityInput = document.getElementById('quantity');
+    const selectedSize = document.getElementById('selected-size').value;
+    
+    if (!selectedSize) {
+        showNotification('Veuillez d\'abord sélectionner une taille', 'error');
+        return;
+    }
+    
     const currentValue = parseInt(quantityInput.value);
     const minValue = parseInt(quantityInput.min) || 1;
-    const maxValue = parseInt(quantityInput.max) || 999;
+    const maxValue = parseInt(quantityInput.max) || 1;
     
     const newValue = currentValue + change;
     
     if (newValue >= minValue && newValue <= maxValue) {
         quantityInput.value = newValue;
+    } else if (newValue > maxValue) {
+        showNotification(`Stock maximum disponible: ${maxValue}`, 'warning');
     }
 }
 

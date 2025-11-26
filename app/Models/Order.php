@@ -19,6 +19,7 @@ class Order extends Model
         'total_amount',
         'shipping_name',
         'shipping_email',
+        'shipping_phone',
         'shipping_address',
         'shipping_city',
         'shipping_postal_code',

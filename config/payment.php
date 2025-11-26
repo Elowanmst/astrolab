@@ -86,9 +86,9 @@ return [
                 'free_above' => 50.00,
             ],
             'pickup' => [
-                'name' => 'Retrait en magasin',
-                'price' => 9.00,
-                'free_above' => 0.00,
+                'name' => 'Point Relais Mondial Relay',
+                'price' => 0.99,
+                'free_above' => 50.00,
             ],
         ],
     ],

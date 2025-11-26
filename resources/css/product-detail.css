@@ -413,6 +413,7 @@ input[type="number"].qty-input {
 .size-option {
     padding: 0.8rem 1.2rem;
     background: transparent;
+    border: none;
     color: var(--astro-text-primary);
     font-weight: 600;
     cursor: pointer;
@@ -420,17 +421,57 @@ input[type="number"].qty-input {
     min-width: 50px;
     text-align: center;
     font-family: var(--astro-font-family);
+    border-radius: var(--astro-radius-md);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
 }
 
 .size-option:hover {
-    background: var(--astro-bg-card-hover);
-    border-radius: var(--astro-radius-lg);
+    background: rgba(0, 0, 0, 0.7);
 }
 
 .size-option.selected {
-    background: var(--astro-primary);
-    color: var(--astro-black);
-    border-radius: var(--astro-radius-lg);
+    background: white;
+    color: black;
+}
+
+/* État des tailles indisponibles */
+.size-option.size-disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.size-option.size-disabled:hover {
+    background: transparent;
+}
+
+/* Style barré pour les tailles indisponibles */
+.size-text.strikethrough {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+}
+
+/* Informations de stock */
+.size-stock-info {
+    margin-top: 0.5rem;
+}
+
+.size-stock-info .stock-info {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.3rem 0;
+    display: inline-block;
+}
+
+.stock-low {
+    color: var(--astro-text-secondary);
+}
+
+.stock-good {
+    color: var(--astro-text-secondary);
 }
 
 /* Guide des tailles */
