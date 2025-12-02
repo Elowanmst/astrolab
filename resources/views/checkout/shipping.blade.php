@@ -21,7 +21,7 @@
     </div>
     @endif
     
-    <form action="{{ route('checkout.payment') }}" method="POST">
+    <form action="{{ route('checkout.summary') }}" method="POST">
         @csrf
         
         <div class="checkout-grid">
@@ -249,7 +249,7 @@
                 
                 <button type="submit" class="checkout-btn">
                     <i class="fas fa-arrow-right"></i>
-                    Continuer vers le paiement
+                    Finaliser ma commande
                 </button>
             </div>
         </div>

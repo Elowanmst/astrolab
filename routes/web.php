@@ -6,7 +6,6 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\MondialRelayController;
 use App\Http\Controllers\LegalController;
 
@@ -43,28 +42,10 @@ Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.a
 Route::delete('/cart/remove/{itemKey}', [CartController::class, 'remove'])->name('cart.remove');
 Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])->name('cart.updateQuantity');
 
-// Routes checkout
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-Route::get('/checkout/shipping', [CheckoutController::class, 'shipping'])->name('checkout.shipping');
-Route::post('/checkout/shipping', [CheckoutController::class, 'shipping']);
-Route::get('/checkout/payment', [CheckoutController::class, 'showPayment'])->name('checkout.payment.show');
-Route::post('/checkout/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
-Route::post('/checkout/process', [CheckoutController::class, 'processPayment'])->name('checkout.process');
-Route::post('/checkout/confirm-payment', [CheckoutController::class, 'confirmPayment'])->name('checkout.confirm-payment');
-Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
-// Pages de confirmation et d'échec de paiement
-Route::get('/payment/success/{order?}', [CheckoutController::class, 'paymentSuccess'])->name('payment.success');
-Route::get('/payment/failed', [CheckoutController::class, 'paymentFailed'])->name('payment.failed');
 
-// UNE SEULE route pour les points de livraison
+// Route pour les points de livraison
 Route::post('/checkout/delivery-points', [CheckoutController::class, 'getDeliveryPoints'])->name('checkout.delivery.points');
-
-// Webhook Stripe
-Route::post('/webhook/stripe', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');
-
-// SUPPRIMER ces routes temporaires qui font doublon :
-// Route::post('/api/mondial-relay/search', [MondialRelayController::class, 'getRelayPoints'])->withoutMiddleware(['csrf']);
 
 // Routes Mondial Relay (garder seulement celles-ci)
 Route::get('/mondial-relay/test', function () {
