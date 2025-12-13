@@ -74,20 +74,6 @@ class OrdersRelationManager extends RelationManager
                     ->label('Montant')
                     ->money('EUR')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('payment_status')
-                    ->label('Paiement')
-                    ->badge()
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'completed',
-                        'danger' => 'failed',
-                    ])
-                    ->formatStateUsing(fn (?string $state): string => match ($state) {
-                        'pending' => 'En attente',
-                        'completed' => 'Payé',
-                        'failed' => 'Échoué',
-                        default => 'Non défini',
-                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Date')
                     ->dateTime('d/m/Y à H:i')
@@ -102,13 +88,6 @@ class OrdersRelationManager extends RelationManager
                         'shipped' => 'Expédiée',
                         'delivered' => 'Livrée',
                         'cancelled' => 'Annulée',
-                    ]),
-                Tables\Filters\SelectFilter::make('payment_status')
-                    ->label('Statut paiement')
-                    ->options([
-                        'pending' => 'En attente',
-                        'completed' => 'Payé',
-                        'failed' => 'Échoué',
                     ]),
             ])
             ->headerActions([

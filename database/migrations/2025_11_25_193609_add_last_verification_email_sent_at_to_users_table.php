@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->timestamp('last_verification_email_sent_at')->nullable()->after('email_verified_at');
+            if (!Schema::hasColumn('users', 'last_verification_email_sent_at')) {
+                $table->timestamp('last_verification_email_sent_at')->nullable()->after('email_verified_at');
+            }
         });
     }
 

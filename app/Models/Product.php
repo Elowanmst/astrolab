@@ -83,6 +83,9 @@ class Product extends Model implements HasMedia
      */
     public function getTotalStock(): int
     {
+        if ($this->relationLoaded('sizeStocks')) {
+            return $this->sizeStocks->sum('stock');
+        }
         return $this->sizeStocks()->sum('stock');
     }
 
@@ -99,6 +102,14 @@ class Product extends Model implements HasMedia
      */
     public function getAvailableSizes(): array
     {
+        if ($this->relationLoaded('sizeStocks')) {
+            return $this->sizeStocks
+                ->where('stock', '>', 0)
+                ->pluck('size')
+                ->map(fn($size) => is_string($size) ? $size : $size->value)
+                ->toArray();
+        }
+
         return $this->sizeStocks()
             ->where('stock', '>', 0)
             ->pluck('size')

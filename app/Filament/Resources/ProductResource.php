@@ -143,6 +143,11 @@ class ProductResource extends Resource
             ]);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['category', 'sizeStocks']);
+    }
+
     public static function getRelations(): array
     {
         return [

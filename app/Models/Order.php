@@ -13,9 +13,6 @@ class Order extends Model
         'user_id',
         'order_number',
         'status',
-        'payment_status',
-        'payment_method',
-        'transaction_id',
         'total_amount',
         'shipping_name',
         'shipping_email',
@@ -53,16 +50,6 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    public function paymentTransactions()
-    {
-        return $this->hasMany(PaymentTransaction::class);
-    }
-
-    public function latestPaymentTransaction()
-    {
-        return $this->hasOne(PaymentTransaction::class)->latestOfMany();
-    }
-
     public function getStatusLabelAttribute()
     {
         return match($this->status) {
@@ -73,6 +60,11 @@ class Order extends Model
             'cancelled' => 'Annulée',
             default => 'Inconnu'
         };
+    }
+
+    public function getStatusLabel()
+    {
+        return $this->status_label;
     }
 
     protected static function boot()
