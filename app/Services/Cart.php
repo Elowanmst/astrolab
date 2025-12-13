@@ -119,17 +119,7 @@ class Cart
             ->first();
         
         if (!$shippingMethod) {
-            // Fallback vers l'ancienne configuration si aucune méthode trouvée
-            $config = config('payment.shipping.methods.' . $shippingMethodCode);
-            if (!$config) {
-                return 0;
-            }
-            
-            $totalHT = $this->getTotalHT();
-            if ($totalHT >= $config['free_above']) {
-                return 0;
-            }
-            return $config['price'];
+            return 0;
         }
         
         return $shippingMethod->calculatePrice($this->getTotalHT());

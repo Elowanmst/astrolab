@@ -29,6 +29,16 @@ class OrderResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::whereIn('status', ['pending', 'processing', 'paid'])->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getModel()::whereIn('status', ['pending', 'processing', 'paid'])->count() > 0 ? 'warning' : 'primary';
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -53,15 +63,6 @@ class OrderResource extends Resource
                                 'cancelled' => 'Annulée',
                             ])
                             ->required(),
-                        Forms\Components\Select::make('payment_status')
-                            ->label('Statut de paiement')
-                            ->options([
-                                'pending' => 'En attente',
-                                'completed' => 'Payé',
-                                'failed' => 'Échoué',
-                                'refunded' => 'Remboursé',
-                            ])
-                            ->required(),
                     ])
                     ->columns(2),
 
@@ -72,9 +73,6 @@ class OrderResource extends Resource
                             ->numeric()
                             ->prefix('€')
                             ->required(),
-                        Forms\Components\TextInput::make('transaction_id')
-                            ->label('ID de transaction')
-                            ->disabled(),
                     ])
                     ->columns(2),
 
@@ -109,15 +107,17 @@ class OrderResource extends Resource
                     ->label('Email')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Statut')
-                    ->colors([
-                        'warning' => 'pending',
-                        'primary' => 'processing',
-                        'info' => 'shipped',
-                        'success' => 'delivered',
-                        'danger' => 'cancelled',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'processing' => 'primary',
+                        'shipped' => 'info',
+                        'delivered' => 'success',
+                        'cancelled' => 'danger',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'pending' => 'En attente',
                         'processing' => 'En traitement',
@@ -126,21 +126,6 @@ class OrderResource extends Resource
                         'cancelled' => 'Annulée',
                         default => $state,
                     }),
-                Tables\Columns\BadgeColumn::make('payment_status')
-                    ->label('Paiement')
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'completed',
-                        'danger' => 'failed',
-                        'info' => 'refunded',
-                    ])
-                    ->formatStateUsing(fn (?string $state): string => match ($state) {
-                        'pending' => 'En attente',
-                        'completed' => 'Payé',
-                        'failed' => 'Échoué',
-                        'refunded' => 'Remboursé',
-                        default => 'Non défini',
-                    }),
                 Tables\Columns\TextColumn::make('items_count')
                     ->label('Articles')
                     ->counts('items')
@@ -148,10 +133,6 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('total_amount')
                     ->label('Montant')
                     ->money('EUR')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('payment_transactions_count')
-                    ->label('Transactions')
-                    ->counts('paymentTransactions')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Créée le')
@@ -172,14 +153,6 @@ class OrderResource extends Resource
                         'shipped' => 'Expédiée',
                         'delivered' => 'Livrée',
                         'cancelled' => 'Annulée',
-                    ]),
-                Tables\Filters\SelectFilter::make('payment_status')
-                    ->label('Statut de paiement')
-                    ->options([
-                        'pending' => 'En attente',
-                        'completed' => 'Payé',
-                        'failed' => 'Échoué',
-                        'refunded' => 'Remboursé',
                     ]),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
@@ -217,6 +190,11 @@ class OrderResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['user']);
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -231,16 +209,6 @@ class OrderResource extends Resource
             'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
-    }
-
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::where('status', 'pending')->count();
-    }
-
-    public static function getNavigationBadgeColor(): string|array|null
-    {
-        return 'warning';
     }
 
     // Empêcher la création manuelle de commandes (elles viennent du site)
