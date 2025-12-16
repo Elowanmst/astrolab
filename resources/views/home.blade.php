@@ -55,7 +55,7 @@
                     <p class="section-subtitle">{{ strtoupper($collection->description) }}</p>
                 @endif
             @else
-                <h2 class="section-title">COLLECTION STELLON 01</h2>
+                <h2 class="section-title">COLLECTION STELLON</h2>
                 <p class="section-subtitle">DÉCOUVREZ NOTRE PREMIÈRE COLLECTION EXCLUSIVE</p>
             @endif
             
@@ -122,7 +122,7 @@
                 </div>
                 <h4 class="card-title">MATHIS DOUILLARD</h4>
                 <p class="card-text">Illustrateur & Designer graphique</p>
-                <a href="https://www.instagram.com/astrolab.boutique/?hl=fr" class="btn-home">SUIVRE MATHIS</a>
+                <a href="https://www.instagram.com/m.zeklox/?hl=fr" class="btn-home">SUIVRE MATHIS</a>
             </div>
 
             <div class="card">
@@ -131,7 +131,7 @@
                 </div>
                 <h4 class="card-title">AXEL CHAPET</h4>
                 <p class="card-text">Illustrateur & Designer graphique</p>
-                <a href="https://www.instagram.com/m.zeklox/?hl=fr" class="btn-home">SUIVRE AXEL</a>
+                <a href="https://www.instagram.com/chabol.arts/?hl=fr" class="btn-home">SUIVRE AXEL</a>
             </div>
         </div>
     </div>
