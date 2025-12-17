@@ -35,7 +35,7 @@
 
         <div class="grid grid-cols-1 gap-8">
             <!-- Modification des informations personnelles -->
-            <div class="bg-gray-900 p-8 border border-gray-700 rounded-lg shadow-xl">
+            <div class="bg-[#222222] p-8 border border-gray-700 rounded-lg shadow-xl">
                 <div class="flex items-center mb-8">
                     <i class="fas fa-user-edit text-2xl text-white mr-4"></i>
                     <h3 class="text-2xl font-bold uppercase tracking-wide">Informations personnelles</h3>
@@ -89,7 +89,7 @@
                         <textarea name="address" 
                                   id="address" 
                                   rows="3"
-                                  class="block w-full px-4 py-3 bg-gray-800 border-2 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-all duration-300 rounded-lg font-medium resize-none">{{ old('address', $user->address) }}</textarea>
+                                  class="block w-full px-4 py-3 bg-[#333333] border-2 border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-all duration-300 rounded-lg font-medium resize-none">{{ old('address', $user->address) }}</textarea>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -126,7 +126,7 @@
             </div>
 
             <!-- Modification du mot de passe -->
-            <div class="bg-gray-900 p-8 border border-gray-700 rounded-lg shadow-xl">
+            <div class="bg-[#222222] p-8 border border-gray-700 rounded-lg shadow-xl">
                 <div class="flex items-center mb-8">
                     <i class="fas fa-key text-2xl text-yellow-500 mr-4"></i>
                     <h3 class="text-2xl font-bold uppercase tracking-wide">Changer le mot de passe</h3>
