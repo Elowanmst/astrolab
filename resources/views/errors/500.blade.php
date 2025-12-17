@@ -7,7 +7,7 @@
     <div class="text-center max-w-2xl">
         <!-- Icône d'erreur -->
         <div class="mb-8">
-            <div class="w-32 h-32 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white error-icon">
+            <div class="w-32 h-32 bg-grey-600 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white error-icon">
                 <i class="fas fa-exclamation-triangle text-4xl text-white"></i>
             </div>
         </div>

@@ -7,7 +7,7 @@
     <div class="text-center max-w-2xl">
         <!-- Icône d'erreur -->
         <div class="mb-8">
-            <div class="w-32 h-32 bg-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white error-icon">
+            <div class="w-32 h-32 bg-grey-600 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white error-icon">
                 <i class="fas fa-lock text-4xl text-white"></i>
             </div>
         </div>
@@ -18,9 +18,6 @@
         
         <!-- Message d'erreur -->
         <div class="space-y-4 mb-8">
-            <p class="text-xl text-gray-300">
-                Cette zone est classifiée top secret...
-            </p>
             <p class="text-lg text-gray-400">
                 Vous n'avez pas l'autorisation d'accéder à cette page.
             </p>
@@ -44,10 +41,6 @@
                 <a href="{{ route('home') }}" class="error-btn-secondary px-6 py-3">
                     <i class="fas fa-home mr-2"></i>
                     RETOUR À L'ACCUEIL
-                </a>
-                <a href="{{ url('/#boutique') }}" class="error-btn-secondary px-6 py-3">
-                    <i class="fas fa-shopping-bag mr-2"></i>
-                    VOIR LA BOUTIQUE
                 </a>
             </div>
         </div>

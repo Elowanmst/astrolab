@@ -7,7 +7,7 @@
     <div class="text-center max-w-2xl">
         <!-- Icône d'erreur -->
         <div class="mb-8">
-            <div class="w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white error-icon">
+            <div class="w-32 h-32 bg-grey-700 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-white error-icon">
                 @if(isset($exception) && method_exists($exception, 'getStatusCode'))
                     <span class="text-4xl font-bold text-white">{{ $exception->getStatusCode() }}</span>
                 @else
