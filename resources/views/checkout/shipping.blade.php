@@ -290,24 +290,20 @@
     }
     
     .relay-point.selected {
-        background: rgba(39, 174, 96, 0.25) !important;
-        border-color: rgba(39, 174, 96, 0.4) !important;
+
         box-shadow: 0 8px 32px rgba(39, 174, 96, 0.2);
     }
     
     .select-relay-btn {
-        background: rgba(52, 152, 219, 0.7) !important;
-        border: 1px solid rgba(52, 152, 219, 0.3) !important;
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
+        background: rgba(78, 78, 78, 0.7) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
         border-radius: 12px !important;
         transition: all 0.3s ease !important;
     }
     
     .select-relay-btn:hover {
-        background: rgba(41, 128, 185, 0.8) !important;
-        border-color: rgba(41, 128, 185, 0.4) !important;
-        transform: scale(1.05) !important;
+        border-color: rgba(32, 32, 32, 0.4) !important;
+        transform: scargba(255, 255, 255, 0.4)
         box-shadow: 0 8px 25px rgba(41, 128, 185, 0.3) !important;
     }
     
@@ -404,8 +400,7 @@
     }
     
     .relay-point.selected {
-        background: rgba(39, 174, 96, 0.25) !important;
-        border-color: rgba(39, 174, 96, 0.4) !important;
+        border-color: rgba(12, 255, 49, 1) !important;
         box-shadow: 0 8px 32px rgba(39, 174, 96, 0.2) !important;
     }
 </style>
@@ -646,11 +641,10 @@
             
             // Puis les points relais
             if (relayPoints.length > 0) {
-                html += `<h6 style="margin: 20px 0 15px 0; color: #3498db; font-weight: 700;
-                             background: rgba(52, 152, 219, 0.1); padding: 10px 16px; border-radius: 12px;
-                             border-left: 4px solid #3498db;">🏪 Points relais</h6>`;
+                html += `<h6 style="margin: 20px 0 15px 0; color: #ffffffff; font-weight: 700;
+                             background: rgba(107, 107, 107, 0.1); padding: 10px 16px; border-radius: 12px;">🏪 Points relais</h6>`;
                 relayPoints.forEach(point => {
-                    html += generatePointHTML(point, '#3498db', '🏪');
+                    html += generatePointHTML(point, '#ffffffff', '🏪');
                 });
             }
             
@@ -668,7 +662,7 @@
             const isLocker = point.type === 'LOC';
             const typeLabel = isLocker ? 'Casier automatique' : 'Point relais';
             const availabilityText = isLocker ? 'Accès 24h/24 - 7j/7' : 'Voir horaires sur place';
-            const accentColor = color === '#27ae60' ? 'rgba(39, 174, 96, 0.7)' : 'rgba(52, 152, 219, 0.7)';
+            const accentColor = color === '#ffffffff' ? 'rgba(39, 174, 96, 0.7)' : 'rgba(52, 152, 219, 0.7)';
             
             // Échapper les données JSON pour éviter les erreurs
             const escapedPoint = JSON.stringify(point).replace(/'/g, "&apos;");
@@ -677,7 +671,7 @@
             <div class="relay-point" data-point-id="${point.id}" style="
                 background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2);
                 border-radius: 16px; backdrop-filter: blur(10px); padding: 20px; margin-bottom: 12px;
-                cursor: pointer; transition: all 0.3s ease; border-left: 4px solid ${color};">
+                cursor: pointer; transition: all 0.3s ease;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div style="flex: 1;">
                         <h4 style="margin: 0 0 8px 0; color: var(--astro-black); font-weight: 700; font-size: 16px;">
@@ -690,15 +684,23 @@
                             ${point.postal_code} ${point.city}
                         </p>
                         <div style="margin-top: 10px;">
-                            <small style="color: #16a085; font-weight: 600; background: rgba(22, 160, 133, 0.1);
+                            <small style="color: #ffffffff; font-weight: 600;
                                           padding: 4px 8px; border-radius: 8px;">⏰ ${availabilityText}</small>
                         </div>
                         ${point.phone ? `<small style="color: rgba(0,0,0,0.6); display: block; margin-top: 6px;">📞 ${point.phone}</small>` : ''}
                     </div>
                     <button type="button" class="select-relay-btn" data-point='${escapedPoint}' style="
-                        background: ${accentColor}; color: white; border: 1px solid rgba(255,255,255,0.2);
-                        padding: 12px 18px; border-radius: 12px; cursor: pointer; font-size: 13px;
-                        font-weight: 600; transition: all 0.3s ease; margin-left: 15px; min-width: 100px;">
+                        background:rgba(255, 255, 255, 0.15); 
+                        color: white; 
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        padding: 12px 18px; 
+                        border-radius: 12px; 
+                        cursor: pointer; 
+                        font-size: 13px;
+                        font-weight: 600; 
+                        transition: all 0.3s ease; 
+                        margin-left: 15px; 
+                        min-width: 100px;">
                         Sélectionner
                     </button>
                 </div>

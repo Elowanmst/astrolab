@@ -41,13 +41,7 @@ class VerifyEmailNotification extends Notification
 
         return (new MailMessage)
             ->subject('🚀 Vérifiez votre email - Astrolab')
-            ->greeting('Bienvenue chez Astrolab !')
-            ->line('Merci de vous être inscrit(e) sur notre boutique.')
-            ->line('Pour activer votre compte et pouvoir passer commande, veuillez cliquer sur le bouton ci-dessous pour vérifier votre adresse email :')
-            ->action('Vérifier mon email', $verificationUrl)
-            ->line('Ce lien de vérification expirera dans ' . Config::get('auth.verification.expire', 60) . ' minutes.')
-            ->line('Si vous n\'avez pas créé de compte, aucune action n\'est requise.')
-            ->salutation('L\'équipe Astrolab');
+            ->view('emails.verify-email', ['url' => $verificationUrl]);
     }
 
     /**
