@@ -48,7 +48,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     // Les utilisateurs admin ou avec un email @astrolab.com peuvent accéder au panneau d'administration Filament
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_admin || str_ends_with($this->email, '@astrolab.com');
+        return $this->is_admin;
     }
     
     

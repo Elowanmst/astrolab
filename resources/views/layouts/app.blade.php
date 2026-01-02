@@ -66,7 +66,7 @@
                         </a>
                     </li>
                     
-                    @if(str_ends_with(Auth::user()->email ?? '', '@astrolab.com'))
+                    @if(str_ends_with(Auth::user()->email ?? '', '@astrolab-boutique.com'))
                         <li class="nav-item">
                             <a href="/admin" class="nav-link" target="_blank">Admin</a>
                         </li>
