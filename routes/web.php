@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\MondialRelayController;
 use App\Http\Controllers\StripeCheckoutController;
+use App\Http\Controllers\LegalController;
 
 // Routes Stripe Simple
 Route::get('/stripe-checkout', [StripeCheckoutController::class, 'checkout'])->name('stripe.checkout');
