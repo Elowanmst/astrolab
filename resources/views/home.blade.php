@@ -61,7 +61,7 @@
             
             <!-- Grille de produits en utilisant les données dynamiques -->
             <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto;">
-                @php $visibleProducts = $products->take(6); @endphp
+                @php $visibleProducts = $products->take(12); @endphp
                 @foreach ($visibleProducts as $product)
                     <div class="card product-card" onclick="navigateToProduct('{{ route('products.show', $product) }}', event)">
                         <div class="product-image-container">
@@ -76,7 +76,7 @@
                             @endif
                         </div>
                         <h3 class="card-title">{{ strtoupper($product->name) }}</h3>
-                        <p class="card-text">Coupe classique • Noir ou Blanc</p>
+                        <p class="card-text">Coupe classique</p>
                         <p class="card-text" style="color: var(--astro-text-primary); font-weight: bold;">{{ $product->price }} €</p>
                     </div>
                 @endforeach
